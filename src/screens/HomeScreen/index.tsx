@@ -1,15 +1,19 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next'; // Import hook useTranslation
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 
-
 const HomeScreen: React.FC = () => {
+  // Sử dụng hook useTranslation để lấy hàm t() và đối tượng i18n
+  const { t } = useTranslation();
+
   return (
     <View style={styles.container}>
       <Header />
       <View style={styles.content}>
-        <Text style={styles.text}>Home Screen</Text>
+        {/* Sử dụng t() để hiển thị văn bản dịch từ các file JSON */}
+        <Text style={styles.text}>{t('welcome')}</Text>
       </View>
       <Footer />
     </View>
