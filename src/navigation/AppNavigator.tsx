@@ -1,13 +1,12 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { View, Text, SafeAreaView, StyleSheet } from "react-native";
+import { Text, SafeAreaView, StyleSheet, View } from "react-native";
 import HomeScreen from "../screens/HomeScreen";
 import FavoriteScreen from "../screens/FavortieScreen";
+import AccountScreen from "../screens/AccountScreen";
 
 const Tab = createBottomTabNavigator();
-
 
 const CategoryScreen = () => (
   <SafeAreaView style={styles.screenContainer}>
@@ -20,15 +19,9 @@ const PostScreen = () => (
   </SafeAreaView>
 );
 
-const AccountScreen = () => (
-  <SafeAreaView style={styles.screenContainer}>
-    <Text style={styles.contentText}>This is Account Screen</Text>
-  </SafeAreaView>
-);
-
 export default function AppNavigator() {
   return (
-    <NavigationContainer>
+    <View style={styles.container}>
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
@@ -39,23 +32,64 @@ export default function AppNavigator() {
               Favorite: "heart-outline",
               Account: "person-outline",
             };
-            return <Icon name={icons[route.name as keyof typeof icons]} size={size} color={color} />;
+            return (
+              <Icon
+                name={icons[route.name as keyof typeof icons]}
+                size={size}
+                color={color}
+              />
+            );
           },
           tabBarActiveTintColor: "#00B0B9",
           tabBarInactiveTintColor: "#738AA0",
+          tabBarStyle: styles.tabBarStyle,
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-        <Tab.Screen name="Category" component={CategoryScreen} options={{ headerShown: false }} />
-        <Tab.Screen name="Post" component={PostScreen} options={{ headerShown: false }} />
-        <Tab.Screen name="Favorite" component={FavoriteScreen} options={{ headerShown: false }} />
-        <Tab.Screen name="Account" component={AccountScreen} options={{ headerShown: false }} />
+        <Tab.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ headerShown: false }}
+        />
+        <Tab.Screen
+          name="Category"
+          component={CategoryScreen}
+          options={{ headerShown: false }}
+        />
+        <Tab.Screen
+          name="Post"
+          component={PostScreen}
+          options={{ headerShown: false }}
+        />
+        <Tab.Screen
+          name="Favorite"
+          component={FavoriteScreen}
+          options={{ headerShown: false }}
+        />
+        <Tab.Screen
+          name="Account"
+          component={AccountScreen}
+          options={{ headerShown: false }}
+        />
       </Tab.Navigator>
-    </NavigationContainer>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screenContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  screenContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F6F9F9",
+  },
   contentText: { fontSize: 18, textAlign: "center" },
+  container: {
+    flex: 1,
+    marginHorizontal: 8,
+  },
+  tabBarStyle: {
+    borderRadius: 10,
+    backgroundColor: "#ffffff",
+    marginBottom: 8,
+  },
 });
