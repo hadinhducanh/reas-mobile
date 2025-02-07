@@ -1,7 +1,9 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./App.tsx", // Thêm đường dẫn đến file của bạn (App.tsx hoặc những file khác sử dụng Tailwind)
-  ],
+  // Cập nhật đường dẫn đến tất cả các file chứa class NativeWind
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  // Sử dụng preset của NativeWind v4
+  presets: [require("nativewind/preset")],
   theme: {
     extend: {},
   },

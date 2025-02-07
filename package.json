@@ -23,7 +23,8 @@
     "react-native": "0.76.5",
     "react-native-css-interop": "^0.1.22",
     "react-native-localize": "^3.3.0",
-    "react-native-safe-area-context": "^5.0.0",
+    "react-native-reanimated": "^3.16.7",
+    "react-native-safe-area-context": "^5.2.0",
     "react-native-screens": "^4.4.0",
     "react-native-vector-icons": "^10.2.0",
     "tailwind-rn": "^4.2.0"

@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import AppNavigator from "./src/navigation/AppNavigator";
 import "./locales/i18n";
 import { NavigationContainer } from "@react-navigation/native";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import SplashScreen from "./src/screens/SplashScreen";
 import { SafeAreaView } from "react-native-safe-area-context";
+import "./global.css";
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
