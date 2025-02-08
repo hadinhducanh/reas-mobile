@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput } from "react-native";
+import { View, Text, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
@@ -24,7 +24,7 @@ const SignUpScreen: React.FC = () => {
           name="checkmark-outline"
           size={20}
           color="#00b0b9"
-          style={styles.passwordToggleIcon}
+          style={{ marginLeft: 10 }}
         />
       );
     } else {
@@ -33,7 +33,7 @@ const SignUpScreen: React.FC = () => {
           name="close-outline"
           size={20}
           color="red"
-          style={styles.passwordToggleIcon}
+          style={{ marginLeft: 10 }}
         />
       );
     }
@@ -45,43 +45,47 @@ const SignUpScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView className="flex-1 bg-[#F6F9F9]">
       {/* Header: Back Button */}
-      <View style={styles.headerContainer}>
+      <View className="w-full px-[20px] pt-[20px] items-start">
         <Icon name="chevron-back-outline" size={24} color="#0b1d2d" />
       </View>
 
       {/* Content Container */}
-      <View style={styles.contentContainer}>
-        {/* Form Container: chiếm phần còn lại của không gian */}
-        <View style={styles.formContainer}>
-          <Text style={styles.title}>Welcome to REAS!</Text>
-          <Text style={styles.subtitle}>Sign up to continue</Text>
+      <View className="flex-1 justify-between">
+        {/* Form Container */}
+        <View className="flex-1 flex-col justify-center bg-white rounded-tl-[10px] rounded-tr-[10px] mx-[20px] px-[20px] mt-[25px] mb-[10px]">
+          <Text className="text-[28px] font-bold leading-[36px] text-[#0b1d2d] mb-[10px]">
+            Welcome to REAS!
+          </Text>
+          <Text className="text-[16px] font-bold leading-[24px] text-[#738aa0] mb-[20px]">
+            Sign up to continue
+          </Text>
 
           {/* Username Input */}
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <View style={styles.inputIconContainer}>
-                <Icon name="person-outline" size={20} color={"#ffffff"} />
+          <View className="w-full h-[50px] mb-[20px]">
+            <View className="flex-row h-[50px] px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
+              <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
+                <Icon name="person-outline" size={20} color="#ffffff" />
               </View>
               <TextInput
                 placeholder="Full Name"
                 placeholderTextColor="#738aa0"
-                style={styles.textInput}
+                className="flex-1 text-[16px] text-[#0b1d2d]"
               />
             </View>
           </View>
 
           {/* Email Input */}
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <View style={styles.inputIconContainer}>
-                <Icon name="mail-outline" size={20} color={"#ffffff"} />
+          <View className="w-full h-[50px] mb-[20px]">
+            <View className="flex-row h-[50px] px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
+              <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
+                <Icon name="mail-outline" size={20} color="#ffffff" />
               </View>
               <TextInput
                 placeholder="Email"
                 placeholderTextColor="#738aa0"
-                style={styles.textInput}
+                className="flex-1 text-[16px] text-[#0b1d2d]"
                 value={email}
                 onChangeText={setEmail}
               />
@@ -90,38 +94,38 @@ const SignUpScreen: React.FC = () => {
           </View>
 
           {/* Password Input */}
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <View style={styles.inputIconContainer}>
-                <Icon name="key-outline" size={20} color={"#ffffff"} />
+          <View className="w-full h-[50px] mb-[20px]">
+            <View className="flex-row h-[50px] px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
+              <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
+                <Icon name="key-outline" size={20} color="#ffffff" />
               </View>
               <TextInput
                 placeholder="Password"
                 placeholderTextColor="#738aa0"
                 secureTextEntry={passwordVisible}
-                style={styles.textInput}
+                className="flex-1 text-[16px] text-[#0b1d2d]"
               />
               <Icon
                 name={passwordVisible ? "eye-off-outline" : "eye-outline"}
                 size={20}
                 color="black"
                 onPress={() => setPasswordVisible(!passwordVisible)}
-                style={styles.passwordToggleIcon}
+                style={{ marginLeft: 10 }}
               />
             </View>
           </View>
 
           {/* Confirm Password Input */}
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <View style={styles.inputIconContainer}>
-                <Icon name="key-outline" size={20} color={"#ffffff"} />
+          <View className="w-full h-[50px] mb-[20px]">
+            <View className="flex-row h-[50px] px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
+              <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
+                <Icon name="key-outline" size={20} color="#ffffff" />
               </View>
               <TextInput
                 placeholder="Confirm Password"
                 placeholderTextColor="#738aa0"
                 secureTextEntry={confirmpasswordVisible}
-                style={styles.textInput}
+                className="flex-1 text-[16px] text-[#0b1d2d]"
               />
               <Icon
                 name={
@@ -132,7 +136,7 @@ const SignUpScreen: React.FC = () => {
                 onPress={() =>
                   setConfirmpasswordVisible(!confirmpasswordVisible)
                 }
-                style={styles.passwordToggleIcon}
+                style={{ marginLeft: 10 }}
               />
             </View>
           </View>
@@ -141,151 +145,24 @@ const SignUpScreen: React.FC = () => {
           <LoadingButton title="Sign up" onPress={handleSignIn} />
 
           {/* Sign In Link */}
-          <Text style={styles.signUpText}>
+          <Text className="text-[13px] text-[#738aa0] mb-[20px]">
             Already have an account?
-            <Text style={styles.signUpLink}> Sign in.</Text>
+            <Text className="text-[#00b0b9]"> Sign in.</Text>
           </Text>
         </View>
 
         {/* Social Buttons Container */}
-        <View style={styles.socialButtonsContainer}>
-          <View style={styles.socialButton}>
-            <Icon name="logo-facebook" size={25} color={"blue"} />
+        <View className="flex-row justify-between mx-[20px] mb-[20px]">
+          <View className="w-[48%] h-[50px] bg-white rounded-bl-[10px] rounded-br-[10px] justify-center items-center">
+            <Icon name="logo-facebook" size={25} color="blue" />
           </View>
-          <View style={styles.socialButton}>
-            <Icon name="logo-google" size={25} color={"red"} />
+          <View className="w-[48%] h-[50px] bg-white rounded-bl-[10px] rounded-br-[10px] justify-center items-center">
+            <Icon name="logo-google" size={25} color="red" />
           </View>
         </View>
       </View>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#F6F9F9",
-  },
-  headerContainer: {
-    width: "100%",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    alignItems: "flex-start",
-  },
-
-  contentContainer: {
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  formContainer: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    backgroundColor: "#ffffff",
-    borderTopRightRadius: 10,
-    borderTopLeftRadius: 10,
-    marginHorizontal: 20,
-    paddingHorizontal: 20,
-    marginTop: 25,
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 28,
-    fontFamily: "DM Sans",
-    fontWeight: "700",
-    lineHeight: 36,
-    color: "#0b1d2d",
-    marginBottom: 10,
-  },
-  passwordToggleIcon: {
-    marginLeft: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: "DM Sans",
-    fontWeight: "700",
-    lineHeight: 24,
-    color: "#738aa0",
-    marginBottom: 20,
-  },
-  inputContainer: {
-    width: "100%",
-    height: 50,
-    marginBottom: 20,
-  },
-  inputWrapper: {
-    flexDirection: "row",
-    height: 50,
-    paddingHorizontal: 6,
-    alignItems: "center",
-    backgroundColor: "#e8f3f6",
-    borderRadius: 8,
-  },
-  inputIconContainer: {
-    width: 40,
-    height: 40,
-    backgroundColor: "#00b0b9",
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  inputIcon: {
-    width: 16,
-    height: 16,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: "DM Sans",
-    color: "#0b1d2d",
-  },
-
-  forgotPassword: {
-    fontSize: 11,
-    fontFamily: "DM Sans",
-    fontWeight: "400",
-    color: "#00b0b9",
-  },
-  signInButton: {
-    width: "100%",
-    paddingVertical: 13,
-    backgroundColor: "#00b0b9",
-    borderRadius: 10,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  signInText: {
-    fontSize: 16,
-    fontFamily: "DM Sans",
-    fontWeight: "700",
-    color: "#ffffff",
-  },
-  signUpText: {
-    fontSize: 13,
-    fontFamily: "DM Sans",
-    marginBottom: 20,
-    color: "#738aa0",
-  },
-  signUpLink: {
-    color: "#00b0b9",
-  },
-  socialButtonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginHorizontal: 20,
-    marginBottom: 20,
-  },
-  socialButton: {
-    width: "48%",
-    height: 50,
-    backgroundColor: "#ffffff",
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
 
 export default SignUpScreen;

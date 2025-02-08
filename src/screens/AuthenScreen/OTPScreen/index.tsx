@@ -1,11 +1,10 @@
 import React, { useRef, useState } from "react";
-import { View, Text, StyleSheet, TextInput } from "react-native";
+import { View, Text, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
 
 const OTPScreen: React.FC = () => {
-  // Lưu trữ mã OTP dưới dạng mảng gồm 4 phần tử
   const [otp, setOtp] = useState(["", "", "", ""]);
 
   // Tạo ref cho 4 ô TextInput để chuyển focus tự động
@@ -44,57 +43,59 @@ const OTPScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView className="flex-1 bg-[#F6F9F9]">
       {/* Header */}
-      <View style={styles.headerContainer}>
-        <View style={styles.backButtonContainer}>
+      <View className="relative flex-row items-center justify-center h-[50px] px-[20px] pt-[20px]">
+        <View className="absolute left-[20px] top-[20px]">
           <Icon name="chevron-back-outline" size={24} color="#0b1d2d" />
         </View>
-        <Text style={styles.headerTitle}>Verify OTP</Text>
+        <Text className="text-[18px] text-[#0b1d2d]">Verify OTP</Text>
       </View>
 
       {/* Form */}
-      <View style={styles.formContainer}>
-        <Text style={styles.instructions}>Enter your OTP code here.</Text>
+      <View className="bg-white rounded-tl-[10px] rounded-tr-[10px] mx-[20px] px-[20px] py-[30px] mt-[20px]">
+        <Text className="text-[16px] text-[#738aa0] mb-[30px] font-light">
+          Enter your OTP code here.
+        </Text>
 
-        <View style={styles.otpContainer}>
+        <View className="flex-row justify-around mb-[30px]">
           <TextInput
             ref={otp1Ref}
-            style={styles.otpInput}
             keyboardType="number-pad"
             maxLength={1}
             value={otp[0]}
             onChangeText={(value) => handleChange(0, value)}
+            className="w-[60px] h-[60px] rounded-[8px] bg-[#e8f3f6] text-center text-[20px] text-[#0b1d2d]"
           />
           <TextInput
             ref={otp2Ref}
-            style={styles.otpInput}
             keyboardType="number-pad"
             maxLength={1}
             value={otp[1]}
             onChangeText={(value) => handleChange(1, value)}
+            className="w-[60px] h-[60px] rounded-[8px] bg-[#e8f3f6] text-center text-[20px] text-[#0b1d2d]"
           />
           <TextInput
             ref={otp3Ref}
-            style={styles.otpInput}
             keyboardType="number-pad"
             maxLength={1}
             value={otp[2]}
             onChangeText={(value) => handleChange(2, value)}
+            className="w-[60px] h-[60px] rounded-[8px] bg-[#e8f3f6] text-center text-[20px] text-[#0b1d2d]"
           />
           <TextInput
             ref={otp4Ref}
-            style={styles.otpInput}
             keyboardType="number-pad"
             maxLength={1}
             value={otp[3]}
             onChangeText={(value) => handleChange(3, value)}
+            className="w-[60px] h-[60px] rounded-[8px] bg-[#e8f3f6] text-center text-[20px] text-[#0b1d2d]"
           />
         </View>
-        {/* Sign Up Link */}
-        <Text style={styles.signUpText}>
+
+        <Text className="text-[16px] text-[#738aa0] mb-[20px]">
           Didn't receive the OTP?
-          <Text style={styles.signUpLink}> Resend.</Text>
+          <Text className="text-[#00b0b9]"> Resend.</Text>
         </Text>
 
         <LoadingButton title="Verify" onPress={handleSend} />
@@ -102,71 +103,5 @@ const OTPScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#F6F9F9",
-  },
-  headerContainer: {
-    position: "relative",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 50,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  backButtonContainer: {
-    position: "absolute",
-    left: 20,
-    top: 20,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontFamily: "DM Sans",
-    color: "#0b1d2d",
-  },
-  formContainer: {
-    backgroundColor: "#ffffff",
-    borderTopRightRadius: 10,
-    borderTopLeftRadius: 10,
-    marginHorizontal: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 30,
-    marginTop: 20,
-  },
-  instructions: {
-    fontSize: 16,
-    fontFamily: "DM Sans",
-    color: "#738aa0",
-    marginBottom: 30,
-    fontWeight: "300",
-  },
-  otpContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 30,
-  },
-  otpInput: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: "#e8f3f6",
-    textAlign: "center",
-    fontSize: 20,
-    fontFamily: "DM Sans",
-    color: "#0b1d2d",
-  },
-  signUpText: {
-    fontSize: 16,
-    fontFamily: "DM Sans",
-    marginBottom: 20,
-    color: "#738aa0",
-  },
-  signUpLink: {
-    color: "#00b0b9",
-  },
-});
 
 export default OTPScreen;

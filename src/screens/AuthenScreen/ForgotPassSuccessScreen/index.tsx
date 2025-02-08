@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
 
@@ -10,93 +10,36 @@ const ForgotPassSuccessScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.mainContainer}>
-      <View style={styles.contentContainer}>
+    <View className="flex-1 bg-[#f6f9f9] justify-center items-center">
+      <View className="w-[90%] h-[70%] bg-white rounded-[10px] p-[20px] flex flex-col justify-center items-center">
         {/* Image Container với background và icon ở giữa */}
-        <View style={styles.imageContainer}>
-          <View style={styles.imageBackground} />
+        <View className="w-[266px] h-[266px] relative overflow-hidden mb-[20px] rounded-[10px]">
+          <View className="absolute inset-0 bg-[#dfecec]" />
           <Icon
             name="key-outline"
             size={120}
             color="#ffffff"
-            style={styles.centerImage}
+            className="absolute top-1/2 left-1/2 -translate-x-[60px] -translate-y-[60px]"
           />
         </View>
 
         {/* Title */}
-        <Text style={styles.titleText}>Your Password Has{"\n"}Been Reset!</Text>
+        <Text className="text-[22px] font-bold leading-[30.8px] text-[#0b1d2d] text-center mt-[20px]">
+          Your Password Has{"\n"}Been Reset!
+        </Text>
 
         {/* Subtitle */}
-        <Text style={styles.subtitleText}>
+        <Text className="text-[16px] font-bold leading-[24px] text-[#738aa0] text-center mt-[10px]">
           Log in with your new password to {"\n"} continue your journey.
         </Text>
       </View>
+
       {/* Button */}
-      <View style={styles.buttonContainer}>
+      <View className="w-[90%] mt-[20px]">
         <LoadingButton title="Done" onPress={handleSend} />
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    backgroundColor: "#f6f9f9",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  contentContainer: {
-    width: "90%",
-    height: "70%",
-    backgroundColor: "#ffffff",
-    borderRadius: 10,
-    padding: 20,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  imageContainer: {
-    width: 266,
-    height: 266,
-    position: "relative",
-    overflow: "hidden",
-    marginBottom: 20,
-    borderRadius: 10,
-  },
-  imageBackground: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#dfecec",
-  },
-  centerImage: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -60 }, { translateY: -60 }],
-  },
-  titleText: {
-    fontFamily: "DM Sans",
-    fontSize: 22,
-    fontWeight: "700",
-    lineHeight: 30.8,
-    color: "#0b1d2d",
-    textAlign: "center",
-    marginTop: 20,
-  },
-  subtitleText: {
-    fontFamily: "DM Sans",
-    fontSize: 16,
-    fontWeight: "700",
-    lineHeight: 24,
-    color: "#738aa0",
-    textAlign: "center",
-    marginTop: 10,
-  },
-  buttonContainer: {
-    width: "90%",
-    marginTop: 20,
-  },
-});
 
 export default ForgotPassSuccessScreen;
