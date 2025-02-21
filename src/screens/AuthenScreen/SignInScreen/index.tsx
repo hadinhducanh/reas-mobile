@@ -1,8 +1,15 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Pressable,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
+import { useNavigation } from "@react-navigation/native";
 
 const SignInScreen: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -44,12 +51,19 @@ const SignInScreen: React.FC = () => {
     await new Promise((resolve) => setTimeout(resolve, 3000));
   };
 
+  const navigation = useNavigation();
+
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
       {/* Header: Back Button */}
-      <View className="w-full px-[20px] pt-[20px] items-start">
+      <Pressable
+        className="w-full px-[20px] pt-[20px] items-start"
+        onPress={() => {
+          navigation.goBack();
+        }}
+      >
         <Icon name="chevron-back-outline" size={24} color="#0b1d2d" />
-      </View>
+      </Pressable>
 
       {/* Content Container */}
       <View className="flex-1 justify-between">
@@ -128,10 +142,16 @@ const SignInScreen: React.FC = () => {
           <LoadingButton title="Sign in" onPress={handleSignIn} />
 
           {/* Sign Up Link */}
-          <Text className="text-[11px] mb-[20px] text-[#738aa0]">
-            Don’t have an account?{" "}
-            <Text className="text-[#00b0b9]">Sign up.</Text>
-          </Text>
+          <Pressable
+            onPress={() => {
+              navigation.navigate("SignUp");
+            }}
+          >
+            <Text className="text-[11px] mb-[20px] text-[#738aa0]">
+              Don’t have an account?{" "}
+              <Text className="text-[#00b0b9]">Sign up.</Text>
+            </Text>
+          </Pressable>
         </View>
 
         {/* Social Buttons Container */}

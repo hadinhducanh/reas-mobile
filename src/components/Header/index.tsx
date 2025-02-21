@@ -1,27 +1,26 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet, ImageBackground } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  headerName?: string;
+}
+
+const Header: React.FC<HeaderProps> = ({ headerName }) => {
   return (
-    <View style={styles.header}>
-      <Text style={styles.headerText}>My App</Text>
+    <View className="relative flex-row items-center justify-center h-[80px]">
+      <Text className="text-[18px] font-bold">{headerName}</Text>
+      <View className="absolute right-[20px] flex-row">
+        <Icon
+          className="mr-3"
+          name="notifications-outline"
+          size={24}
+          color="#00B0B9"
+        />
+        <Icon name="chatbox-outline" size={24} color="#00B0B9" />
+      </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  header: {
-    height: 60,
-    paddingTop: 20,
-    backgroundColor: 'tomato',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
 
 export default Header;
