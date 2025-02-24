@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import AppNavigator from "./src/navigation/AppNavigator";
 import "./locales/i18n";
-import { NavigationContainer } from "@react-navigation/native";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 import SplashScreen from "./src/screens/SplashScreen";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import "./global.css";
+import ChatHistoryScreen from "./src/screens/ChatHistoryScreen";
+import OrderFailedScreen from "./src/screens/OrderScreen/OrderFailedScreen";
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -23,13 +24,10 @@ const App: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.container}>
-        <NavigationContainer>
-          <AppNavigator />
-        </NavigationContainer>
-      </SafeAreaView>
-    </View>
+    <SafeAreaProvider style={styles.container}>
+      <AppNavigator />
+    </SafeAreaProvider>
+    // <ChatHistoryScreen />
   );
 };
 

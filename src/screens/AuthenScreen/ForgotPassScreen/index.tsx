@@ -8,7 +8,6 @@ const ForgotPassScreen: React.FC = () => {
   const [email, setEmail] = useState("");
 
   const handleSend = async () => {
-    // Test Loading: delay 3 giây
     await new Promise((resolve) => setTimeout(resolve, 3000));
   };
 

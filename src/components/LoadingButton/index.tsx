@@ -1,16 +1,20 @@
 import React, { useState } from "react";
-import { Pressable, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { Pressable, Text, ActivityIndicator } from "react-native";
 
 type ButtonProps = {
   title: string;
   onPress: () => Promise<void> | void;
-  backgroundColor?: string;
+  loadingColor?: string;
+  buttonClassName?: string;
+  textColor?: string;
 };
 
 const LoadingButton: React.FC<ButtonProps> = ({
   title,
   onPress,
-  backgroundColor,
+  loadingColor,
+  buttonClassName = "",
+  textColor = "",
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -26,37 +30,23 @@ const LoadingButton: React.FC<ButtonProps> = ({
     }
   };
 
-  const baseBackgroundColor = backgroundColor || "#00b0b9";
+  const baseBackgroundColor = "#00b0b9";
+  const baseTextColor = textColor || "text-white";
+  const indicatorColor = loadingColor || "#ffffff";
 
   return (
     <Pressable
       onPress={handlePress}
       disabled={loading}
-      style={[styles.button, { backgroundColor: baseBackgroundColor }]}
+      className={`w-full py-4 rounded-lg flex justify-center items-center bg-[${baseBackgroundColor}] ${buttonClassName}`}
     >
       {loading ? (
-        <ActivityIndicator size="small" color="#ffffff" />
+        <ActivityIndicator size="small" color={indicatorColor} />
       ) : (
-        <Text style={styles.text}>{title}</Text>
+        <Text className={`text-base font-bold ${baseTextColor}`}>{title}</Text>
       )}
     </Pressable>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    width: "100%",
-    paddingVertical: 13,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#ffffff",
-  },
-});
 
 export default LoadingButton;

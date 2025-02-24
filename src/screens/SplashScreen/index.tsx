@@ -12,7 +12,7 @@ const SplashScreen: React.FC = () => {
           <View className="w-[200px] h-[200px] rounded-full overflow-hidden">
             <ImageBackground
               source={{
-                uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1738837274/REAS/Logo/yphvs1utycnesn4ozy76.png",
+                uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1739892939/REAS/Logo/lpjfdwhauzuca2uxvtf4.png",
               }}
               style={{
                 width: "100%",
