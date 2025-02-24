@@ -51,7 +51,7 @@ const SignInScreen: React.FC = () => {
     await new Promise((resolve) => setTimeout(resolve, 3000));
   };
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">

@@ -10,7 +10,7 @@ const ChatHistoryScreen: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]">
-      <View>
+      <View className="bg-[#00B0B9]">
         <View className="relative flex-row items-center justify-center h-[60px]">
           <Text className="text-[18px] font-bold text-white">Chat</Text>
           <Pressable
@@ -22,16 +22,20 @@ const ChatHistoryScreen: React.FC = () => {
             <Icon name="chevron-back-outline" size={24} color="#fff" />
           </Pressable>
         </View>
+        <ScrollView className="bg-white h-full" scrollEnabled={true}>
+          <ChatRow name="Ha Dinh Duc Anh" time="15:34 PM" message="You: OK!" />
+          <ChatRow
+            name="Nguyen Duc Son"
+            time="12:30 PM"
+            message="You: I have a pair of headphones in good condition t...."
+          />
+          <ChatRow
+            name="Nguyen Tien Dung"
+            time="18/01/2024"
+            message="You: OK!"
+          />
+        </ScrollView>
       </View>
-      <ScrollView className="bg-white" scrollEnabled={true}>
-        <ChatRow name="Ha Dinh Duc Anh" time="15:34 PM" message="You: OK!" />
-        <ChatRow
-          name="Nguyen Duc Son"
-          time="12:30 PM"
-          message="You: I have a pair of headphones in good condition t...."
-        />
-        <ChatRow name="Nguyen Tien Dung" time="18/01/2024" message="You: OK!" />
-      </ScrollView>
     </SafeAreaView>
   );
 };

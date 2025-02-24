@@ -6,7 +6,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 
 const AccountScreen: React.FC = () => {
   const isLoggedIn = false;
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   return (
     <SafeAreaView className="bg-[#00B0B9]">
