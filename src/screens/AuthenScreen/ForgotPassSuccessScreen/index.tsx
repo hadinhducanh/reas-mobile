@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ForgotPassSuccessScreen: React.FC = () => {
   const handleSend = async () => {
@@ -10,8 +11,8 @@ const ForgotPassSuccessScreen: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-[#f6f9f9] justify-center items-center">
-      <View className="w-[90%] h-[70%] bg-white rounded-[10px] p-[20px] flex flex-col justify-center items-center">
+    <SafeAreaView className="flex-1 bg-[#f6f9f9] items-center">
+      <View className="w-[90%] h-[90%] bg-white rounded-[10px] p-[20px] flex flex-col justify-center items-center">
         {/* Image Container với background và icon ở giữa */}
         <View className="w-[266px] h-[266px] relative overflow-hidden mb-[20px] rounded-[10px]">
           <View className="absolute inset-0 bg-[#dfecec]" />
@@ -38,7 +39,7 @@ const ForgotPassSuccessScreen: React.FC = () => {
       <View className="w-[90%] mt-[20px]">
         <LoadingButton title="Done" onPress={handleSend} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
