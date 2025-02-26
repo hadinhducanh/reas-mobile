@@ -27,7 +27,6 @@ const App: React.FC = () => {
     <SafeAreaProvider style={styles.container}>
       <AppNavigator />
     </SafeAreaProvider>
-    // <ChatHistoryScreen />
   );
 };
 
