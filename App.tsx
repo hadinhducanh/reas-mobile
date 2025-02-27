@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import AppNavigator from "./src/navigation/AppNavigator";
 import "./locales/i18n";
 import { StyleSheet } from "react-native";
-import SplashScreen from "./src/screens/SplashScreen";
+import SplashScreen from "./src/screens/Splash";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import "./global.css";
-import ChatHistoryScreen from "./src/screens/ChatHistoryScreen";
-import OrderFailedScreen from "./src/screens/OrderScreen/OrderFailedScreen";
+import ChatHistoryScreen from "./src/screens/ChatHistory";
+import OrderFailedScreen from "./src/screens/OrderScreen/OrderFailed";
+import { Provider } from "react-redux";
+import store from "./src/redux/store";
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -25,9 +27,10 @@ const App: React.FC = () => {
 
   return (
     <SafeAreaProvider style={styles.container}>
-      <AppNavigator />
+      <Provider store={store}>
+        <AppNavigator />
+      </Provider>
     </SafeAreaProvider>
-    // <ChatHistoryScreen />
   );
 };
 

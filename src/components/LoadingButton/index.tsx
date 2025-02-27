@@ -4,6 +4,7 @@ import { Pressable, Text, ActivityIndicator } from "react-native";
 type ButtonProps = {
   title: string;
   onPress: () => Promise<void> | void;
+  loading?: boolean;
   loadingColor?: string;
   buttonClassName?: string;
   textColor?: string;
@@ -12,33 +13,21 @@ type ButtonProps = {
 const LoadingButton: React.FC<ButtonProps> = ({
   title,
   onPress,
+  loading = false,
   loadingColor,
   buttonClassName = "",
   textColor = "",
 }) => {
-  const [loading, setLoading] = useState(false);
-
-  const handlePress = async () => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      await onPress();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const baseBackgroundColor = "#00b0b9";
   const baseTextColor = textColor || "text-white";
   const indicatorColor = loadingColor || "#ffffff";
 
   return (
     <Pressable
-      onPress={handlePress}
+      onPress={onPress}
       disabled={loading}
-      className={`w-full py-4 rounded-lg flex justify-center items-center bg-[${baseBackgroundColor}] ${buttonClassName}`}
+      className={`w-full py-4 rounded-lg flex justify-center items-center bg-[${baseBackgroundColor}] ${buttonClassName} active:bg-[rgb(0,176,185,0.5)]
+      `}
     >
       {loading ? (
         <ActivityIndicator size="small" color={indicatorColor} />
