@@ -3,19 +3,21 @@ import { Text, SafeAreaView, View, Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
 
-import HomeScreen from "../screens/HomeScreen";
-import FavoriteScreen from "../screens/FavortieScreen";
+import HomeScreen from "../screens/Home";
+import FavoriteScreen from "../screens/Favortie";
 import AccountScreen from "../screens/AccountScreen";
 import { createStackNavigator } from "@react-navigation/stack";
-import SignInScreen from "../screens/AuthenScreen/SignInScreen";
-import SignUpScreen from "../screens/AuthenScreen/SignUpScreen";
+import SignInScreen from "../screens/AuthenScreen/SignIn";
+import SignUpScreen from "../screens/AuthenScreen/SignUp";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import ProfileDetailScreen from "../screens/AccountScreen/ProfileDetailScreen";
-import ExchangeHistoryScreen from "../screens/AccountScreen/ExchangeHistoryScreen";
-import ChatHistoryScreen from "../screens/ChatHistoryScreen";
-import ExchangeDetailScreen from "../screens/AccountScreen/ExchangeDetailScreen";
-import ChatDetailsScreen from "../screens/ChatDetailsScreen";
-import StatisticsScreen from "../screens/StatisticsScreen";
+import ProfileDetailScreen from "../screens/AccountScreen/ProfileDetail";
+import ExchangeHistoryScreen from "../screens/AccountScreen/ExchangeHistory";
+import ChatHistoryScreen from "../screens/ChatHistory";
+import ExchangeDetailScreen from "../screens/AccountScreen/ExchangeDetail";
+import ChatDetailsScreen from "../screens/ChatDetails";
+import StatisticsScreen from "../screens/Statistics";
+import OTPScreen from "../screens/AuthenScreen/OTP";
+import SignUpSuccessScreen from "../screens/AuthenScreen/SignUpSuccess";
 
 const CategoryScreen = () => (
   <SafeAreaView className="flex-1 items-center justify-center bg-[#F6F9F9]">
@@ -141,6 +143,8 @@ export default function RootNavigator() {
         <Stack.Screen name="ChatHistory" component={ChatHistoryScreen} />
         <Stack.Screen name="ChatDetails" component={ChatDetailsScreen} />
         <Stack.Screen name="Statistics" component={StatisticsScreen} />
+        <Stack.Screen name="OTP" component={OTPScreen} />
+        <Stack.Screen name="SignUpSuccess" component={SignUpSuccessScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
