@@ -1,97 +1,137 @@
-import React, { useState } from "react";
-import {
-  SafeAreaView,
-  View,
-  ScrollView,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  Text,
-} from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import React from "react";
+import { SafeAreaView, View, ScrollView, TextInput, Image, Text, TouchableOpacity } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 
-const Home: React.FC = () => {
-  const [textInput1, onChangeTextInput1] = useState<string>("");
+
+type ItemType = {
+  id: number;
+  name: string;
+  price: string;
+  image: string;
+  location: string;
+  description: string;
+};
+
+// Định nghĩa kiểu cho navigation
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "ItemDetail">;
+
+const HomeScreen: React.FC = () => {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
+
+  // Dữ liệu item mẫu
+  const items: ItemType[] = [
+    {
+      id: 1,
+      name: "iPhone 20",
+      price: "150.000",
+      image: "https://via.placeholder.com/150",
+      location: "Vinhome Grand Park",
+      description: "Brand new iPhone 20 with latest features.",
+    },
+    {
+      id: 2,
+      name: "Samsung Galaxy S25",
+      price: "150.000",
+      image: "https://via.placeholder.com/150",
+      location: "District 1, HCMC",
+      description: "Latest Samsung flagship phone.",
+    },
+    {
+      id: 3,
+      name: "Samsung Galaxy S24",
+      price: "150.000",
+      image: "https://via.placeholder.com/150",
+      location: "District 3, HCMC",
+      description: "Latest Samsung flagship phone1.",
+    },
+  ];
 
   return (
-    <SafeAreaView
-      className="flex-1 bg-white"
-      style={{ backgroundColor: "#F6F9F9", height: "100%" }}
-    >
-      <ScrollView className="flex-1 bg-gray-100 pt-2">
-        <Image
-          source={{ uri: "https://i.imgur.com/1tMFzp8.png" }}
-          resizeMode="stretch"
-          className="h-14 w-full"
-        />
-
-        <View className="flex-row justify-between items-center mb-2 mx-5">
-          <View className="flex-row items-center bg-white rounded-lg px-3 w-4/5 mt-2">
-            <View className="w-10 h-10 bg-teal-500 rounded-lg justify-center items-center mr-3 mt-2 mb-2">
-              <MaterialIcons name="search" size={24} color="#738AA0" />
-            </View>
-            <TextInput
-              placeholder="Search..."
-              value={textInput1}
-              onChangeText={onChangeTextInput1}
-              className="text-gray-500 text-base flex-1 py-1"
-            />
-          </View>
-          <View className="w-12 bg-white rounded-lg px-3">
-            <MaterialIcons name="filter-list" size={24} color="#738AA0" />
-          </View>
-        </View>
-
-        <View className="flex-row justify-between items-center mb-8 mx-1">
-          <TouchableOpacity
-            className="w-36 flex-row justify-center items-center bg-teal-500 rounded-lg py-2"
-            onPress={() => alert("Pressed!")}
-          >
-            <Image
-              source={{ uri: "https://i.imgur.com/1tMFzp8.png" }}
-              resizeMode="stretch"
-              className="w-6 h-6 mr-3"
-            />
-            <Text className="text-gray-900 text-sm font-semibold">
-              Electronic
-            </Text>
-          </TouchableOpacity>
-          {[...Array(4)].map((_, index) => (
-            <View key={index} className="w-12 bg-white rounded-lg px-3">
-              <Image
-                source={{ uri: "https://i.imgur.com/1tMFzp8.png" }}
-                resizeMode="stretch"
-                className="h-6 mt-3"
+    <SafeAreaView className="flex-1 bg-gray-100">
+      <ScrollView>
+        {/* Header với thanh tìm kiếm */}
+        <View className="h-32 bg-[#00B0B9] w-full flex flex-row justify-between items-center px-5">
+          <View className="flex-1 flex items-center mr-5">
+            <View className="w-full h-12 bg-white rounded-lg flex flex-row items-center px-3">
+              <View className="w-8 h-8 bg-[#00B0B9] rounded-md flex items-center justify-center mr-3">
+                <Icon name="search" size={20} color="#ffffff" />
+              </View>
+              <TextInput
+                placeholder="Search..."
+                placeholderTextColor="#738aa0"
+                className="flex-1 text-sm text-gray-800"
               />
             </View>
-          ))}
+          </View>
+          <View className="flex flex-row space-x-3">
+            <Icon name="notifications-outline" size={35} color="#ffffff" />
+            <Icon name="chatbox-outline" size={35} color="#ffffff" />
+          </View>
         </View>
 
-        {[...Array(3)].map((_, index) => (
-          <View
-            key={index}
-            className="flex-row justify-between items-center mb-5 mx-5"
-          >
-            {[...Array(2)].map((_, subIndex) => (
-              <View key={subIndex} className="w-40 bg-white rounded-lg pb-5">
-                <View className="bg-white px-32 py-4 mb-3">
-                  <Image
-                    source={{ uri: "https://i.imgur.com/1tMFzp8.png" }}
-                    resizeMode="stretch"
-                    className="w-16 h-16 mt-28"
-                  />
-                </View>
-                <Text className="text-gray-500 text-xs mb-3 ml-3">
-                  Iphone 20
-                </Text>
-                <Text className="text-gray-900 text-sm ml-3">$12.79</Text>
+        {/* Banner Image */}
+        <View>
+          <Image
+            source={{ uri: "https://res.cloudinary.com/dnslrwedn/image/upload/v1740407613/52c61b29-1200_628_1_deautx.png" }}
+            className="w-full h-60"
+          />
+        </View>
+
+        {/* Danh mục */}
+        <View className="w-[90%] mx-auto relative rounded-lg mt-5 p-4 bg-white">
+          <Text className="text-[#0b1d2d] text-sm font-bold capitalize mb-3">
+            Explore Category
+          </Text>
+          <View className="flex flex-wrap justify-between">
+            {[...Array(2)].map((_, rowIndex) => (
+              <View key={rowIndex} className="flex flex-row justify-around w-full mb-4">
+                {[...Array(3)].map((_, colIndex) => (
+                  <View key={colIndex} className="flex flex-col items-center">
+                    <View className="w-12 h-12 bg-gray-300 rounded-lg"></View>
+                    <Text className="text-xs font-medium text-black capitalize mt-1">Category</Text>
+                  </View>
+                ))}
               </View>
             ))}
           </View>
-        ))}
+        </View>
+
+        {/* Danh sách item mới */}
+        <View className="mt-5 ml-5">
+          <Text className="text-[#0b1d2d] text-sm font-bold capitalize">
+            New items
+          </Text>
+        </View>
+
+        <View className="flex flex-row flex-wrap justify-between px-5 mt-3">
+          {items.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              className="w-[48%] bg-white rounded-lg p-3 mb-4"
+              onPress={() => navigation.navigate("ItemDetail", { item })}
+            >
+              {/* Image Container */}
+              <View className="w-full aspect-[4/3] bg-white rounded-t-lg overflow-hidden relative">
+                <Image source={{ uri: item.image }} className="w-full h-full" />
+                <View className="absolute bottom-2 right-2">
+                  <Icon name="heart-outline" size={24} color="#ff0000" />
+                </View>
+              </View>
+              {/* Item Info */}
+              <View className="mt-2 space-y-1">
+                <Text className="text-gray-500 text-sm font-medium truncate">{item.name}</Text>
+                <Text className="text-gray-900 text-base font-semibold">{item.price} VND</Text>
+                <Text className="text-gray-400 text-xs">14 mins ago | {item.location}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-export default Home;
+export default HomeScreen;
