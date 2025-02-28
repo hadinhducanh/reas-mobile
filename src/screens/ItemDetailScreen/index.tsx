@@ -33,7 +33,7 @@ const ItemDetailScreen: React.FC = () => {
           
           {/* Nút quay lại */}
           <TouchableOpacity
-            className="absolute top-5 left-5 bg-white p-2 rounded-full mt-10"
+            className="absolute top-5 left-5 bg-white p-2 rounded-full"
             onPress={() => navigation.goBack()}
           >
             <Icon name="arrow-back" size={25} color="#333" />
@@ -43,7 +43,7 @@ const ItemDetailScreen: React.FC = () => {
         {/* Thông tin item */}
         <View className="p-5">
           <Text className="text-2xl font-bold text-gray-900">{item.name}</Text>
-          <Text className="text-lg text-gray-600 mt-1">${item.price}</Text>
+          <Text className="text-2xl font-semibold text-[#00B0B9] mt-1">{item.price} VND</Text>
 
           {/* Địa điểm */}
           <View className="flex flex-row items-center mt-3">

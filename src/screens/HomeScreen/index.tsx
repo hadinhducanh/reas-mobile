@@ -26,7 +26,7 @@ const HomeScreen: React.FC = () => {
     {
       id: 1,
       name: "iPhone 20",
-      price: "12.79",
+      price: "150.000",
       image: "https://via.placeholder.com/150",
       location: "Vinhome Grand Park",
       description: "Brand new iPhone 20 with latest features.",
@@ -34,10 +34,18 @@ const HomeScreen: React.FC = () => {
     {
       id: 2,
       name: "Samsung Galaxy S25",
-      price: "10.99",
+      price: "150.000",
       image: "https://via.placeholder.com/150",
       location: "District 1, HCMC",
       description: "Latest Samsung flagship phone.",
+    },
+    {
+      id: 3,
+      name: "Samsung Galaxy S24",
+      price: "150.000",
+      image: "https://via.placeholder.com/150",
+      location: "District 3, HCMC",
+      description: "Latest Samsung flagship phone1.",
     },
   ];
 
@@ -45,9 +53,9 @@ const HomeScreen: React.FC = () => {
     <SafeAreaView className="flex-1 bg-gray-100">
       <ScrollView>
         {/* Header với thanh tìm kiếm */}
-        <View className="h-40 bg-[#00B0B9] w-full flex flex-row justify-between items-center px-5">
+        <View className="h-32 bg-[#00B0B9] w-full flex flex-row justify-between items-center px-5">
           <View className="flex-1 flex items-center mr-5">
-            <View className="w-full h-12 bg-white rounded-lg flex flex-row items-center px-3 mt-7">
+            <View className="w-full h-12 bg-white rounded-lg flex flex-row items-center px-3">
               <View className="w-8 h-8 bg-[#00B0B9] rounded-md flex items-center justify-center mr-3">
                 <Icon name="search" size={20} color="#ffffff" />
               </View>
@@ -58,9 +66,9 @@ const HomeScreen: React.FC = () => {
               />
             </View>
           </View>
-          <View className="flex flex-row space-x-3 ml-2 mt-7">
+          <View className="flex flex-row space-x-3">
             <Icon name="notifications-outline" size={35} color="#ffffff" />
-            <Icon name="chatbubble-outline" size={30} color="#ffffff" />
+            <Icon name="chatbox-outline" size={35} color="#ffffff" />
           </View>
         </View>
 
@@ -102,7 +110,7 @@ const HomeScreen: React.FC = () => {
           {items.map((item) => (
             <TouchableOpacity
               key={item.id}
-              className="w-[48%] bg-white rounded-lg shadow-md p-3 mb-4"
+              className="w-[48%] bg-white rounded-lg p-3 mb-4"
               onPress={() => navigation.navigate("ItemDetail", { item })}
             >
               {/* Image Container */}
@@ -115,7 +123,7 @@ const HomeScreen: React.FC = () => {
               {/* Item Info */}
               <View className="mt-2 space-y-1">
                 <Text className="text-gray-500 text-sm font-medium truncate">{item.name}</Text>
-                <Text className="text-gray-900 text-base font-semibold">${item.price}</Text>
+                <Text className="text-gray-900 text-base font-semibold">{item.price} VND</Text>
                 <Text className="text-gray-400 text-xs">14 mins ago | {item.location}</Text>
               </View>
             </TouchableOpacity>

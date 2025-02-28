@@ -17,6 +17,13 @@ import ExchangeDetailScreen from "../screens/AccountScreen/ExchangeDetailScreen"
 import ChatDetailsScreen from "../screens/ChatDetailsScreen";
 import StatisticsScreen from "../screens/StatisticsScreen";
 import ItemDetailScreen from "../screens/ItemDetailScreen";
+import UploadScreen from "../screens/UploadScreen";
+import TypeOfItemScreen from "../screens/TypeOfItemScreen";
+import TypeOfItemDetailScreen from "../screens/TypeOfItemDetailScreen";
+import ItemConditionScreen from "../screens/ItemConditionScreen";
+import MethodOfExchangeScreen from "../screens/MethodOfExchangeScreen";
+import ExchangeTypeScreen from "../screens/ExchangeTypeScreen";
+import ExchangeDesiredItemScreen from "../screens/ExchangeDesiredItemScreen";
 
 // Định nghĩa kiểu cho item (có thể dùng chung cho các file khác)
 type ItemType = {
@@ -40,6 +47,13 @@ export type RootStackParamList = {
   ChatDetails: undefined;
   Statistics: undefined;
   ItemDetail: { item: ItemType };
+  TypeOfItemScreen: undefined;
+  TypeOfItemDetailScreen: undefined;
+  ItemConditionScreen: undefined;
+  UploadScreen: undefined;
+  MethodOfExchangeScreen: undefined;
+  ExchangeTypeScreen: undefined;
+  ExchangeDesiredItemScreen: undefined;
 };
 
 const CategoryScreen = () => (
@@ -48,11 +62,6 @@ const CategoryScreen = () => (
   </SafeAreaView>
 );
 
-const PostScreen = () => (
-  <SafeAreaView className="flex-1 items-center justify-center bg-[#F6F9F9]">
-    <Text className="text-[18px] text-center">This is Post Screen</Text>
-  </SafeAreaView>
-);
 
 const TabArr = [
   { route: "Home", label: "Home", component: HomeScreen, type: "home-outline" },
@@ -65,7 +74,7 @@ const TabArr = [
   {
     route: "Upload",
     label: "Upload",
-    component: PostScreen,
+    component: UploadScreen,
     type: "add-circle-outline",
   },
   {
@@ -165,6 +174,13 @@ export default function RootNavigator() {
         <Stack.Screen name="ChatDetails" component={ChatDetailsScreen} />
         <Stack.Screen name="Statistics" component={StatisticsScreen} />
         <Stack.Screen name="ItemDetail" component={ItemDetailScreen} />
+        <Stack.Screen name="TypeOfItemScreen" component={TypeOfItemScreen} />
+        <Stack.Screen name="TypeOfItemDetailScreen" component={TypeOfItemDetailScreen} />
+        <Stack.Screen name="ItemConditionScreen" component={ItemConditionScreen} />
+        <Stack.Screen name="UploadScreen" component={UploadScreen} />
+        <Stack.Screen name="MethodOfExchangeScreen" component={MethodOfExchangeScreen} />
+        <Stack.Screen name="ExchangeTypeScreen" component={ExchangeTypeScreen} />
+        <Stack.Screen name="ExchangeDesiredItemScreen" component={ExchangeDesiredItemScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
