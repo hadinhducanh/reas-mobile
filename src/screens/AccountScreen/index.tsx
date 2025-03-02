@@ -7,6 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import { AppDispatch, RootState } from "../../redux/store";
 import { logoutUserThunk } from "../../redux/thunk/authThunks";
 import { logout } from "../../redux/slices/authSlice";
+import Header from "../../components/Header";
 
 type AccountListItemProps = {
   iconName: string;
@@ -36,7 +37,7 @@ const AccountListItem: React.FC<AccountListItemProps> = memo(
 );
 
 const Account: React.FC = () => {
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user, accessToken } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<any>();
 
@@ -47,10 +48,20 @@ const Account: React.FC = () => {
     dispatch(logoutUserThunk());
   }, [dispatch]);
 
-  const navigateToProfile = useCallback(
-    () => navigation.navigate("Profile"),
-    [navigation]
-  );
+  const navigateToProfile = useCallback(() => {
+    if (!accessToken) {
+      navigation.navigate("SignIn");
+    } else {
+      navigation.navigate("Profile");
+    }
+  }, [navigation]);
+  const navigateToChangePassword = useCallback(() => {
+    if (!accessToken) {
+      navigation.navigate("SignIn");
+    } else {
+      navigation.navigate("ResetPassword");
+    }
+  }, [navigation]);
   const navigateToExchangeHistory = useCallback(
     () => navigation.navigate("ExchangeHistory"),
     [navigation]
@@ -73,15 +84,19 @@ const Account: React.FC = () => {
   );
 
   return (
-    <SafeAreaView className="bg-[#00B0B9] flex-1">
+    <SafeAreaView className="bg-[#00B0B9] flex-1" edges={["top"]}>
       <View className="flex-1 bg-white">
-        <View className="h-[50px] bg-[#00B0B9] items-center justify-center">
-          <Text className="text-[18px] font-bold text-white">Account</Text>
-        </View>
+        <Header
+          title="Account"
+          backgroundColor="bg-[#00B0B9]"
+          showBackButton={false}
+          textColor="text-white"
+          showOption={false}
+        />
 
         {isLoggedIn ? (
           <View className="mx-5 h-[100px] justify-start flex-row items-center ">
-            <View className="w-[70px] h-[70px] rounded-full bg-[#738aa0]" />
+            <Icon name="person-circle-outline" size={85} color="gray" />
             <View className="ml-3">
               <Text className="text-[18px] font-bold">{user?.fullName}</Text>
               <View className="flex-row items-center justify-center mt-[6px]">
@@ -97,7 +112,8 @@ const Account: React.FC = () => {
           </View>
         ) : (
           <View className="px-5 h-[100px] justify-between flex-row items-center bg-white">
-            <View className="w-[70px] h-[70px] rounded-full bg-[#738aa0]" />
+            <Icon name="person-circle-outline" size={85} color="gray" />
+
             <View className="flex-row w-[60%]">
               <Pressable
                 className="flex-1 bg-white py-3 rounded-lg border-[1px] border-[#00B0B9] active:bg-gray-200"
@@ -126,6 +142,11 @@ const Account: React.FC = () => {
             onPress={navigateToProfile}
           />
           <AccountListItem
+            iconName="key-outline"
+            label="Change password"
+            onPress={navigateToChangePassword}
+          />
+          <AccountListItem
             iconName="swap-horizontal-outline"
             label="Exchanges history"
             onPress={navigateToExchangeHistory}
@@ -138,7 +159,7 @@ const Account: React.FC = () => {
           <AccountListItem
             iconName="globe-outline"
             label="Language"
-            onPress={navigateToLanguage}
+            // onPress={navigateToLanguage}
           />
           <AccountListItem iconName="heart-outline" label="Favorites" />
           <AccountListItem

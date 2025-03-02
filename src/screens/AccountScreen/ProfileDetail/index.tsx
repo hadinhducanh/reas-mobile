@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
 import { useNavigation } from "@react-navigation/native";
+import Header from "../../../components/Header";
 
 const ProfileDetail: React.FC = () => {
   // State quản lý chế độ chỉnh sửa
@@ -96,18 +97,7 @@ const ProfileDetail: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      {/* Header: Back Button */}
-      <View className="relative flex-row items-center justify-center h-[60px]">
-        <Text className="text-[18px] font-bold">Edit profile</Text>
-        <Pressable
-          className="absolute left-[20px] flex-row"
-          onPress={() => {
-            navigation.goBack();
-          }}
-        >
-          <Icon name="chevron-back-outline" size={24} color="#0b1d2d" />
-        </Pressable>
-      </View>
+      <Header title="Profile" showOption={false} />
 
       {/* Content Container */}
       <View className="flex-1 mb-5">

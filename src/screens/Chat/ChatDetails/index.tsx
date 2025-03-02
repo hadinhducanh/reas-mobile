@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
-import ChatMessage from "../../components/ChatMessage";
+import ChatMessage from "../../../components/ChatMessage";
 import { TextInput } from "react-native-gesture-handler";
 import { KeyboardAvoidingView } from "react-native";
 

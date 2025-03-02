@@ -3,6 +3,7 @@ import { View, Text } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Header from "../../../components/Header";
 
 const OrderHistoryEmpty: React.FC = () => {
   const handleSend = async () => {
@@ -13,12 +14,7 @@ const OrderHistoryEmpty: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-[#f6f9f9]">
       {/* Header: Back Button */}
-      <View className="relative flex-row items-center justify-center h-[65px] ">
-        <Text className="text-[18px] font-bold">Purchase order history</Text>
-        <View className="absolute left-[20px] flex-row">
-          <Icon name="chevron-back-outline" size={24} color="#0b1d2d" />
-        </View>
-      </View>
+      <Header title="Purchase order history" />
 
       <View className="items-center h-full ">
         <View className="w-[90%] h-[80%] bg-white rounded-[10px] flex flex-col justify-center items-center">

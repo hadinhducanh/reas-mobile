@@ -29,3 +29,8 @@ export interface UserResponse {
   image: string | undefined;
   roleName: RoleName | undefined;
 }
+
+export interface PasswordChangeRequest{
+  oldPassword: string | undefined;
+  newPassword: string | undefined;
+}

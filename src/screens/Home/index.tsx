@@ -1,10 +1,19 @@
-import React from "react";
-import { SafeAreaView, View, ScrollView, TextInput, Image, Text, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  ScrollView,
+  TextInput,
+  Image,
+  Text,
+  TouchableOpacity,
+  Pressable,
+} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigation/AppNavigator";
-
+import { SafeAreaView } from "react-native-safe-area-context";
+import ItemCard from "../../components/ItemCard";
 
 type ItemType = {
   id: number;
@@ -13,16 +22,30 @@ type ItemType = {
   image: string;
   location: string;
   description: string;
+  isFavorited: boolean;
 };
 
 // Định nghĩa kiểu cho navigation
-type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "ItemDetail">;
+type HomeScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  "ItemDetail"
+>;
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
-  // Dữ liệu item mẫu
-  const items: ItemType[] = [
+  const categories = [
+    { id: 1, name: "Kitchen" },
+    { id: 2, name: "Cleaning" },
+    { id: 3, name: "Cooling" },
+    { id: 4, name: "Electric" },
+    { id: 5, name: "Lighting" },
+    { id: 6, name: "Living room" },
+    { id: 7, name: "Bedroom" },
+    { id: 8, name: "Bathroom" },
+  ];
+
+  const [itemList, setItemList] = useState<ItemType[]>([
     {
       id: 1,
       name: "iPhone 20",
@@ -30,6 +53,7 @@ const HomeScreen: React.FC = () => {
       image: "https://via.placeholder.com/150",
       location: "Vinhome Grand Park",
       description: "Brand new iPhone 20 with latest features.",
+      isFavorited: false,
     },
     {
       id: 2,
@@ -38,6 +62,7 @@ const HomeScreen: React.FC = () => {
       image: "https://via.placeholder.com/150",
       location: "District 1, HCMC",
       description: "Latest Samsung flagship phone.",
+      isFavorited: false,
     },
     {
       id: 3,
@@ -46,87 +71,127 @@ const HomeScreen: React.FC = () => {
       image: "https://via.placeholder.com/150",
       location: "District 3, HCMC",
       description: "Latest Samsung flagship phone1.",
+      isFavorited: false,
     },
-  ];
+  ]);
+
+  // Hàm chunk mảng thành các nhóm nhỏ với mỗi nhóm có 2 item
+  const chunkArray = (array: ItemType[], size: number) => {
+    const chunked: ItemType[][] = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunked.push(array.slice(i, i + size));
+    }
+    return chunked;
+  };
+
+  const toggleLike = (itemId: number) => {
+    setItemList((prevList) =>
+      prevList.map((item) =>
+        item.id === itemId ? { ...item, isFavorited: !item.isFavorited } : item
+      )
+    );
+  };
+
+  // Chia itemList thành các hàng, mỗi hàng có 2 item
+  const rows = chunkArray(itemList, 2);
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <ScrollView>
+    <SafeAreaView className="flex-1 bg-[#00B0B9]">
+      <ScrollView className="bg-gray-100" showsVerticalScrollIndicator={false}>
         {/* Header với thanh tìm kiếm */}
-        <View className="h-32 bg-[#00B0B9] w-full flex flex-row justify-between items-center px-5">
-          <View className="flex-1 flex items-center mr-5">
-            <View className="w-full h-12 bg-white rounded-lg flex flex-row items-center px-3">
-              <View className="w-8 h-8 bg-[#00B0B9] rounded-md flex items-center justify-center mr-3">
+        <View className="h-20 bg-[#00B0B9] w-full flex-row justify-between items-center px-5">
+          <View className="flex-1 mr-5">
+            <View className="bg-white rounded-xl flex-row items-center px-2">
+              <View className="p-2 bg-[#00B0B9] rounded-xl flex items-center justify-center mr-3">
                 <Icon name="search" size={20} color="#ffffff" />
               </View>
               <TextInput
                 placeholder="Search..."
                 placeholderTextColor="#738aa0"
-                className="flex-1 text-sm text-gray-800"
+                className="flex-1 text-lg text-gray-800 py-3"
               />
             </View>
           </View>
-          <View className="flex flex-row space-x-3">
-            <Icon name="notifications-outline" size={35} color="#ffffff" />
-            <Icon name="chatbox-outline" size={35} color="#ffffff" />
+          <View className="flex-row">
+            <Icon
+              className="mr-1"
+              name="notifications-outline"
+              size={34}
+              color="#ffffff"
+            />
+            <Pressable onPress={() => navigation.navigate("ChatDetails")}>
+              <Icon name="chatbox-outline" size={34} color="#ffffff" />
+            </Pressable>
           </View>
         </View>
 
         {/* Banner Image */}
         <View>
           <Image
-            source={{ uri: "https://res.cloudinary.com/dnslrwedn/image/upload/v1740407613/52c61b29-1200_628_1_deautx.png" }}
+            source={{
+              uri: "https://res.cloudinary.com/dnslrwedn/image/upload/v1740407613/52c61b29-1200_628_1_deautx.png",
+            }}
             className="w-full h-60"
           />
         </View>
 
         {/* Danh mục */}
         <View className="w-[90%] mx-auto relative rounded-lg mt-5 p-4 bg-white">
-          <Text className="text-[#0b1d2d] text-sm font-bold capitalize mb-3">
+          <Text className="text-[#0b1d2d] text-lg font-bold capitalize mb-3">
             Explore Category
           </Text>
-          <View className="flex flex-wrap justify-between">
-            {[...Array(2)].map((_, rowIndex) => (
-              <View key={rowIndex} className="flex flex-row justify-around w-full mb-4">
-                {[...Array(3)].map((_, colIndex) => (
-                  <View key={colIndex} className="flex flex-col items-center">
-                    <View className="w-12 h-12 bg-gray-300 rounded-lg"></View>
-                    <Text className="text-xs font-medium text-black capitalize mt-1">Category</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View className="flex flex-row">
+              {categories
+                .reduce((columns: any[], _, i) => {
+                  if (i % 2 === 0) {
+                    columns.push(categories.slice(i, i + 2));
+                  }
+                  return columns;
+                }, [])
+                .map((col, colIndex) => (
+                  <View
+                    key={colIndex}
+                    className="flex flex-col justify-between mx-6"
+                  >
+                    {col.map((category: any) => (
+                      <View
+                        key={category.id}
+                        className="flex flex-col items-center mb-5"
+                      >
+                        <View className="p-8 bg-gray-300 rounded-lg"></View>
+                        <Text className="text-sm font-medium text-black capitalize mt-1">
+                          {category.name}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
                 ))}
-              </View>
-            ))}
-          </View>
+            </View>
+          </ScrollView>
         </View>
 
         {/* Danh sách item mới */}
         <View className="mt-5 ml-5">
-          <Text className="text-[#0b1d2d] text-sm font-bold capitalize">
-            New items
-          </Text>
+          <Text className="text-[#0b1d2d] text-xl font-bold">New items</Text>
         </View>
 
-        <View className="flex flex-row flex-wrap justify-between px-5 mt-3">
-          {items.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              className="w-[48%] bg-white rounded-lg p-3 mb-4"
-              onPress={() => navigation.navigate("ItemDetail", { item })}
-            >
-              {/* Image Container */}
-              <View className="w-full aspect-[4/3] bg-white rounded-t-lg overflow-hidden relative">
-                <Image source={{ uri: item.image }} className="w-full h-full" />
-                <View className="absolute bottom-2 right-2">
-                  <Icon name="heart-outline" size={24} color="#ff0000" />
+        <View className="px-5 mt-3">
+          {rows.map((row, rowIndex) => (
+            <View key={rowIndex} className="flex flex-row mb-2 gap-x-2">
+              {row.map((item) => (
+                <View key={item.id} className="flex-1">
+                  <ItemCard
+                    item={item}
+                    navigation={navigation}
+                    toggleLike={toggleLike}
+                    mode="default"
+                  />
                 </View>
-              </View>
-              {/* Item Info */}
-              <View className="mt-2 space-y-1">
-                <Text className="text-gray-500 text-sm font-medium truncate">{item.name}</Text>
-                <Text className="text-gray-900 text-base font-semibold">{item.price} VND</Text>
-                <Text className="text-gray-400 text-xs">14 mins ago | {item.location}</Text>
-              </View>
-            </TouchableOpacity>
+              ))}
+              {/* Nếu hàng chỉ có 1 item, thêm View trống để lấp đầy không gian */}
+              {row.length === 1 && <View className="flex-1" />}
+            </View>
           ))}
         </View>
       </ScrollView>

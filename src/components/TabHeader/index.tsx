@@ -31,8 +31,8 @@ const TabHeader: FC = () => {
             <View
               className={`px-5 h-[45px] justify-center items-center bg-[#f6f9f9] ${
                 isSelected(tab.label)
-                  ? "border-b-2 border-[#00b0b9]"
-                  : "border-b border-gray-200"
+                  ? "border-b-2 border-solid border-[#00b0b9]"
+                  : "border-b border-solid border-gray-200"
               }`}
             >
               <Text
