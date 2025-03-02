@@ -17,13 +17,16 @@ import ExchangeDetailScreen from "../screens/AccountScreen/ExchangeDetailScreen"
 import ChatDetailsScreen from "../screens/ChatDetailsScreen";
 import StatisticsScreen from "../screens/StatisticsScreen";
 import ItemDetailScreen from "../screens/ItemDetailScreen";
-import UploadScreen from "../screens/UploadScreen";
-import TypeOfItemScreen from "../screens/TypeOfItemScreen";
-import TypeOfItemDetailScreen from "../screens/TypeOfItemDetailScreen";
-import ItemConditionScreen from "../screens/ItemConditionScreen";
-import MethodOfExchangeScreen from "../screens/MethodOfExchangeScreen";
-import ExchangeTypeScreen from "../screens/ExchangeTypeScreen";
-import ExchangeDesiredItemScreen from "../screens/ExchangeDesiredItemScreen";
+import UploadScreen from "../screens/PostItemScreen/Upload";
+import TypeOfItemScreen from "../screens/PostItemScreen/TypeOfItem";
+import TypeOfItemDetailScreen from "../screens/PostItemScreen/TypeOfItemDetail";
+import ItemConditionScreen from "../screens/PostItemScreen/ItemCondition";
+import MethodOfExchangeScreen from "../screens/PostItemScreen/MethodOfExchange";
+import ExchangeTypeScreen from "../screens/PostItemScreen/ExchangeType";
+import ExchangeDesiredItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem";
+import ExchangeDesiredItemTypeOfItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem/TypeOfItem";
+import ExchangeDesiredItemTypeOfItemDetailScreen from "../screens/PostItemScreen/ExchangeDesiredItem/TypeOfItemDetail";
+import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelection";
 
 // Định nghĩa kiểu cho item (có thể dùng chung cho các file khác)
 type ItemType = {
@@ -54,6 +57,9 @@ export type RootStackParamList = {
   MethodOfExchangeScreen: undefined;
   ExchangeTypeScreen: undefined;
   ExchangeDesiredItemScreen: undefined;
+  ExchangeDesiredItemTypeOfItemScreen: undefined;
+  ExchangeDesiredItemTypeOfItemDetailScreen: undefined;
+  BrandSelectionScreen: undefined;
 };
 
 const CategoryScreen = () => (
@@ -181,6 +187,9 @@ export default function RootNavigator() {
         <Stack.Screen name="MethodOfExchangeScreen" component={MethodOfExchangeScreen} />
         <Stack.Screen name="ExchangeTypeScreen" component={ExchangeTypeScreen} />
         <Stack.Screen name="ExchangeDesiredItemScreen" component={ExchangeDesiredItemScreen} />
+        <Stack.Screen name="ExchangeDesiredItemTypeOfItemScreen" component={ExchangeDesiredItemTypeOfItemScreen} />
+        <Stack.Screen name="BrandSelectionScreen" component={BrandSelectionScreen} />
+        <Stack.Screen name="ExchangeDesiredItemTypeOfItemDetailScreen" component={ExchangeDesiredItemTypeOfItemDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

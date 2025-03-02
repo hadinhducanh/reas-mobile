@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { SafeAreaView, ScrollView, Text, TextInput, View, TouchableOpacity } from "react-native";
+import {  ScrollView, Text, TextInput, View, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { RootStackParamList } from "../../navigation/AppNavigator";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ExchangeDesiredItemScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -29,7 +30,9 @@ const ExchangeDesiredItemScreen = () => {
 
                 {/* Content */}
                 <View className="items-center mt-4">
-                    <TouchableOpacity className="w-11/12 h-16 bg-white rounded-lg mt-2 flex-row justify-between items-center px-4">
+                    <TouchableOpacity 
+                    onPress={() => navigation.navigate("ExchangeDesiredItemTypeOfItemScreen")}
+                    className="w-11/12 h-16 bg-white rounded-lg mt-2 flex-row justify-between items-center px-4">
                         <Text className="text-l font-normal text-black">Type of item</Text>
                         <Icon name="arrow-forward-ios" size={20} color="#6b7280" />
                     </TouchableOpacity>

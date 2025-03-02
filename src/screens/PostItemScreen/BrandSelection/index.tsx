@@ -1,45 +1,50 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, ScrollView, Text, View, TouchableOpacity } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { RootStackParamList } from "../../navigation/AppNavigator";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const options = [
-  "Brand new",
-  "Like new",
-  "Excellent condition",
-  "Good condition",
-  "Fair condition",
-  "Poor condition",
-  "For parts / Not working",
+  "Samsung",
+  "LG",
+  "Nike",
+  "Adidas",
+  "Zara",
+  "IKEA",
+  "Puma",
+  "H&M",
+  "Whirlpool",
+  "Sony",
+
 ];
 
-const ItemConditionScreen = () => {
+const BrandSelectionScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   // Lấy dữ liệu từ AsyncStorage khi vào màn hình
   useEffect(() => {
-    const getStoredCondition = async () => {
+    const getStoredBrand = async () => {
       try {
-        const storedCondition = await AsyncStorage.getItem("selectedCondition");
-        if (storedCondition) {
-          setSelectedOption(storedCondition);
+        const storedBrand = await AsyncStorage.getItem("selectedBrand");
+        if (storedBrand) {
+          setSelectedOption(storedBrand);
         }
       } catch (error) {
         console.error("Failed to retrieve condition:", error);
       }
     };
-    getStoredCondition();
+    getStoredBrand();
   }, []);
 
   // Khi chọn một option, lưu vào AsyncStorage và quay về UploadScreen
-  const handleSelectCondition = async (condition: string) => {
+  const handleSelectBrand = async (brand: string) => {
     try {
-      await AsyncStorage.setItem("selectedCondition", condition);
-      setSelectedOption(condition);
+      await AsyncStorage.setItem("selectedBrand", brand);
+      setSelectedOption(brand);
       navigation.goBack();
     } catch (error) {
       console.error("Failed to save condition:", error);
@@ -55,7 +60,7 @@ const ItemConditionScreen = () => {
             <Icon name="arrow-back-ios" size={20} color="black" />
           </TouchableOpacity>
           <View className="flex-1 items-center">
-            <Text className="text-2xl font-semibold text-black">Item condition</Text>
+            <Text className="text-2xl font-semibold text-black">Brand</Text>
           </View>
           <View className="w-10" />
         </View>
@@ -66,7 +71,7 @@ const ItemConditionScreen = () => {
           return (
             <TouchableOpacity
               key={index}
-              onPress={() => handleSelectCondition(option)}
+              onPress={() => handleSelectBrand(option)}
               className={`w-11/12 h-16 rounded-lg mt-2 ml-4 flex-row justify-between items-center px-4 ${
                 isSelected ? "bg-[#00b0b91A]" : "bg-white"
               }`}
@@ -90,4 +95,4 @@ const ItemConditionScreen = () => {
   );
 };
 
-export default ItemConditionScreen;
+export default BrandSelectionScreen;

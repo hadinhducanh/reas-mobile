@@ -1,14 +1,16 @@
 import React, { useState } from "react";
-import { SafeAreaView, ScrollView, Text, View } from "react-native";
+import {  ScrollView, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { RootStackParamList } from "../../navigation/AppNavigator";
+
+import { SafeAreaView } from "react-native-safe-area-context";
+import { RootStackParamList } from "../../../../navigation/AppNavigator";
 
 
 
-const TypeOfItemDetailScreen = () => {
+const ExchangeDesiredItemTypeOfItemDetailScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [isSelected, setIsSelected] = useState(false);
 
@@ -59,4 +61,4 @@ const TypeOfItemDetailScreen = () => {
     );
 };
 
-export default TypeOfItemDetailScreen;
+export default ExchangeDesiredItemTypeOfItemDetailScreen;
