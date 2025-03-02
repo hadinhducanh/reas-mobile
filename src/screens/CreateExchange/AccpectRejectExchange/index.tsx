@@ -1,18 +1,38 @@
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView, Pressable, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import Header from "../../../components/Header";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { TextInput } from "react-native-gesture-handler";
 
-const ExchangeDetail: React.FC = () => {
+const AccpectRejectExchange: React.FC = () => {
   const [feedback, setFeedback] = useState("");
 
   const handleSend = async () => {
     // Test Loading: delay 3 giây
     await new Promise((resolve) => setTimeout(resolve, 3000));
   };
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [negotiatedVisible, setNegotiatedVisible] = useState(false);
+
+  const handleNegotiatePrice = () => {
+    setModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setModalVisible(false);
+  };
+
+  const handleSet = () => {
+    setModalVisible(false);
+    setNegotiatedVisible(!negotiatedVisible);
+  };
+
+  const handleAccpectRejectExchange = () => {};
 
   return (
     <SafeAreaView className="flex-1 bg-[#f6f9f9]">
@@ -161,7 +181,14 @@ const ExchangeDetail: React.FC = () => {
         </View>
 
         <View className="my-8">
-          <Text className="font-bold text-lg text-gray-500">Price of item</Text>
+          <View className="flex-row justify-between">
+            <Text className="font-bold text-lg text-gray-500">
+              Price of item
+            </Text>
+            <Pressable onPress={handleNegotiatePrice}>
+              <Icon name="create-outline" size={24} color="#00b0b9" />
+            </Pressable>
+          </View>
 
           <View className="bg-white mt-2 rounded-lg p-4 flex-col justify-center h-fit">
             <View className="flex-row items-center justify-between">
@@ -184,9 +211,105 @@ const ExchangeDetail: React.FC = () => {
             </View>
           </View>
         </View>
+        {negotiatedVisible && (
+          <View className="">
+            <View className="flex-row justify-between">
+              <Text className="font-bold text-lg text-gray-500">
+                Negotiated price
+              </Text>
+            </View>
+
+            <View className="bg-white mt-2 rounded-lg p-4 flex-col justify-center h-fit">
+              <View className="flex-row items-center justify-between">
+                <Text className="font-bold text-lg">After adjusting</Text>
+                <Text className="font-bold text-lg text-[#00b0b9]">
+                  300.000 VND
+                </Text>
+              </View>
+              <View className="flex-row items-center justify-end">
+                <Text className="text-sm text-gray-500">2 offer remaining</Text>
+              </View>
+            </View>
+          </View>
+        )}
       </ScrollView>
+      <View className="h-24 px-5 bg-white mt-auto rounded-t-xl shadow-xl flex-row items-center">
+        <Pressable className="flex-1 border-[1px] border-[#00B0B9] bg-white p-3 rounded-lg mx-2 items-center flex-row justify-center active:bg-[rgb(0,176,185,0.1)]">
+          <Text className="text-[#00B0B9] font-bold ml-1">Reject</Text>
+        </Pressable>
+        <Pressable className="flex-1 bg-[#00B0B9] p-3 rounded-lg items-center flex-row justify-center active:bg-[rgb(0,176,185,0.9)]">
+          <Text className="text-white font-bold ml-1">Accpect</Text>
+        </Pressable>
+      </View>
+
+      <Modal
+        transparent={true}
+        visible={modalVisible}
+        animationType="fade"
+        onRequestClose={handleCancel}
+      >
+        <Pressable
+          className="flex-1 bg-[rgba(0,0,0,0.2)]"
+          onPress={handleCancel}
+        >
+          {/* Khung modal chính */}
+          <View className="absolute inset-0 flex justify-center items-center">
+            <View className="w-[85%] bg-white rounded-lg p-5">
+              <Text className="text-center text-xl font-bold text-[#00B0B9]">
+                Negotiated Price
+              </Text>
+              <Text className="text-center text-sm text-gray-500 mt-1">
+                Please input a negotiated price
+              </Text>
+
+              <View className="flex-row justify-between items-center mt-4 mb-2">
+                <View>
+                  <Text className="text-base font-medium text-gray-800">
+                    Estimated difference
+                  </Text>
+                  <Text className="text-lg font-bold text-[#00B0B9]">
+                    350.000 VND
+                  </Text>
+                </View>
+                <Icon name="cash-outline" size={40} color="#00B0B9" />
+              </View>
+
+              <View className="border border-[#00B0B9] rounded-md px-3 py-2">
+                <Text className="text-[#00B0B9] font-bold">
+                  Negotiated price
+                </Text>
+                <View className="flex-row items-center justify-between">
+                  <TextInput
+                    placeholder="0"
+                    placeholderTextColor="#999"
+                    keyboardType="numeric"
+                    className="flex-1 text-base text-gray-700 font-semibold"
+                  />
+                  <Text className="text-gray-500 ml-1 font-semibold">đ</Text>
+                </View>
+              </View>
+
+              {/* Nút Cancel và Set */}
+              <View className="flex-row mt-5">
+                <Pressable
+                  onPress={handleCancel}
+                  className="flex-1 border border-[#00B0B9] rounded-md py-3 mr-2 items-center"
+                >
+                  <Text className="text-[#00B0B9] font-bold">Cancel</Text>
+                </Pressable>
+                <Pressable
+                  onPress={handleSet}
+                  className="flex-1 bg-[#00B0B9] rounded-md py-3 ml-2 items-center"
+                >
+                  <Text className="text-white font-bold">Set</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 };
 
-export default ExchangeDetail;
+export default AccpectRejectExchange;

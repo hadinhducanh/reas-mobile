@@ -4,8 +4,9 @@ import {
   JWTAuthResponse,
   UserResponse,
   SignupDto,
+  PasswordChangeRequest,
 } from "../common/models/auth";
-import { API_BASE_URL } from "../common/models/constants";
+import { API_BASE_URL, API_BASE_URL_LOG_OUT } from "../common/models/constants";
 
 const authenticateUser = async (
   credentials: LoginDto
@@ -46,7 +47,7 @@ const getInfo = async (accessToken: string): Promise<UserResponse> => {
 
 const logout = async (accessToken: string): Promise<void> => {
   await axios.post(
-    `http://10.0.2.2:8080/logout`,
+    `${API_BASE_URL_LOG_OUT}/logout`,
     {},
     {
       headers: {
@@ -55,10 +56,29 @@ const logout = async (accessToken: string): Promise<void> => {
     }
   );
 };
+
+const changePassword = async (
+  accessToken: string,
+  payload: PasswordChangeRequest
+): Promise<boolean> => {
+  const response = await axios.post<boolean>(
+    `${API_BASE_URL}/auth/change-password`,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+
 export default {
   authenticateUser,
   signupUser,
   sendOtp,
   getInfo,
   logout,
+  changePassword,
 };

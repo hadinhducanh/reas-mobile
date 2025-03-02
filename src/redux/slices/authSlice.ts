@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   authenticateUserThunk,
+  changePasswordThunk,
   fetchUserInfoThunk,
   logoutUserThunk,
   sendOtpThunk,
@@ -17,6 +18,7 @@ export interface AuthState {
   refreshToken: string | null;
   otp: string | null;
   user: UserResponse | null;
+  changePasswordSuccess: boolean | null;
   loading: boolean;
   error: string | null;
 }
@@ -28,6 +30,7 @@ const initialState: AuthState = {
   user: null,
   loading: false,
   error: null,
+  changePasswordSuccess: null,
 };
 
 const authSlice = createSlice({
@@ -39,6 +42,7 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.otp = null;
       state.user = null;
+      state.changePasswordSuccess = null;
       state.loading = false;
       state.error = null;
     },
@@ -141,6 +145,28 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload || "Send OTP failed";
       });
+
+      builder
+      .addCase(changePasswordThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.changePasswordSuccess = null;
+      })
+      .addCase(
+        changePasswordThunk.fulfilled,
+        (state, action: PayloadAction<boolean>) => {
+          state.loading = false;
+          state.changePasswordSuccess = action.payload;
+        }
+      )
+      .addCase(
+        changePasswordThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Change password failed";
+          state.changePasswordSuccess = false;
+        }
+      );
   },
 });
 

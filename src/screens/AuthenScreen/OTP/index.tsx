@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
 import LoadingButton from "../../../components/LoadingButton";
 import { sendOtpThunk, signupUserThunk } from "../../../redux/thunk/authThunks";
+import Header from "../../../components/Header";
 
 interface SignUpDTO {
   fullName: string;
@@ -68,15 +69,7 @@ const OTP: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <View className="relative flex-row items-center justify-center h-[48px] px-[20px] pt-[20px]">
-        <Pressable
-          className="absolute left-[20px] top-[20px]"
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="chevron-back-outline" size={24} color="#0b1d2d" />
-        </Pressable>
-        <Text className="text-[18px] text-[#0b1d2d]">Verify OTP</Text>
-      </View>
+      <Header title="Verify OTP" showOption={false} />
 
       <View className="bg-white rounded-tl-[10px] rounded-tr-[10px] mx-[20px] px-[20px] py-[30px] mt-[20px]">
         <Text className="text-[16px] text-[#738aa0] mb-[30px] font-light">

@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   JWTAuthResponse,
   LoginDto,
+  PasswordChangeRequest,
   SignupDto,
   UserResponse,
 } from "../../common/models/auth";
@@ -87,3 +88,29 @@ export const logoutUserThunk = createAsyncThunk<
     return thunkAPI.rejectWithValue(error.response?.data || "Logout failed");
   }
 });
+
+export const changePasswordThunk = createAsyncThunk<
+  boolean, // Trả về boolean
+  PasswordChangeRequest,
+  { state: RootState }
+>(
+  "auth/changePassword",
+  async (payload, thunkAPI) => {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+    if (!accessToken) {
+      return thunkAPI.rejectWithValue("No access token available");
+    }
+    try {
+      const success: boolean = await AuthService.changePassword(
+        accessToken,
+        payload
+      );
+      return success;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Change password failed"
+      );
+    }
+  }
+);

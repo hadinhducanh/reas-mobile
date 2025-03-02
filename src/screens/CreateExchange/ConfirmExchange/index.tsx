@@ -1,18 +1,24 @@
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import Header from "../../../components/Header";
+import LoadingButton from "../../../components/LoadingButton";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
 
-const ExchangeDetail: React.FC = () => {
+const ConfirmExchange: React.FC = () => {
   const [feedback, setFeedback] = useState("");
 
   const handleSend = async () => {
     // Test Loading: delay 3 giây
     await new Promise((resolve) => setTimeout(resolve, 3000));
   };
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const handleConfirmExchange = () => {
+    navigation.navigate("AccpectRejectExchange");
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#f6f9f9]">
@@ -185,8 +191,14 @@ const ExchangeDetail: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+      <View className="h-24 px-5 bg-white mt-auto rounded-t-xl shadow-xl flex-row items-center">
+        <LoadingButton
+          title="Confirm exchange"
+          onPress={handleConfirmExchange}
+        />
+      </View>
     </SafeAreaView>
   );
 };
 
-export default ExchangeDetail;
+export default ConfirmExchange;

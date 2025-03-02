@@ -5,7 +5,7 @@ import { StyleSheet } from "react-native";
 import SplashScreen from "./src/screens/Splash";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import "./global.css";
-import ChatHistoryScreen from "./src/screens/ChatHistory";
+import ChatHistoryScreen from "./src/screens/Chat/ChatHistory";
 import OrderFailedScreen from "./src/screens/OrderScreen/OrderFailed";
 import { Provider } from "react-redux";
 import store from "./src/redux/store";

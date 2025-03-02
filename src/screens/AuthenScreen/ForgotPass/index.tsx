@@ -3,6 +3,7 @@ import { View, Text, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
+import Header from "../../../components/Header";
 
 const ForgotPass: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -43,13 +44,7 @@ const ForgotPass: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      {/* Header: Back Button & Title */}
-      <View className="relative flex-row items-center justify-center h-[50px] px-[20px] pt-[20px]">
-        <View className="absolute left-[20px] top-[20px]">
-          <Icon name="chevron-back-outline" size={24} color="#0b1d2d" />
-        </View>
-        <Text className="text-[18px] font-normal">Forgot Password</Text>
-      </View>
+      <Header title="Forgot password" />
 
       {/* Form nằm ngay dưới Header */}
       <View className="bg-white rounded-tl-[10px] rounded-tr-[10px] mx-[20px] px-[20px] py-[20px] mt-[20px]">
