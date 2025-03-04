@@ -1,6 +1,10 @@
 import React from "react";
 import { Text, SafeAreaView, View, Platform } from "react-native";
-import { NavigationContainer, RouteProp } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  NavigatorScreenParams,
+  RouteProp,
+} from "@react-navigation/native";
 import {
   createStackNavigator,
   StackNavigationProp,
@@ -36,6 +40,13 @@ import BrowseItems from "../screens/CreateExchange/BrowseItems";
 import DifferentItem from "../screens/CreateExchange/DifferentItem";
 import ConfirmExchange from "../screens/CreateExchange/ConfirmExchange";
 import AccpectRejectExchange from "../screens/CreateExchange/AccpectRejectExchange";
+import FeedbackItem from "../screens/AccountScreen/FeedbackItem";
+import SearchResult from "../screens/SearchResult";
+import OwnerItem from "../screens/Owner/OwnerItem";
+import OwnerFeedback from "../screens/Owner/OwnerFeedback";
+import Favorite from "../screens/Favortie";
+import Notifications from "../screens/Notification";
+import FilterMap from "../screens/FilterMap";
 
 type ItemType = {
   id: number;
@@ -47,9 +58,15 @@ type ItemType = {
   isFavorited: boolean;
 };
 
-// Định nghĩa kiểu cho các màn hình trong Stack Navigator
+export type MainTabsParamList = {
+  Home: undefined;
+  UploadScreen: undefined;
+  Exchanges: undefined;
+  Account: undefined;
+};
+
 export type RootStackParamList = {
-  MainTabs: undefined;
+  MainTabs: NavigatorScreenParams<MainTabsParamList>;
   SignIn: undefined;
   SignUp: undefined;
   Profile: undefined;
@@ -74,6 +91,13 @@ export type RootStackParamList = {
   DifferentItem: undefined;
   ConfirmExchange: undefined;
   AccpectRejectExchange: undefined;
+  FeedbackItem: undefined;
+  SearchResult: undefined;
+  OwnerItem: undefined;
+  OwnerFeedback: undefined;
+  Favorite: undefined;
+  Notifications: undefined;
+  FilterMap: undefined;
 };
 
 const CategoryScreen = () => (
@@ -99,7 +123,7 @@ const TabArr = [
   {
     route: "Exchanges",
     label: "Exchanges",
-    component: FavoriteScreen,
+    component: ExchangeHistoryScreen,
     type: "swap-horizontal-outline",
   },
   {
@@ -187,10 +211,6 @@ export default function RootNavigator() {
         <Stack.Screen name="SignIn" component={SignInScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="Profile" component={ProfileDetailScreen} />
-        <Stack.Screen
-          name="ExchangeHistory"
-          component={ExchangeHistoryScreen}
-        />
         <Stack.Screen name="ExchangeDetail" component={ExchangeDetailScreen} />
         <Stack.Screen name="ChatHistory" component={ChatHistoryScreen} />
         <Stack.Screen name="ChatDetails" component={ChatDetailsScreen} />
@@ -202,6 +222,13 @@ export default function RootNavigator() {
         <Stack.Screen name="ItemDetail" component={ItemDetailScreen} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
         <Stack.Screen name="CreateExchange" component={CreateExchange} />
+        <Stack.Screen name="FeedbackItem" component={FeedbackItem} />
+        <Stack.Screen name="SearchResult" component={SearchResult} />
+        <Stack.Screen name="OwnerItem" component={OwnerItem} />
+        <Stack.Screen name="OwnerFeedback" component={OwnerFeedback} />
+        <Stack.Screen name="Favorite" component={Favorite} />
+        <Stack.Screen name="Notifications" component={Notifications} />
+        <Stack.Screen name="FilterMap" component={FilterMap} />
         <Stack.Screen name="TypeOfItemScreen" component={TypeOfItemScreen} />
         <Stack.Screen
           name="TypeOfItemDetailScreen"

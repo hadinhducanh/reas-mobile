@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
 import {
@@ -23,6 +23,7 @@ import {
 import { z } from "zod";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Header from "../../../components/Header";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const signInSchema = z.object({
@@ -41,7 +42,7 @@ const SignIn: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState(true);
   const [remember, setRemember] = useState(false);
 
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const isValidEmail = useCallback(
     (email: string) => emailRegex.test(email),

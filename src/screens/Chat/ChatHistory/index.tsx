@@ -13,6 +13,8 @@ const ChatHistory: React.FC = () => {
     <SafeAreaView className="flex-1 bg-[#00B0B9]">
       <View className="bg-[#00B0B9]">
         <Header
+          backIconColor="white"
+          showOption={false}
           title="Chat"
           backgroundColor="bg-[#00B0B9]"
           textColor="text-white"
