@@ -23,8 +23,6 @@ const MatchedList: React.FC<MatchedListProps> = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
 
-  const handleSelectItem = () => {};
-
   return (
     <View>
       <Pressable

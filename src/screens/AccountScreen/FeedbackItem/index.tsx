@@ -16,7 +16,7 @@ const FeedbackItem: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-[#f6f9f9]">
       {/* Header: Back Button */}
-      <Header title="Leave a review" />
+      <Header title="Leave a review" showOption={false} />
 
       <View className="items-center h-full ">
         <View className="w-[90%] h-[90%] bg-white rounded-[10px] flex flex-col items-center justify-center">

@@ -3,11 +3,12 @@ import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { AppDispatch, RootState } from "../../redux/store";
 import { logoutUserThunk } from "../../redux/thunk/authThunks";
 import { logout } from "../../redux/slices/authSlice";
 import Header from "../../components/Header";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 
 type AccountListItemProps = {
   iconName: string;
@@ -39,7 +40,7 @@ const AccountListItem: React.FC<AccountListItemProps> = memo(
 const Account: React.FC = () => {
   const { user, accessToken } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const isLoggedIn = !!user;
 
@@ -62,16 +63,16 @@ const Account: React.FC = () => {
       navigation.navigate("ResetPassword");
     }
   }, [navigation]);
-  const navigateToExchangeHistory = useCallback(
-    () => navigation.navigate("ExchangeHistory"),
-    [navigation]
-  );
   const navigateToStatistics = useCallback(
     () => navigation.navigate("Statistics"),
     [navigation]
   );
   const navigateToLanguage = useCallback(
     () => navigation.navigate("ChatHistory"),
+    [navigation]
+  );
+  const navigateToFavorite = useCallback(
+    () => navigation.navigate("Favorite"),
     [navigation]
   );
   const navigateToSignIn = useCallback(
@@ -147,11 +148,6 @@ const Account: React.FC = () => {
             onPress={navigateToChangePassword}
           />
           <AccountListItem
-            iconName="swap-horizontal-outline"
-            label="Exchanges history"
-            onPress={navigateToExchangeHistory}
-          />
-          <AccountListItem
             iconName="stats-chart-sharp"
             label="Statistics"
             onPress={navigateToStatistics}
@@ -161,7 +157,11 @@ const Account: React.FC = () => {
             label="Language"
             // onPress={navigateToLanguage}
           />
-          <AccountListItem iconName="heart-outline" label="Favorites" />
+          <AccountListItem
+            iconName="heart-outline"
+            label="Favorites"
+            onPress={navigateToFavorite}
+          />
           <AccountListItem
             iconName="information-circle-outline"
             label="About"
