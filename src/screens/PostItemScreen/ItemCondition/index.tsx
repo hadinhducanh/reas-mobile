@@ -7,19 +7,20 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// Mảng chứa cả nhãn hiển thị và giá trị tương ứng
 const options = [
-  "Brand new",
-  "Like new",
-  "Excellent condition",
-  "Good condition",
-  "Fair condition",
-  "Poor condition",
-  "For parts / Not working",
+  { label: "Brand new", value: "BRAND_NEW" },
+  { label: "Like new", value: "LIKE_NEW" },
+  { label: "Excellent condition", value: "EXCELLENT" },
+  { label: "Good condition", value: "GOOD" },
+  { label: "Fair condition", value: "FAIR" },
+  { label: "Poor condition", value: "POOR" },
+  { label: "For parts / Not working", value: "NOT_WORKING" },
 ];
 
 const ItemConditionScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [selectedOption, setSelectedOption] = useState<{ label: string; value: string } | null>(null);
 
   // Lấy dữ liệu từ AsyncStorage khi vào màn hình
   useEffect(() => {
@@ -27,7 +28,7 @@ const ItemConditionScreen = () => {
       try {
         const storedCondition = await AsyncStorage.getItem("selectedCondition");
         if (storedCondition) {
-          setSelectedOption(storedCondition);
+          setSelectedOption(JSON.parse(storedCondition));
         }
       } catch (error) {
         console.error("Failed to retrieve condition:", error);
@@ -37,9 +38,9 @@ const ItemConditionScreen = () => {
   }, []);
 
   // Khi chọn một option, lưu vào AsyncStorage và quay về UploadScreen
-  const handleSelectCondition = async (condition: string) => {
+  const handleSelectCondition = async (condition: { label: string; value: string }) => {
     try {
-      await AsyncStorage.setItem("selectedCondition", condition);
+      await AsyncStorage.setItem("selectedCondition", JSON.stringify(condition));
       setSelectedOption(condition);
       navigation.goBack();
     } catch (error) {
@@ -51,7 +52,7 @@ const ItemConditionScreen = () => {
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
       <ScrollView contentInsetAdjustmentBehavior="automatic" className="flex-1">
         {/* Header */}
-        <View className="w-full h-14 flex-row items-center px-4 ">
+        <View className="w-full h-14 flex-row items-center px-4">
           <TouchableOpacity onPress={() => navigation.goBack()} className="w-10">
             <Icon name="arrow-back-ios" size={20} color="black" />
           </TouchableOpacity>
@@ -63,7 +64,7 @@ const ItemConditionScreen = () => {
 
         {/* Danh sách lựa chọn */}
         {options.map((option, index) => {
-          const isSelected = selectedOption === option;
+          const isSelected = selectedOption?.value === option.value;
           return (
             <TouchableOpacity
               key={index}
@@ -74,7 +75,7 @@ const ItemConditionScreen = () => {
             >
               {/* Text hiển thị nội dung */}
               <Text className={`text-lg font-normal ${isSelected ? "text-[#00b0b9] font-bold" : "text-black"}`}>
-                {option}
+                {option.label}
               </Text>
 
               {/* Radio Button */}

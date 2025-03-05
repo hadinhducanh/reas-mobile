@@ -10,21 +10,36 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ImagePickerComponent from "./ImagePickerComponent";
+import { AppDispatch, RootState } from "../../../redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { postItemThunk } from "../../../redux/thunk/itemThunks";
 
 export default function UploadScreen() {
 
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const [isChecked, setIsChecked] = useState(false);
-    const [price, setPrice] = useState("");
-    const [title, setTitle] = useState("");
+    const [isCheckedFree, setIsCheckedFree] = useState(false);
+    const [isCheckedDesiredItem, setIsCheckedDesiredItem] = useState(false);
+    const [price, setPrice] = useState<number | null>(null);
+    const [title, setTitle] = useState<string | null>(null)
     const [description1, setDescription1] = useState("");
     const [quantity, setQuantity] = useState("");
     const [condition, setCondition] = useState("");
     const [images, setImages] = useState<string[]>([]); // Lưu trữ các ảnh đã chọn
     const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
+    const [selectedMethodsValue, setSelectedMethodsValue] = useState<string[]>([]);
     const [selectedCondition, setSelectedCondition] = useState<string | null>(null);
-    const [selectedExchangeType, setSelectedExchangeType] = useState<string | null>(null);
+    const [selectedConditionValue, setSelectedConditionValue] = useState<string | null>(null);
     const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+    const [selectedBrandId, setSelectedBrandId] = useState<number | null>(null);
+    const [selectedType, setSelectedType] = useState<string | null>(null);
+    const [selectedTypeValue, setSelectedTypeValue] = useState<string | null>(null);
+
+    const { loading } = useSelector((state: RootState) => state.item);
+
+
+    const dispatch = useDispatch<AppDispatch>();
+
 
 
     // Lấy dữ liệu từ AsyncStorage khi vào trang UploadScreen
@@ -32,19 +47,39 @@ export default function UploadScreen() {
         useCallback(() => {
             const fetchStoredData = async () => {
                 try {
-                    const [methods, condition, exchangeType, brand] = await Promise.all([
+                    const [methods, condition, brand, type] = await Promise.all([
                         AsyncStorage.getItem("selectedMethods"),
                         AsyncStorage.getItem("selectedCondition"),
-                        AsyncStorage.getItem("exchangeType"),
-                        AsyncStorage.getItem("selectedBrand")
+                        AsyncStorage.getItem("selectedBrand"),
+                        AsyncStorage.getItem("selectedType"),
+
                     ]);
 
-                    if (methods) setSelectedMethods(JSON.parse(methods));
-                    if (condition) setSelectedCondition(condition);
-                    if (exchangeType) setSelectedExchangeType(exchangeType);
-                    if (brand) setSelectedBrand(brand);
+                    if (methods) {
+                        const parsedMethods = JSON.parse(methods);
+                        setSelectedMethodsValue(parsedMethods.map((method: { value: string }) => method.value));
+                        setSelectedMethods(parsedMethods.map((method:{ label: string }) => method.label));
+                        
+                    }
+                    if (condition) {
+                        const parsedCondition = JSON.parse(condition);
+                        setSelectedConditionValue(parsedCondition.value);
+                        setSelectedCondition(parsedCondition.label);
+                    }
+
+                    if (brand) {
+                        const parsedBrand = JSON.parse(brand);
+                        setSelectedBrand(parsedBrand.brandName);
+                        setSelectedBrandId(parsedBrand.id);
+                    }
+                    if (type) {
+                        const parsedType = JSON.parse(type);
+                        setSelectedTypeValue(parsedType.value);
+                        setSelectedType(parsedType.label);
+                    }
+
                 } catch (error) {
-                    console.error("Failed to retrieve data:", error);
+                    console.error("Failed to retrieve or delete data:", error);
                 }
             };
 
@@ -52,106 +87,76 @@ export default function UploadScreen() {
         }, [])
     );
 
-
-    const toggleCheckbox = () => {
-        setIsChecked(!isChecked);
-    };
-    // Hàm mở camera để chụp ảnh
-    const openCamera = async () => {
-        if (images.length >= 4) {
-            Alert.alert("Limit reached", "You can only upload up to 4 photos.");
+    const handleCreateItem = async () => {
+        const missingFields = [];
+    
+        if (!title) missingFields.push("title");
+        if (!selectedType) missingFields.push("selectedType");
+        if (!selectedBrandId) missingFields.push("selectedBrandId");
+        if (!selectedCondition) missingFields.push("selectedCondition");
+    
+        if (missingFields.length > 0) {
+            console.log("❌ Missing fields:", missingFields.join(", "));
+            Alert.alert("Error", `Please fill in all required fields: ${missingFields.join(", ")}`);
             return;
         }
-
-        // Xin quyền truy cập camera
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== "granted") {
-            Alert.alert("Permission denied", "Sorry, we need camera permissions to make this work!");
-            return;
-        }
-
-        // Mở camera
-        const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images, // Chỉ chụp ảnh
-            quality: 1, // Chất lượng ảnh (từ 0 đến 1)
-            allowsEditing: true, // Cho phép chỉnh sửa ảnh
-        });
-
-        if (!result.canceled) {
-            const newImage = result.assets[0].uri; // Lấy URI của ảnh đã chụp
-            setImages((prevImages) => [...prevImages, newImage]); // Thêm ảnh vào danh sách
-        }
-    };
-
-    // Hàm mở thư viện ảnh
-    const openImageLibrary = async () => {
-        // Kiểm tra số lượng ảnh hiện tại
-        if (images.length >= 4) {
-            Alert.alert("Limit reached", "You can only upload up to 4 photos.");
-            return;
-        }
-
-        // Xin quyền truy cập thư viện ảnh
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-            Alert.alert("Permission denied", "Sorry, we need camera roll permissions to make this work!");
-            return;
-        }
-
-        // Mở thư viện ảnh
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images, // Chỉ cho phép chọn ảnh
-            allowsMultipleSelection: true, // Cho phép chọn nhiều ảnh
-            quality: 1, // Chất lượng ảnh (từ 0 đến 1)
-            selectionLimit: 4 - images.length, // Giới hạn số lượng ảnh có thể chọn
-        });
-
-        if (!result.canceled) {
-            const selectedImages = result.assets.map((asset) => asset.uri); // Lấy URIs của các ảnh đã chọn
-            setImages((prevImages) => [...prevImages, ...selectedImages]); // Cập nhật state với các ảnh đã chọn
+    
+        const newItem = {
+            itemName: title || "",
+            description: description1 || "",
+            price: isCheckedFree ? 0 : price || 0,
+            conditionItem: selectedConditionValue || "",
+            imageUrl: images.length > 0 ? images[0] : "",
+            // imageUrl: "hehehege",
+            methodExchanges: selectedMethodsValue || [],
+            isMoneyAccepted: !isCheckedDesiredItem,
+            typeExchange: isCheckedDesiredItem ? "EXCHANGE_WITH_DESIRED_ITEM" : "OPEN_EXCHANGE",
+            typeItem: selectedTypeValue || "",
+            termsAndConditionsExchange: condition || "",
+            categoryId: 2, // Đúng với dữ liệu mẫu
+            brandId: selectedBrandId ?? 2, // Đúng với dữ liệu mẫu
+            desiredItem: isCheckedDesiredItem
+                ? {
+                    typeItem: "LIVING_ROOM_APPLIANCES",
+                    categoryId: 2,
+                    brandId: 2,
+                    conditionItem: "LIKE_NEW",
+                    minPrice: 1000,
+                    maxPrice: 100000,
+                } : undefined   // Đúng với dữ liệu mẫu
+        };
+        
+        
+        
+        console.log("🛠 Sending newItem data:", JSON.stringify(newItem, null, 2)); // Log toàn bộ dữ liệu item
+    
+        try {
+            const resultAction = await dispatch(postItemThunk(newItem)).unwrap();
+            console.log("✅ Success:", resultAction);
+            Alert.alert("Success", "Item created successfully!");
+        } catch (err) {
+            console.log("❌ Error creating item:", err);
+    
+            if (err instanceof Error) {
+                console.log("🛠 Error message:", err.message);
+                Alert.alert("Error", err.message || "Failed to create item.");
+            } else {
+                console.log("🛠 Unknown error:", JSON.stringify(err, null, 2));
+                Alert.alert("Error", "Failed to create item.");
+            }
         }
     };
+    
+    
 
-    // Hàm hiển thị menu lựa chọn (chụp ảnh hoặc chọn ảnh từ thư viện)
-    const showImagePickerOptions = () => {
-        // Kiểm tra số lượng ảnh hiện tại
-        if (images.length >= 4) {
-            Alert.alert("Limit reached", "You can only upload up to 4 photos.");
-            return;
-        }
 
-        if (Platform.OS === "ios") {
-            ActionSheetIOS.showActionSheetWithOptions(
-                {
-                    options: ["Cancel", "Take Photo", "Choose from Library"],
-                    cancelButtonIndex: 0,
-                },
-                (buttonIndex) => {
-                    if (buttonIndex === 1) {
-                        openCamera();
-                    } else if (buttonIndex === 2) {
-                        openImageLibrary();
-                    }
-                }
-            );
-        } else {
-            // Đối với Android, sử dụng Alert
-            Alert.alert(
-                "Select Option",
-                "Choose an option",
-                [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Take Photo", onPress: openCamera },
-                    { text: "Choose from Library", onPress: openImageLibrary },
-                ]
-            );
-        }
+    const toggleCheckboxFree = () => {
+        setIsCheckedFree(!isCheckedFree);
+    };
+    const toggleCheckboxDesiredItem = () => {
+        setIsCheckedDesiredItem(!isCheckedDesiredItem);
     };
 
-    // Hàm xóa ảnh
-    const deleteImage = (index: number) => {
-        setImages((prevImages) => prevImages.filter((_, i) => i !== index));
-    };
 
 
 
@@ -181,59 +186,23 @@ export default function UploadScreen() {
                             <View className="w-10" />
                         </View>
                         {/* Phần chọn ảnh và hiển thị ảnh đã chọn */}
-                        <View className="flex-row flex-wrap mt-2 ml-4">
-                            {/* Phần "Add up to 4 photos" */}
-                            {images.length < 4 && (
-                                <TouchableOpacity
-                                    onPress={showImagePickerOptions}
-                                    className="w-20 h-32 bg-transparent border-2 border-dashed border-gray-300 rounded-lg justify-center items-center mr-2"
-                                >
-                                    {/* Biểu tượng camera */}
-                                    <View className="flex justify-center items-center">
-                                        <Icon name="photo-camera" size={24} color="#00b0b9" />
-                                    </View>
-                                    {/* Dòng chữ "Add up to 4 photos" */}
-                                    <Text
-                                        className="text-center text-xs font-light text-gray-500 mt-2"
-                                        numberOfLines={2}
-                                        ellipsizeMode="tail"
-                                        style={{ width: 64 }}
-                                    >
-                                        Add up to 4 photos
-                                    </Text>
-                                </TouchableOpacity>
-                            )}
-
-                            {/* Hiển thị các ảnh đã chọn */}
-                            {images.map((uri, index) => (
-                                <View
-                                    key={index}
-                                    className="w-20 h-32 bg-transparent border-2 border-dashed border-gray-300 rounded-lg justify-center items-center mr-2"
-                                >
-                                    <Image
-                                        source={{ uri }}
-                                        className="w-full h-full rounded-lg"
-                                    />
-                                    {/* Nút xóa ảnh */}
-                                    <TouchableOpacity
-                                        onPress={() => deleteImage(index)}
-                                        className="absolute top-0 right-0 bg-red-500 rounded-full w-6 h-6 justify-center items-center"
-                                    >
-                                        <Icon name="close" size={14} color="#ffffff" />
-                                    </TouchableOpacity>
-                                </View>
-                            ))}
-                        </View>
+                        <ImagePickerComponent images={images} setImages={setImages} />
 
                         {/* Type of item section */}
                         <TouchableOpacity
                             onPress={() => navigation.navigate("TypeOfItemScreen")}
-                            className="w-11/12 h-12 bg-white rounded-lg mt-4 ml-4 flex-row justify-between items-center px-4"
+                            className="w-11/12 h-16 bg-white rounded-lg mt-4 ml-4 flex-row justify-between items-center px-4"
                         >
                             {/* Dòng chữ "Type of item" */}
-                            <Text className="text-xs font-normal text-black">
-                                Type of item
-                            </Text>
+                            <View>
+                                <Text className="text-base font-normal text-black">
+                                    Type of item
+                                </Text>
+                                <Text className="text-lg font-semibold text-black mt-1">
+                                    {selectedType || "Select type of item"}
+                                </Text>
+                            </View>
+
 
                             {/* Biểu tượng mũi tên qua phải */}
                             <Icon name="arrow-forward-ios" size={20} color="#6b7280" />
@@ -245,10 +214,10 @@ export default function UploadScreen() {
                             className="w-11/12 h-16 bg-white rounded-lg mt-4 ml-4 px-4 py-2 flex-row justify-between items-center"
                         >
                             <View>
-                                <Text className="text-xs font-normal text-black">
+                                <Text className="text-base font-normal text-black">
                                     Brand
                                 </Text>
-                                <Text className="text-sm font-semibold text-black mt-1">
+                                <Text className="text-lg font-semibold text-black mt-1">
                                     {selectedBrand || "Select brand"}
                                 </Text>
                             </View>
@@ -263,8 +232,8 @@ export default function UploadScreen() {
                         >
                             {/* View bọc phần Text để giữ nó bên trái */}
                             <View>
-                                <Text className="text-xs font-normal text-black">Condition</Text>
-                                <Text className="text-sm font-semibold text-black mt-1">
+                                <Text className="text-base font-normal text-black">Condition</Text>
+                                <Text className="text-lg font-semibold text-black mt-1">
                                     {selectedCondition || "Select condition"}
                                 </Text>
                             </View>
@@ -275,29 +244,29 @@ export default function UploadScreen() {
 
 
                         <TouchableOpacity
-                            onPress={toggleCheckbox}
+                            onPress={toggleCheckboxFree}
                             className="flex-row items-center justify-between mt-4 ml-7"
                         >
                             {/* Dòng chữ "I want to give it for free" */}
-                            <Text className="text-sm font-bold text-[#738aa0]">
+                            <Text className="text-lg font-bold text-[#738aa0]">
                                 I want to give it for free
                             </Text>
                             {/* Checkbox */}
-                            <View className="w-5 h-5 bg-white rounded-sm justify-center items-center mr-6">
-                                {isChecked && <Icon name="check" size={14} color="#00B0B9" />}
+                            <View className="w-5 h-5 bg-white rounded-sm justify-center items-center mr-6 border border-[#738aa0]">
+                                {isCheckedFree && <Icon name="check" size={14} color="#00B0B9" />}
                             </View>
                         </TouchableOpacity>
 
 
                         {/* Price section */}
-                        {!isChecked && (
+                        {!isCheckedFree && (
                             <View className="w-11/12 h-12 bg-white rounded-lg mt-4 ml-4 justify-center">
                                 <TextInput
                                     className="text-xs font-normal text-black ml-4"
                                     placeholder="Price"
                                     placeholderTextColor="#d1d5db" // Màu placeholder
-                                    value={price}
-                                    onChangeText={setPrice}
+                                    value={price !== null ? price.toString() : ""}
+                                    onChangeText={(text) => setPrice(text ? parseFloat(text) : null)}
                                     keyboardType="numeric" // Bàn phím số cho trường Price
                                 />
                             </View>
@@ -310,7 +279,7 @@ export default function UploadScreen() {
                                 className="text-xs font-normal text-black ml-4"
                                 placeholder="Title"
                                 placeholderTextColor="#d1d5db"
-                                value={title}
+                                value={title ?? undefined}
                                 onChangeText={setTitle}
                             />
                         </View>
@@ -358,30 +327,40 @@ export default function UploadScreen() {
 
 
                         {/* Accept exchanging with money text */}
-                        <Text className="text-sm font-bold text-[#738aa0] mt-4 ml-5">
-                            Accept exchanging with money
-                        </Text>
-
-                        {/* Choose your exchange type section */}
                         <TouchableOpacity
-                            onPress={() => navigation.navigate("ExchangeTypeScreen")}
-                            className="w-11/12 h-16 bg-white rounded-lg mt-4 ml-4 px-4 py-2 flex-row justify-between items-center"
+                            onPress={toggleCheckboxDesiredItem}
+                            className="flex-row items-center justify-between mt-4 ml-7"
                         >
-                            <View>
-                                <Text className="text-xs font-normal text-black">
-                                    Choose your exchange type
-                                </Text>
-                                <Text className="text-sm font-semibold text-black mt-1">
-                                    {selectedExchangeType || "Select exchange type"}
-                                </Text>
+                            {/* Dòng chữ "I want to give it for free" */}
+                            <Text className="text-sm font-bold text-[#738aa0]">
+                                I want to desire an item for exchanging
+                            </Text>
+                            {/* Checkbox */}
+                            <View className="w-5 h-5 bg-white rounded-sm justify-center items-center mr-6">
+                                {isCheckedDesiredItem && <Icon name="check" size={14} color="#00B0B9" />}
                             </View>
-
-                            <Icon name="arrow-forward-ios" size={20} color="#6b7280" />
                         </TouchableOpacity>
 
+                        {/* Choose your exchange type section */}
+                        {isCheckedDesiredItem && (
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate("ExchangeDesiredItemScreen")}
+                                className="w-11/12 h-16 bg-white rounded-lg mt-4 ml-4 px-4 py-2 flex-row justify-between items-center"
+                            >
+                                <View>
+                                    <Text className="text-xs font-normal text-black">
+                                        Add your desired item for exchanging (optional)
+                                    </Text>
+                                </View>
+
+                                <Icon name="arrow-forward-ios" size={20} color="#6b7280" />
+                            </TouchableOpacity>
+                        )}
 
 
-                        <Text className="text-sm font-bold text-[#738aa0] mt-4 ml-5">
+
+
+                        <Text className="text-sm font-bold text-[#0] mt-4 ml-5">
                             Exchange’s terms and conditions
                         </Text>
 
@@ -398,11 +377,9 @@ export default function UploadScreen() {
                         </View>
 
                         {/* Create button */}
-                        <View className="w-11/12 py-3 flex-row justify-center items-center bg-[#00b0b9] rounded-lg mt-8 mx-4 mb-8">
-                            <Text className="text-base font-bold text-white">
-                                Create
-                            </Text>
-                        </View>
+                        <TouchableOpacity onPress={handleCreateItem} className="w-11/12 py-3 flex-row justify-center items-center bg-[#00b0b9] rounded-lg mt-8 mx-4 mb-8">
+                            <Text className="text-base font-bold text-white">{loading ? "Creating..." : "Create"}</Text>
+                        </TouchableOpacity>
                     </View>
                 </KeyboardAwareScrollView>
 

@@ -5,35 +5,43 @@ import { createStackNavigator, StackNavigationProp } from "@react-navigation/sta
 import Icon from "react-native-vector-icons/Ionicons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-import HomeScreen from "../screens/HomeScreen";
-import FavoriteScreen from "../screens/FavortieScreen";
+import HomeScreen from "../screens/Home";
+import FavoriteScreen from "../screens/Favortie";
 import AccountScreen from "../screens/AccountScreen";
-import SignInScreen from "../screens/AuthenScreen/SignInScreen";
-import SignUpScreen from "../screens/AuthenScreen/SignUpScreen";
-import ProfileDetailScreen from "../screens/AccountScreen/ProfileDetailScreen";
-import ExchangeHistoryScreen from "../screens/AccountScreen/ExchangeHistoryScreen";
-import ChatHistoryScreen from "../screens/ChatHistoryScreen";
-import ExchangeDetailScreen from "../screens/AccountScreen/ExchangeDetailScreen";
-import ChatDetailsScreen from "../screens/ChatDetailsScreen";
-import StatisticsScreen from "../screens/StatisticsScreen";
+
+
+
+import SignInScreen from "../screens/AuthenScreen/SignIn";
+import SignUpScreen from "../screens/AuthenScreen/SignUp";
+import ProfileDetailScreen from "../screens/AccountScreen/ProfileDetail";
+import ExchangeHistoryScreen from "../screens/AccountScreen/ExchangeHistory";
+import ChatHistoryScreen from "../screens/ChatHistory";
+import ExchangeDetailScreen from "../screens/AccountScreen/ExchangeDetail";
+import ChatDetailsScreen from "../screens/ChatDetails";
+import StatisticsScreen from "../screens/Statistics";
+import OTPScreen from "../screens/AuthenScreen/OTP";
+import SignUpSuccessScreen from "../screens/AuthenScreen/SignUpSuccess";
 import ItemDetailScreen from "../screens/ItemDetailScreen";
 import UploadScreen from "../screens/PostItemScreen/Upload";
 import TypeOfItemScreen from "../screens/PostItemScreen/TypeOfItem";
-import TypeOfItemDetailScreen from "../screens/PostItemScreen/TypeOfItemDetail";
+
 import ItemConditionScreen from "../screens/PostItemScreen/ItemCondition";
 import MethodOfExchangeScreen from "../screens/PostItemScreen/MethodOfExchange";
-import ExchangeTypeScreen from "../screens/PostItemScreen/ExchangeType";
+
 import ExchangeDesiredItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem";
 import ExchangeDesiredItemTypeOfItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem/TypeOfItem";
-import ExchangeDesiredItemTypeOfItemDetailScreen from "../screens/PostItemScreen/ExchangeDesiredItem/TypeOfItemDetail";
-import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelection";
+
+import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelectionScreen";
+import TypeOfItemDetailScreen from "../screens/PostItemScreen/TypeOfItemDetail";
+import ExchangeDesiredItemBrandSelectionScreen from "../screens/PostItemScreen/ExchangeDesiredItem/BrandSelectionScreen";
+import ExchangeDesiredItemConditionScreen from "../screens/PostItemScreen/ExchangeDesiredItem/ItemCondition";
 
 // Định nghĩa kiểu cho item (có thể dùng chung cho các file khác)
-type ItemType = {
+export type ItemType = {
   id: number;
   name: string;
-  price: string;
-  image: string;
+  price: number;
+  images: string[];
   location: string;
   description: string;
 };
@@ -49,18 +57,23 @@ export type RootStackParamList = {
   ChatHistory: undefined;
   ChatDetails: undefined;
   Statistics: undefined;
-  ItemDetail: { item: ItemType };
+  ItemDetail: { itemId: number };
   TypeOfItemScreen: undefined;
   TypeOfItemDetailScreen: undefined;
   ItemConditionScreen: undefined;
   UploadScreen: undefined;
   MethodOfExchangeScreen: undefined;
-  ExchangeTypeScreen: undefined;
+ 
   ExchangeDesiredItemScreen: undefined;
   ExchangeDesiredItemTypeOfItemScreen: undefined;
-  ExchangeDesiredItemTypeOfItemDetailScreen: undefined;
   BrandSelectionScreen: undefined;
+  SignUpSuccess: undefined;
+  OTP: undefined;
+  ExchangeDesiredItemBrandSelectionScreen: undefined;
+  ExchangeDesiredItemConditionScreen: undefined;
+
 };
+
 
 const CategoryScreen = () => (
   <SafeAreaView className="flex-1 items-center justify-center bg-[#F6F9F9]">
@@ -145,9 +158,8 @@ function BottomTabs() {
                     className="mb-[2px]"
                   />
                   <Text
-                    className={`text-xs font-bold ${
-                      focused ? "text-[#00B0B9]" : "text-[#738AA0]"
-                    }`}
+                    className={`text-xs font-bold ${focused ? "text-[#00B0B9]" : "text-[#738AA0]"
+                      }`}
                   >
                     {item.label}
                   </Text>
@@ -179,17 +191,24 @@ export default function RootNavigator() {
         <Stack.Screen name="ChatHistory" component={ChatHistoryScreen} />
         <Stack.Screen name="ChatDetails" component={ChatDetailsScreen} />
         <Stack.Screen name="Statistics" component={StatisticsScreen} />
+        <Stack.Screen name="OTP" component={OTPScreen} />
+        <Stack.Screen name="SignUpSuccess" component={SignUpSuccessScreen} />
         <Stack.Screen name="ItemDetail" component={ItemDetailScreen} />
         <Stack.Screen name="TypeOfItemScreen" component={TypeOfItemScreen} />
         <Stack.Screen name="TypeOfItemDetailScreen" component={TypeOfItemDetailScreen} />
         <Stack.Screen name="ItemConditionScreen" component={ItemConditionScreen} />
         <Stack.Screen name="UploadScreen" component={UploadScreen} />
         <Stack.Screen name="MethodOfExchangeScreen" component={MethodOfExchangeScreen} />
-        <Stack.Screen name="ExchangeTypeScreen" component={ExchangeTypeScreen} />
         <Stack.Screen name="ExchangeDesiredItemScreen" component={ExchangeDesiredItemScreen} />
         <Stack.Screen name="ExchangeDesiredItemTypeOfItemScreen" component={ExchangeDesiredItemTypeOfItemScreen} />
         <Stack.Screen name="BrandSelectionScreen" component={BrandSelectionScreen} />
-        <Stack.Screen name="ExchangeDesiredItemTypeOfItemDetailScreen" component={ExchangeDesiredItemTypeOfItemDetailScreen} />
+        <Stack.Screen name="ExchangeDesiredItemBrandSelectionScreen" component={ExchangeDesiredItemBrandSelectionScreen} />
+        <Stack.Screen name="ExchangeDesiredItemConditionScreen" component={ExchangeDesiredItemConditionScreen} />
+
+        
+
+
+
       </Stack.Navigator>
     </NavigationContainer>
   );
