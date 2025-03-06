@@ -3,37 +3,25 @@ import { Text, SafeAreaView, View, Platform } from "react-native";
 import {
   NavigationContainer,
   NavigatorScreenParams,
-  RouteProp,
 } from "@react-navigation/native";
-import {
-  createStackNavigator,
-  StackNavigationProp,
-} from "@react-navigation/stack";
+import { createStackNavigator } from "@react-navigation/stack";
 import Icon from "react-native-vector-icons/Ionicons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import HomeScreen from "../screens/Home";
-import FavoriteScreen from "../screens/Favortie";
 import AccountScreen from "../screens/AccountScreen";
 
 import SignInScreen from "../screens/AuthenScreen/SignIn";
 import SignUpScreen from "../screens/AuthenScreen/SignUp";
 import ProfileDetailScreen from "../screens/AccountScreen/ProfileDetail";
-import ExchangeHistoryScreen from "../screens/AccountScreen/ExchangeHistory";
+import ExchangeHistoryScreen from "../screens/Exchanges/ExchangeHistory";
 import ChatHistoryScreen from "../screens/Chat/ChatHistory";
-import ExchangeDetailScreen from "../screens/AccountScreen/ExchangeDetail";
+import ExchangeDetailScreen from "../screens/Exchanges/ExchangeDetail";
 import ChatDetailsScreen from "../screens/Chat/ChatDetails";
 import StatisticsScreen from "../screens/Statistics";
 import OTPScreen from "../screens/AuthenScreen/OTP";
 import SignUpSuccessScreen from "../screens/AuthenScreen/SignUpSuccess";
 import ItemDetailScreen from "../screens/ItemDetail";
-import UploadScreen from "../screens/UploadScreen";
-import TypeOfItemScreen from "../screens/TypeOfItemScreen";
-import TypeOfItemDetailScreen from "../screens/TypeOfItemDetailScreen";
-import ItemConditionScreen from "../screens/ItemConditionScreen";
-import MethodOfExchangeScreen from "../screens/MethodOfExchangeScreen";
-import ExchangeTypeScreen from "../screens/ExchangeTypeScreen";
-import ExchangeDesiredItemScreen from "../screens/ExchangeDesiredItemScreen";
 import ResetPassword from "../screens/AuthenScreen/ResetPassword";
 import CreateExchange from "../screens/CreateExchange";
 import BrowseItems from "../screens/CreateExchange/BrowseItems";
@@ -47,12 +35,23 @@ import OwnerFeedback from "../screens/Owner/OwnerFeedback";
 import Favorite from "../screens/Favortie";
 import Notifications from "../screens/Notification";
 import FilterMap from "../screens/FilterMap";
+import UploadScreen from "../screens/PostItemScreen/Upload";
+import TypeOfItemScreen from "../screens/PostItemScreen/TypeOfItem";
+import TypeOfItemDetailScreen from "../screens/PostItemScreen/TypeOfItemDetail";
+import ItemConditionScreen from "../screens/PostItemScreen/ItemCondition";
+import MethodOfExchangeScreen from "../screens/PostItemScreen/MethodOfExchange";
+import ExchangeDesiredItemTypeOfItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem/TypeOfItem";
+import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelectionScreen";
+import ExchangeDesiredItemBrandSelectionScreen from "../screens/PostItemScreen/ExchangeDesiredItem/BrandSelectionScreen";
+import ExchangeDesiredItemConditionScreen from "../screens/PostItemScreen/ExchangeDesiredItem/ItemCondition";
+import ItemDetails from "../screens/ItemDetail";
+import ItemManagement from "../screens/ItemManagement";
 
-type ItemType = {
+export type ItemType = {
   id: number;
   name: string;
-  price: string;
-  image: string;
+  price: number;
+  images: string;
   location: string;
   description: string;
   isFavorited: boolean;
@@ -75,18 +74,19 @@ export type RootStackParamList = {
   ChatHistory: undefined;
   ChatDetails: undefined;
   Statistics: undefined;
-  ItemDetail: { item: ItemType };
+  ItemDetails: { itemId: number };
   TypeOfItemScreen: undefined;
   TypeOfItemDetailScreen: undefined;
   ItemConditionScreen: undefined;
   UploadScreen: undefined;
   MethodOfExchangeScreen: undefined;
-  ExchangeTypeScreen: undefined;
   ExchangeDesiredItemScreen: undefined;
+  ExchangeDesiredItemTypeOfItemScreen: undefined;
+  BrandSelectionScreen: undefined;
   SignUpSuccess: undefined;
   OTP: undefined;
   ResetPassword: undefined;
-  CreateExchange: { item: ItemType };
+  CreateExchange: { itemId: number };
   BrowseItems: undefined;
   DifferentItem: undefined;
   ConfirmExchange: undefined;
@@ -98,20 +98,16 @@ export type RootStackParamList = {
   Favorite: undefined;
   Notifications: undefined;
   FilterMap: undefined;
+  ExchangeDesiredItemBrandSelectionScreen: undefined;
+  ExchangeDesiredItemConditionScreen: undefined;
 };
-
-const CategoryScreen = () => (
-  <SafeAreaView className="flex-1 items-center justify-center bg-[#F6F9F9]">
-    <Text className="text-[18px] text-center">This is Category Screen</Text>
-  </SafeAreaView>
-);
 
 const TabArr = [
   { route: "Home", label: "Home", component: HomeScreen, type: "home-outline" },
   {
     route: "Items",
     label: "Items",
-    component: CategoryScreen,
+    component: ItemManagement,
     type: "grid-outline",
   },
   {
@@ -198,16 +194,13 @@ function BottomTabs() {
   );
 }
 
-// Sử dụng kiểu RootStackParamList cho Stack Navigator
 const Stack = createStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* Màn hình chính: Bottom Tab Navigator */}
         <Stack.Screen name="MainTabs" component={BottomTabs} />
-        {/* Các màn hình Stack khác */}
         <Stack.Screen name="SignIn" component={SignInScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="Profile" component={ProfileDetailScreen} />
@@ -215,11 +208,9 @@ export default function RootNavigator() {
         <Stack.Screen name="ChatHistory" component={ChatHistoryScreen} />
         <Stack.Screen name="ChatDetails" component={ChatDetailsScreen} />
         <Stack.Screen name="Statistics" component={StatisticsScreen} />
-
         <Stack.Screen name="OTP" component={OTPScreen} />
         <Stack.Screen name="SignUpSuccess" component={SignUpSuccessScreen} />
-
-        <Stack.Screen name="ItemDetail" component={ItemDetailScreen} />
+        <Stack.Screen name="ItemDetails" component={ItemDetails} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} />
         <Stack.Screen name="CreateExchange" component={CreateExchange} />
         <Stack.Screen name="FeedbackItem" component={FeedbackItem} />
@@ -243,20 +234,28 @@ export default function RootNavigator() {
           name="MethodOfExchangeScreen"
           component={MethodOfExchangeScreen}
         />
-        <Stack.Screen
-          name="ExchangeTypeScreen"
-          component={ExchangeTypeScreen}
-        />
-        <Stack.Screen
-          name="ExchangeDesiredItemScreen"
-          component={ExchangeDesiredItemScreen}
-        />
         <Stack.Screen name="BrowseItems" component={BrowseItems} />
         <Stack.Screen name="DifferentItem" component={DifferentItem} />
         <Stack.Screen name="ConfirmExchange" component={ConfirmExchange} />
         <Stack.Screen
           name="AccpectRejectExchange"
           component={AccpectRejectExchange}
+        />
+        <Stack.Screen
+          name="ExchangeDesiredItemTypeOfItemScreen"
+          component={ExchangeDesiredItemTypeOfItemScreen}
+        />
+        <Stack.Screen
+          name="BrandSelectionScreen"
+          component={BrandSelectionScreen}
+        />
+        <Stack.Screen
+          name="ExchangeDesiredItemBrandSelectionScreen"
+          component={ExchangeDesiredItemBrandSelectionScreen}
+        />
+        <Stack.Screen
+          name="ExchangeDesiredItemConditionScreen"
+          component={ExchangeDesiredItemConditionScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

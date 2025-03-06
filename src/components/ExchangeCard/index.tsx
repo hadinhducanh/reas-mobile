@@ -1,8 +1,9 @@
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React from "react";
-import { View, Text, ImageBackground, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import LoadingButton from "../LoadingButton";
 
 interface ExchangeCardProps {
   status: string;
@@ -104,38 +105,33 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status }) => {
         <Text className="my-2 text-right items-center text-[12px] font-normal text-[#738aa0]">
           Paid by: Sarah Wilson
         </Text>
-        <View className="flex-row justify-end">
+        <View className="flex-row justify-end items-center">
           {status === "Completed" && (
-            <Pressable
-              className="flex-row justify-center items-center py-3 px-5 border-[#00b0b9] border-[1px] rounded-lg mr-2 active:bg-[rgb(0,176,185,0.1)]"
-              onPress={() => navigation.navigate("FeedbackItem")}
-            >
-              <Icon
-                className="mr-1"
-                name="pencil-outline"
-                size={18}
-                color="#00b0b9"
+            <View className="mr-2">
+              <LoadingButton
+                title="Feedback"
+                onPress={() => navigation.navigate("ChatHistory")}
+                buttonClassName="py-4 px-8 bg-white border-2 border-[#00b0b9]"
+                textColor="text-[#00b0b9]"
+                iconColor="#00b0b9"
+                showIcon={true}
+                iconName="pencil-outline"
+                iconSize={18}
               />
-              <Text className="justify-center items-center text-center text-[16px] font-bold text-[#00b0b9]">
-                Feedback
-              </Text>
-            </Pressable>
+            </View>
           )}
 
-          <Pressable
-            className="flex-row justify-center items-center py-3 px-8 bg-[#00b0b9] rounded-lg active:bg-[rgb(0,176,185,0.9)]"
-            onPress={() => navigation.navigate("ChatHistory")}
-          >
-            <Icon
-              className="mr-1"
-              name="chatbox-ellipses-outline"
-              size={18}
-              color="#fff"
+          <View>
+            <LoadingButton
+              title="Chat"
+              onPress={() => navigation.navigate("ChatHistory")}
+              buttonClassName="py-4 px-8 border-2 border-transparent"
+              iconColor="#fff"
+              showIcon={true}
+              iconName="chatbox-ellipses-outline"
+              iconSize={18}
             />
-            <Text className="justify-center items-center text-center text-[16px] font-bold text-white">
-              Chat
-            </Text>
-          </Pressable>
+          </View>
         </View>
       </View>
     </Pressable>

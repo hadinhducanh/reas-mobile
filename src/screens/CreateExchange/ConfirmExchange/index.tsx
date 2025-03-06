@@ -211,6 +211,7 @@ const ConfirmExchange: React.FC = () => {
         <LoadingButton
           title="Confirm exchange"
           onPress={handleConfirmExchange}
+          buttonClassName="p-4"
         />
       </View>
     </>

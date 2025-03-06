@@ -36,9 +36,13 @@ const OrderSuccess: React.FC = () => {
         </Text>
       </View>
       <View className="py-4">
-        <LoadingButton title="Continue" onPress={handleSend} />
         <LoadingButton
-          buttonClassName="mt-3 border-[1px] border-[#00b0b9] bg-white"
+          title="Continue"
+          onPress={handleSend}
+          buttonClassName="py-4"
+        />
+        <LoadingButton
+          buttonClassName="mt-3 border-[1px] border-[#00b0b9] bg-white py-4"
           textColor="text-[#00b0b9]"
           loadingColor="#00b0b9"
           title="View orders"

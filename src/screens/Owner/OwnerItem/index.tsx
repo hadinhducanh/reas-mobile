@@ -4,31 +4,21 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../../components/Header";
 import Icon from "react-native-vector-icons/Ionicons";
 import TabHeader from "../../../components/TabHeader";
-import ItemCard from "../../../components/ItemCard";
+import ItemCard from "../../../components/CardItem";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { ItemType, RootStackParamList } from "../../../navigation/AppNavigator";
 
-interface ExchangeData {
+interface ItemTabData {
   id: number;
   status: string;
   // Các trường khác nếu cần
 }
 
-type ItemType = {
-  id: number;
-  name: string;
-  price: string;
-  image: string;
-  location: string;
-  description: string;
-  isFavorited: boolean;
-};
-
 const OwnerItem: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>("Đang hiển thị");
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const data: ExchangeData[] = [
+  const data: ItemTabData[] = [
     { id: 1, status: "Đang hiển thị" },
     { id: 2, status: "Đang hiển thị" },
     { id: 3, status: "Đang hiển thị" },
@@ -41,8 +31,8 @@ const OwnerItem: React.FC = () => {
     {
       id: 1,
       name: "iPhone 20",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "Vinhome Grand Park",
       description: "Brand new iPhone 20 with latest features.",
       isFavorited: false,
@@ -50,8 +40,8 @@ const OwnerItem: React.FC = () => {
     {
       id: 2,
       name: "Samsung Galaxy S25",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "District 1, HCMC",
       description: "Latest Samsung flagship phone.",
       isFavorited: false,
@@ -59,8 +49,8 @@ const OwnerItem: React.FC = () => {
     {
       id: 3,
       name: "Samsung Galaxy S24",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "District 3, HCMC",
       description: "Latest Samsung flagship phone1.",
       isFavorited: false,

@@ -22,6 +22,7 @@ import {
 import Icon from "react-native-vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
+import LoadingButton from "../../../components/LoadingButton";
 
 type ItemType = {
   id: number;
@@ -48,6 +49,8 @@ const DifferentItem: React.FC = () => {
   const [selectedCondition, setSelectedCondition] = useState<string | null>(
     null
   );
+
+  const handleDone = () => {};
 
   useFocusEffect(
     useCallback(() => {
@@ -339,11 +342,16 @@ const DifferentItem: React.FC = () => {
         </View>
       </ScrollView>
 
-      {/* Nút Done */}
-      <View className="h-24 px-5 bg-white mt-auto rounded-t-xl shadow-xl flex-row items-center">
-        <Pressable className="flex-1 bg-[#00B0B9] p-4 rounded-lg items-center flex-row justify-center active:bg-[rgb(0,176,185,0.9)]">
-          <Text className="text-white font-bold ml-1">Done</Text>
-        </Pressable>
+      <View
+        className={`${
+          Platform.OS === "ios" ? "pt-4 pb-7" : "py-3"
+        } px-5 bg-white mt-auto rounded-t-xl flex-row items-center`}
+      >
+        <LoadingButton
+          buttonClassName="p-3"
+          title="Done"
+          onPress={handleDone}
+        />
       </View>
     </SafeAreaView>
   );

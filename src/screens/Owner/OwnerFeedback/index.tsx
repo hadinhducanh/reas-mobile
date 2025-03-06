@@ -7,7 +7,7 @@ import TabHeader from "../../../components/TabHeader";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 
-interface ExchangeData {
+interface FeedbackTabData {
   id: number;
   status: string;
 }
@@ -16,7 +16,7 @@ const OwnerFeedback: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>("Tất cả");
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const data: ExchangeData[] = [
+  const data: FeedbackTabData[] = [
     { id: 1, status: "Tất cả" },
     { id: 2, status: "Tất cả" },
     { id: 3, status: "Tất cả" },

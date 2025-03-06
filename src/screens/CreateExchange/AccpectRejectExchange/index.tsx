@@ -13,12 +13,12 @@ import Icon from "react-native-vector-icons/Ionicons";
 import Header from "../../../components/Header";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { TextInput } from "react-native-gesture-handler";
+import LoadingButton from "../../../components/LoadingButton";
 
 const AccpectRejectExchange: React.FC = () => {
   const [feedback, setFeedback] = useState("");
 
   const handleSend = async () => {
-    // Test Loading: delay 3 giây
     await new Promise((resolve) => setTimeout(resolve, 3000));
   };
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -327,12 +327,27 @@ const AccpectRejectExchange: React.FC = () => {
           Platform.OS === "ios" ? "pt-4 pb-7" : "py-3"
         } px-5 bg-white mt-auto rounded-t-xl flex-row items-center`}
       >
-        <Pressable className="flex-1 border-[1px] border-[#00B0B9] bg-white p-4 rounded-lg mx-2 items-center flex-row justify-center active:bg-[rgb(0,176,185,0.1)]">
+        <View className="flex-1 mr-2">
+          <LoadingButton
+            title="Reject"
+            onPress={handleSend}
+            buttonClassName="p-4 border-[#00B0B9] border-2 bg-white"
+            textColor="text-[#00B0B9]"
+          />
+        </View>
+        <View className="flex-1">
+          <LoadingButton
+            title="Accept"
+            onPress={handleSend}
+            buttonClassName="p-4 border-2 border-transparent"
+          />
+        </View>
+        {/* <Pressable className="flex-1 border-[1px] border-[#00B0B9] bg-white p-4 rounded-lg mx-2 items-center flex-row justify-center active:bg-[rgb(0,176,185,0.1)]">
           <Text className="text-[#00B0B9] font-bold ml-1">Reject</Text>
-        </Pressable>
-        <Pressable className="flex-1 bg-[#00B0B9] p-4 rounded-lg items-center flex-row justify-center active:bg-[rgb(0,176,185,0.9)]">
+        </Pressable> */}
+        {/* <Pressable className="flex-1 bg-[#00B0B9] p-4 rounded-lg items-center flex-row justify-center active:bg-[rgb(0,176,185,0.9)]">
           <Text className="text-white font-bold ml-1">Accpect</Text>
-        </Pressable>
+        </Pressable> */}
       </View>
     </>
   );

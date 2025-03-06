@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Pressable, Image } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import LoadingButton from "../LoadingButton";
 
 type ItemType = {
   id: number;
@@ -44,7 +45,7 @@ const MatchedList: React.FC<MatchedListProps> = ({
                   key={item.id}
                   className="mb-3 flex-row justify-between w-full items-center bg-white px-5 rounded-lg py-2"
                 >
-                  <View className="flex-row items-center">
+                  <View className="flex-row items-center mr-2">
                     <View className="w-20 h-20 rounded-md overflow-hidden">
                       <Image
                         source={{
@@ -57,21 +58,18 @@ const MatchedList: React.FC<MatchedListProps> = ({
                     <Text
                       className="text-gray-700 text-lg ml-2 w-40 font-medium"
                       numberOfLines={1}
-                      ellipsizeMode="tail"
-                      style={{ flexShrink: 1 }}
                     >
                       {item.name}
                     </Text>
                   </View>
 
-                  <Pressable
-                    className="bg-[#00B0B9] py-3 px-8 rounded-xl active:bg-[rgb(0,176,185,0.5)]"
-                    onPress={() => onSelectItem?.(item)}
-                  >
-                    <Text className="text-base text-white font-medium">
-                      Select
-                    </Text>
-                  </Pressable>
+                  <View>
+                    <LoadingButton
+                      title="Select"
+                      onPress={() => onSelectItem?.(item)}
+                      buttonClassName="py-3 px-8"
+                    />
+                  </View>
                 </View>
               ))
             ) : (

@@ -102,6 +102,7 @@ const SignIn: React.FC = () => {
 
       if (res.accessToken) {
         dispatch(fetchUserInfoThunk());
+        console.log("Access Token:", res.accessToken);
         navigation.navigate("MainTabs", { screen: "Account" });
       }
     } catch (err: any) {
@@ -221,9 +222,9 @@ const SignIn: React.FC = () => {
                 title="Sign in"
                 onPress={handleSignIn}
                 loading={loading}
+                buttonClassName="py-4"
               />
 
-              {/* Sign Up Link */}
               <Pressable onPress={handleNavigateToSignUp}>
                 <Text className="text-sm mt-3 text-[#738aa0]">
                   Don’t have an account?{" "}

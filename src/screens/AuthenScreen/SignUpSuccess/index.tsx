@@ -34,7 +34,11 @@ const SignUpSuccess: React.FC = () => {
       </View>
 
       <View className="w-[90%] mt-[20px]">
-        <LoadingButton title="Get started" onPress={handleSend} />
+        <LoadingButton
+          title="Get started"
+          onPress={handleSend}
+          buttonClassName="py-4"
+        />
       </View>
     </SafeAreaView>
   );

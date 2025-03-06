@@ -17,39 +17,19 @@ import {
 } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../components/Header";
-import ItemCard from "../../components/ItemCard";
-import { RootStackParamList } from "../../navigation/AppNavigator";
-
-type ItemType = {
-  id: number;
-  name: string;
-  price: string;
-  image: string;
-  location: string;
-  description: string;
-  isFavorited: boolean;
-};
+import { ItemType, RootStackParamList } from "../../navigation/AppNavigator";
+import HorizontalSection from "../../components/HorizontalSection";
+import LoadingButton from "../../components/LoadingButton";
 
 const { width } = Dimensions.get("window");
 
-const ItemDetailScreen: React.FC = () => {
-  const route = useRoute<RouteProp<RootStackParamList, "ItemDetail">>();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { item } = route.params;
-  const [isFavorite, setIsFavorite] = useState(item.isFavorited);
-
-  const imageArray = item.image ? item.image.split(",") : [];
-
-  const setFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
-
+const ItemDetails: React.FC = () => {
   const [itemList, setItemList] = useState<ItemType[]>([
     {
       id: 1,
       name: "iPhone 20",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "Vinhome Grand Park",
       description: "Brand new iPhone 20 with latest features.",
       isFavorited: false,
@@ -57,8 +37,8 @@ const ItemDetailScreen: React.FC = () => {
     {
       id: 2,
       name: "Samsung Galaxy S25",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "District 1, HCMC",
       description: "Latest Samsung flagship phone.",
       isFavorited: false,
@@ -66,13 +46,63 @@ const ItemDetailScreen: React.FC = () => {
     {
       id: 3,
       name: "Samsung Galaxy S24",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "District 3, HCMC",
       description: "Latest Samsung flagship phone1.",
       isFavorited: false,
     },
   ]);
+
+  const otherItems: ItemType[] = [
+    {
+      id: 4,
+      name: "MacBook Pro M3",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
+      location: "Hà Nội",
+      description: "Brand new iPhone 20 with latest features.",
+      isFavorited: false,
+    },
+    {
+      id: 5,
+      name: "AirPods Pro 2",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
+      location: "Hồ Chí Minh",
+      description: "Brand new iPhone 20 with latest features.",
+      isFavorited: false,
+    },
+    {
+      id: 6,
+      name: "iPad Air 5",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
+      location: "Đà Nẵng",
+      description: "Brand new iPhone 20 with latest features.",
+      isFavorited: false,
+    },
+  ];
+
+  const data = [
+    { label: "Tình trạng", value: "Đã sử dụng" },
+    { label: "Thiết bị", value: "Máy giặt" },
+    { label: "Hãng", value: "Samsung" },
+    { label: "Phương thức trao đổi", value: "Tự đến lấy" },
+    { label: "Loại giao dịch", value: "Giao dịch mở" },
+  ];
+
+  const route = useRoute<RouteProp<RootStackParamList, "ItemDetails">>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { itemId } = route.params;
+  const item = itemList.find((item) => item.id === itemId);
+  const [isFavorite, setIsFavorite] = useState(item?.isFavorited);
+
+  const imageArray = item?.images ? item.images.split(",") : [];
+
+  const setFavorite = () => {
+    setIsFavorite(!isFavorite);
+  };
 
   const toggleLike = (itemId: number) => {
     setItemList((prevList) =>
@@ -82,33 +112,13 @@ const ItemDetailScreen: React.FC = () => {
     );
   };
 
-  const renderHorizontalSection = (title: string, data: ItemType[]) => (
-    <View className="p-5">
-      <View className="flex-row justify-between items-center">
-        <Text className="font-semibold text-xl">{title}</Text>
-        <Text className="font-bold underline text-lg text-[#00B0B9]">
-          Tất cả
-        </Text>
-      </View>
-      <View className="py-1">
-        <FlatList
-          data={data}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View className="mr-2 w-48 h-100">
-              <ItemCard
-                item={item}
-                navigation={navigation}
-                toggleLike={toggleLike}
-              />
-            </View>
-          )}
-        />
-      </View>
-    </View>
-  );
+  const formatPrice = (price: number | undefined): string => {
+    return price !== undefined ? price.toLocaleString("vi-VN") : "0";
+  };
+
+  const handleSend = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  };
 
   const renderContent = () => (
     <View>
@@ -140,9 +150,9 @@ const ItemDetailScreen: React.FC = () => {
       />
 
       <View className="p-5 bg-white">
-        <Text className="text-2xl font-bold text-gray-900">{item.name}</Text>
+        <Text className="text-2xl font-bold text-gray-900">{item?.name}</Text>
         <Text className="text-2xl font-semibold text-[#00B0B9] mt-1">
-          {item.price} VND
+          {formatPrice(item?.price)} VND
         </Text>
         <Text
           className="text-gray-500 font-bold text-base mt-1"
@@ -155,7 +165,7 @@ const ItemDetailScreen: React.FC = () => {
           <View className="flex flex-row items-center">
             <Icon name="location-outline" size={25} color="black" />
             <Text className="ml-1 text-gray-500 text-lg">
-              {item.location}, HCM
+              {item?.location}, HCM
             </Text>
           </View>
           <View className="flex flex-row items-center mt-2">
@@ -235,61 +245,18 @@ const ItemDetailScreen: React.FC = () => {
         {/* Thông tin chi tiết */}
         <Text className="text-xl font-bold mt-4 mb-3">Thông tin chi tiết</Text>
         <View className="border border-gray-300 rounded-md overflow-hidden">
-          {/* Hàng 1 */}
-          <View className="flex-row border-b border-gray-300">
-            <View className="w-[40%] px-2 py-4 bg-gray-200">
-              <Text className="text-base font-semibold text-gray-500">
-                Tình trạng
-              </Text>
+          {data.map((info, index) => (
+            <View key={index} className="flex-row border-b border-gray-300">
+              <View className="w-[40%] px-2 py-4 bg-gray-200">
+                <Text className="text-base font-semibold text-gray-500">
+                  {info.label}
+                </Text>
+              </View>
+              <View className="px-2 py-4">
+                <Text className="text-base">{info.value}</Text>
+              </View>
             </View>
-            <View className="px-2 py-4">
-              <Text className="text-base">Đã sử dụng</Text>
-            </View>
-          </View>
-          {/* Hàng 2 */}
-          <View className="flex-row border-b border-gray-300">
-            <View className="w-[40%] px-2 py-4 bg-gray-200">
-              <Text className="text-base font-semibold text-gray-500">
-                Thiết bị
-              </Text>
-            </View>
-            <View className="flex-1 px-2 py-4">
-              <Text className="text-base">Máy giặt</Text>
-            </View>
-          </View>
-          {/* Hàng 3 */}
-          <View className="flex-row border-b border-gray-300">
-            <View className="w-[40%] px-2 py-4 bg-gray-200">
-              <Text className="text-base font-semibold text-gray-500">
-                Hãng
-              </Text>
-            </View>
-            <View className="flex-1 px-2 py-4">
-              <Text className="text-base">Samsung</Text>
-            </View>
-          </View>
-          {/* Hàng 4 */}
-          <View className="flex-row border-b border-gray-300">
-            <View className="w-[40%] px-2 py-4 bg-gray-200">
-              <Text className="text-base font-semibold text-gray-500">
-                Phương thức trao đổi
-              </Text>
-            </View>
-            <View className="flex-1 px-2 py-4">
-              <Text className="text-base">Bằng tiền</Text>
-            </View>
-          </View>
-          {/* Hàng 5 */}
-          <View className="flex-row">
-            <View className="w-[40%] px-2 py-4 bg-gray-200">
-              <Text className="text-base font-semibold text-gray-500">
-                Loại giao dịch
-              </Text>
-            </View>
-            <View className="flex-1 px-2 py-4">
-              <Text className="text-base">Gặp mặt trực tiếp</Text>
-            </View>
-          </View>
+          ))}
         </View>
 
         {/* Điều khoản và điều kiện */}
@@ -303,9 +270,19 @@ const ItemDetailScreen: React.FC = () => {
         </View>
       </View>
 
-      {renderHorizontalSection("Bài đăng khác của Ngọc Cường", itemList)}
+      <HorizontalSection
+        title="Bài đăng khác của Ngọc Cường"
+        data={otherItems}
+        toggleLike={toggleLike}
+        navigation={navigation}
+      />
 
-      {renderHorizontalSection("Bài đăng tương tự", itemList)}
+      <HorizontalSection
+        title="Bài đăng tương tự"
+        data={otherItems}
+        toggleLike={toggleLike}
+        navigation={navigation}
+      />
     </View>
   );
 
@@ -327,24 +304,45 @@ const ItemDetailScreen: React.FC = () => {
           Platform.OS === "ios" ? "pt-4 pb-7" : "py-5"
         } px-5 bg-white rounded-t-xl flex-row items-center`}
       >
-        <Pressable className="flex-1 border-[1px] border-[#00B0B9] bg-white p-3 rounded-lg items-center flex-row justify-center active:bg-[rgb(0,176,185,0.1)]">
-          <Icon name="call-outline" size={25} color="#00B0B9" />
-          <Text className="text-[#00B0B9] font-bold ml-1">Call</Text>
-        </Pressable>
-        <Pressable className="flex-1 border-[1px] border-[#00B0B9] bg-white p-3 rounded-lg mx-2 items-center flex-row justify-center active:bg-[rgb(0,176,185,0.1)]">
-          <Icon name="chatbubble-outline" size={25} color="#00B0B9" />
-          <Text className="text-[#00B0B9] font-bold ml-1">SMS</Text>
-        </Pressable>
-        <Pressable
-          className="flex-1 bg-[#00B0B9] p-3 rounded-lg items-center flex-row justify-center active:bg-[rgb(0,176,185,0.9)]"
-          onPress={() => navigation.navigate("CreateExchange", { item })}
-        >
-          <Icon name="swap-horizontal" size={25} color="white" />
-          <Text className="text-white font-bold ml-1">Exchange</Text>
-        </Pressable>
+        <View className="flex-1">
+          <LoadingButton
+            title="Call"
+            onPress={handleSend}
+            buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
+            iconName="call-outline"
+            iconSize={25}
+            iconColor="#00B0B9"
+            showIcon={true}
+            textColor="text-[#00B0B9]"
+          />
+        </View>
+        <View className="flex-1 mx-2">
+          <LoadingButton
+            title="SMS"
+            onPress={handleSend}
+            buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
+            iconName="chatbubble-outline"
+            iconSize={25}
+            iconColor="#00B0B9"
+            showIcon={true}
+            textColor="text-[#00B0B9]"
+          />
+        </View>
+        <View className="flex-1">
+          <LoadingButton
+            title="Exchange"
+            onPress={() => navigation.navigate("CreateExchange", { itemId })}
+            buttonClassName="p-3 border-transparent border-2 bg-[#00B0B9]"
+            iconName="swap-horizontal"
+            iconSize={25}
+            iconColor="white"
+            showIcon={true}
+            textColor="text-white"
+          />
+        </View>
       </View>
     </>
   );
 };
 
-export default ItemDetailScreen;
+export default ItemDetails;

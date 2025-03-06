@@ -59,7 +59,11 @@ const FeedbackItem: React.FC = () => {
           />
           {/* Button */}
           <View className="w-[90%] mt-[20px]">
-            <LoadingButton title="Send review" onPress={handleSend} />
+            <LoadingButton
+              title="Send review"
+              onPress={handleSend}
+              buttonClassName="py-4"
+            />
           </View>
         </View>
       </View>

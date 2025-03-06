@@ -82,7 +82,11 @@ const FilterMap: React.FC = () => {
           thumbTintColor="#00B0B9"
         />
 
-        <LoadingButton title="Apply" onPress={handleLocation} />
+        <LoadingButton
+          title="Apply"
+          onPress={handleLocation}
+          buttonClassName="py-4"
+        />
       </View>
     </SafeAreaView>
   );

@@ -5,7 +5,7 @@ import { RootStackParamList } from "../../../navigation/AppNavigator";
 import Header from "../../../components/Header";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import ItemCard from "../../../components/ItemCard";
+import ItemCard from "../../../components/CardItem";
 
 type ItemType = {
   id: number;

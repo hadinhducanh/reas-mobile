@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Pressable, Text, ActivityIndicator } from "react-native";
+import { Pressable, Text, ActivityIndicator, View } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
 
 type ButtonProps = {
   title: string;
@@ -8,6 +9,10 @@ type ButtonProps = {
   loadingColor?: string;
   buttonClassName?: string;
   textColor?: string;
+  iconName?: string;
+  iconSize?: number;
+  iconColor?: string;
+  showIcon?: boolean;
 };
 
 const LoadingButton: React.FC<ButtonProps> = ({
@@ -17,6 +22,10 @@ const LoadingButton: React.FC<ButtonProps> = ({
   loadingColor,
   buttonClassName = "",
   textColor = "",
+  iconName = "",
+  iconSize = 0,
+  iconColor = "",
+  showIcon = false,
 }) => {
   const baseBackgroundColor = "#00b0b9";
   const baseTextColor = textColor || "text-white";
@@ -26,13 +35,26 @@ const LoadingButton: React.FC<ButtonProps> = ({
     <Pressable
       onPress={onPress}
       disabled={loading}
-      className={`w-full py-4 rounded-lg flex justify-center items-center bg-[${baseBackgroundColor}] ${buttonClassName} active:bg-[rgb(0,176,185,0.5)]
+      className={`w-full rounded-lg justify-center items-center bg-[${baseBackgroundColor}] ${buttonClassName} active:bg-[rgb(0,176,185,0.5)]
       `}
     >
       {loading ? (
         <ActivityIndicator size="small" color={indicatorColor} />
       ) : (
-        <Text className={`text-base font-bold ${baseTextColor}`}>{title}</Text>
+        <View className="flex-row items-center">
+          {showIcon && (
+            <Icon
+              className="mr-1"
+              name={iconName}
+              size={iconSize}
+              color={iconColor}
+            />
+          )}
+
+          <Text className={`text-base font-bold ${baseTextColor}`}>
+            {title}
+          </Text>
+        </View>
       )}
     </Pressable>
   );

@@ -35,9 +35,9 @@ type ItemType = {
 const CreateExchange: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "CreateExchange">>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { item } = route.params;
+  const { itemId } = route.params;
 
-  const [itemList, setItemList] = useState<ItemType[]>([
+  const [itemList] = useState<ItemType[]>([
     {
       id: 1,
       name: "iPhone 20",
@@ -49,7 +49,7 @@ const CreateExchange: React.FC = () => {
     },
     {
       id: 2,
-      name: "iPhone 202",
+      name: "iPhone 22",
       price: "150.000",
       image: "https://via.placeholder.com/150",
       location: "Vinhome Grand Park",
@@ -57,6 +57,8 @@ const CreateExchange: React.FC = () => {
       isFavorited: false,
     },
   ]);
+  const item = itemList.find((item) => item.id === itemId);
+
   const [selectedItem, setSelectedItem] = useState<ItemType | null>(null);
 
   const handleSelectItem = (item: ItemType) => {
@@ -107,13 +109,13 @@ const CreateExchange: React.FC = () => {
               {/* Thông tin sản phẩm */}
               <View className="ml-3 flex-1">
                 <Text className="text-lg font-bold text-gray-900">
-                  {item.name}
+                  {item?.name}
                 </Text>
                 <Text className="text-gray-500 text-base my-1">
                   Listed by Đức Sơn
                 </Text>
                 <Text className="text-[#00B0B9] text-xl font-semibold">
-                  {item.price}VND
+                  {item?.price}VND
                 </Text>
               </View>
             </View>
@@ -151,10 +153,10 @@ const CreateExchange: React.FC = () => {
               </Text>
               {selectedItem ? (
                 <View
-                  key={item.id}
+                  key={item?.id}
                   className="mb-3 flex-row justify-between w-full items-center bg-white px-5 rounded-lg py-2"
                 >
-                  <View className="flex-row items-center">
+                  <View className="flex-row items-center mr-2">
                     <View className="w-20 h-20 rounded-md overflow-hidden">
                       <Image
                         source={{
@@ -174,14 +176,22 @@ const CreateExchange: React.FC = () => {
                     </Text>
                   </View>
 
-                  <Pressable
+                  <View>
+                    {/* <Pressable
                     className="bg-white border-[1px] border-[#00B0B9] py-3 px-8 rounded-xl active:bg-[rgb(0,176,185,0.1)]"
                     onPress={handleRemoveItem}
                   >
                     <Text className="text-base text-[#00B0B9] font-medium">
                       Remove
                     </Text>
-                  </Pressable>
+                  </Pressable> */}
+                    <LoadingButton
+                      title="Remove"
+                      onPress={handleRemoveItem}
+                      buttonClassName="border-2 border-[#00B0B9] py-3 px-5 bg-white"
+                      textColor="text-[#00B0B9]"
+                    />
+                  </View>
                 </View>
               ) : (
                 <View className="py-10">
@@ -258,6 +268,7 @@ const CreateExchange: React.FC = () => {
         } px-5 bg-white mt-auto rounded-t-xl flex-row items-center`}
       >
         <LoadingButton
+          buttonClassName="p-3"
           title="Propose exchange"
           onPress={handleProposeExchange}
         />
@@ -285,22 +296,21 @@ const CreateExchange: React.FC = () => {
 
               {/* Nút Cancel & Continue */}
               <View className="flex-row justify-between mt-2 mx-3">
-                <Pressable
-                  onPress={handleCancel}
-                  className="px-4 py-4 bg-white rounded-xl flex-1 items-center border-[1px] border-[#00B0B9] active:bg-[rgb(0,176,185,0.1)] mr-5"
-                >
-                  <Text className="text-[#00B0B9] text-lg font-semibold">
-                    Cancel
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={handleContinue}
-                  className="px-4 py-4 bg-[#00B0B9] rounded-xl flex-1 items-center active:bg-[rgb(0,176,185,0.9)] "
-                >
-                  <Text className="text-white text-lg font-semibold">
-                    Continue
-                  </Text>
-                </Pressable>
+                <View className="flex-1 mr-2">
+                  <LoadingButton
+                    title="Cancel"
+                    onPress={handleCancel}
+                    buttonClassName="p-4 bg-white border-2 border-[#00B0B9]"
+                    textColor="text-[#00B0B9]"
+                  />
+                </View>
+                <View className="flex-1">
+                  <LoadingButton
+                    title="Continue"
+                    onPress={handleContinue}
+                    buttonClassName="p-4 border-2 border-transparent"
+                  />
+                </View>
               </View>
             </View>
           </View>

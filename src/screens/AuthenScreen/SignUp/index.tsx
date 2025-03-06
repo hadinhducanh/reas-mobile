@@ -265,6 +265,7 @@ const SignUp: React.FC = () => {
                 title="Sign up"
                 onPress={handleSignUp}
                 loading={loading}
+                buttonClassName="py-4"
               />
               {/* Sign In Link */}
               <Pressable onPress={handleNavigateToSignIn}>

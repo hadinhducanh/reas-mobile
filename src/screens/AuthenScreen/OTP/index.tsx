@@ -90,7 +90,12 @@ const OTP: React.FC = () => {
           ))}
         </View>
 
-        <LoadingButton title="Verify" onPress={verifyOTP} loading={loading} />
+        <LoadingButton
+          title="Verify"
+          onPress={verifyOTP}
+          loading={loading}
+          buttonClassName="py-4"
+        />
 
         <Pressable onPress={resendOTP}>
           <Text className="text-[16px] text-[#738aa0] mt-3">

@@ -96,7 +96,11 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
 
       {/* Nút Apply */}
       <View className="mt-5">
-        <LoadingButton title="Apply" onPress={handleApply} />
+        <LoadingButton
+          title="Apply"
+          onPress={handleApply}
+          buttonClassName="py-4"
+        />
       </View>
     </View>
   );

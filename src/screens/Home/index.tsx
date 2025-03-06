@@ -5,34 +5,22 @@ import {
   TextInput,
   Image,
   Text,
-  TouchableOpacity,
   Pressable,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../navigation/AppNavigator";
+import { ItemType, RootStackParamList } from "../../navigation/AppNavigator";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ItemCard from "../../components/ItemCard";
+import ItemCard from "../../components/CardItem";
 
-type ItemType = {
-  id: number;
-  name: string;
-  price: string;
-  image: string;
-  location: string;
-  description: string;
-  isFavorited: boolean;
-};
-
-// Định nghĩa kiểu cho navigation
 type HomeScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
-  "ItemDetail"
+  "ItemDetails"
 >;
 
 const HomeScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<HomeScreenNavigationProp>();
 
   const categories = [
     { id: 1, name: "Kitchen" },
@@ -49,8 +37,8 @@ const HomeScreen: React.FC = () => {
     {
       id: 1,
       name: "iPhone 20",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "Vinhome Grand Park",
       description: "Brand new iPhone 20 with latest features.",
       isFavorited: false,
@@ -58,8 +46,8 @@ const HomeScreen: React.FC = () => {
     {
       id: 2,
       name: "Samsung Galaxy S25",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "District 1, HCMC",
       description: "Latest Samsung flagship phone.",
       isFavorited: false,
@@ -67,8 +55,8 @@ const HomeScreen: React.FC = () => {
     {
       id: 3,
       name: "Samsung Galaxy S24",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "District 3, HCMC",
       description: "Latest Samsung flagship phone1.",
       isFavorited: false,
@@ -91,7 +79,6 @@ const HomeScreen: React.FC = () => {
     );
   };
 
-  // Chia itemList thành các hàng, mỗi hàng có 2 item
   const rows = chunkArray(itemList, 2);
 
   return (

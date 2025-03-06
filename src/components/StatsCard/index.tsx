@@ -3,10 +3,10 @@ import React from "react";
 import { View, Text } from "react-native";
 
 interface StatsCardProps {
-  value: string; // ví dụ: "10"
-  label: string; // ví dụ: "Orders"
-  percentage: string; // ví dụ: "+2.5%"
-  isPositive?: boolean; // true nếu tăng, false nếu giảm
+  value: string;
+  label: string;
+  percentage: string;
+  isPositive?: boolean;
 }
 
 export const StatsCard: React.FC<StatsCardProps> = ({

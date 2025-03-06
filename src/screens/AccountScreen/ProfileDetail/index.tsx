@@ -189,6 +189,7 @@ const ProfileDetail: React.FC = () => {
           <LoadingButton
             title={isEditing ? "Save change" : "Edit profile"}
             onPress={handleEditSave}
+            buttonClassName="py-4"
           />
         </View>
       </View>

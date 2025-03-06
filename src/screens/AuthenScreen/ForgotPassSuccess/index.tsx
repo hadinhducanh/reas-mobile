@@ -33,7 +33,11 @@ const ForgotPassSuccess: React.FC = () => {
       </View>
 
       <View className="w-[90%] mt-[20px]">
-        <LoadingButton title="Done" onPress={handleSend} />
+        <LoadingButton
+          title="Done"
+          onPress={handleSend}
+          buttonClassName="py-4"
+        />
       </View>
     </SafeAreaView>
   );

@@ -150,6 +150,7 @@ const ResetPassword: React.FC = () => {
           title="Change Password"
           onPress={handleChangePassword}
           loading={loading}
+          buttonClassName="py-4"
         />
       </View>
     </SafeAreaView>

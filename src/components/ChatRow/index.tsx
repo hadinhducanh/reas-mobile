@@ -1,6 +1,7 @@
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React from "react";
 import { View, Text, Pressable } from "react-native";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 
 interface ChatRowProps {
   name: string;
@@ -9,7 +10,7 @@ interface ChatRowProps {
 }
 
 const ChatRow: React.FC<ChatRowProps> = ({ name, time, message }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
     <Pressable

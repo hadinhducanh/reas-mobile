@@ -36,9 +36,13 @@ const OrderFailed: React.FC = () => {
         </Text>
       </View>
       <View className="py-4">
-        <LoadingButton title="Try again" onPress={handleSend} />
         <LoadingButton
-          buttonClassName="mt-3 border-[1px] border-[#00b0b9] bg-white"
+          title="Try again"
+          onPress={handleSend}
+          buttonClassName="py-4"
+        />
+        <LoadingButton
+          buttonClassName="mt-3 border-[1px] border-[#00b0b9] bg-white py-4"
           textColor="text-[#00b0b9]"
           loadingColor="#00b0b9"
           title="Go back to the order"

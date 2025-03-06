@@ -9,6 +9,7 @@ import { logoutUserThunk } from "../../redux/thunk/authThunks";
 import { logout } from "../../redux/slices/authSlice";
 import Header from "../../components/Header";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import LoadingButton from "../../components/LoadingButton";
 
 type AccountListItemProps = {
   iconName: string;
@@ -116,22 +117,21 @@ const Account: React.FC = () => {
             <Icon name="person-circle-outline" size={85} color="gray" />
 
             <View className="flex-row w-[60%]">
-              <Pressable
-                className="flex-1 bg-white py-3 rounded-lg border-[1px] border-[#00B0B9] active:bg-gray-200"
-                onPress={navigateToSignIn}
-              >
-                <Text className="text-center text-[#00B0B9] font-bold">
-                  Sign In
-                </Text>
-              </Pressable>
-              <Pressable
-                className="flex-1 bg-[#00B0B9] py-3 ml-2 rounded-lg active:bg-[#00b0b9e0]"
-                onPress={navigateToSignUp}
-              >
-                <Text className="text-center text-white font-bold">
-                  Sign Up
-                </Text>
-              </Pressable>
+              <View className="flex-1 mr-2">
+                <LoadingButton
+                  title="Sign in"
+                  onPress={navigateToSignIn}
+                  buttonClassName="border-2 border-[#00B0B9] py-3 bg-white"
+                  textColor="text-[#00B0B9]"
+                />
+              </View>
+              <View className="flex-1">
+                <LoadingButton
+                  title="Sign up"
+                  onPress={navigateToSignUp}
+                  buttonClassName="py-3 border-2 border-transparent"
+                />
+              </View>
             </View>
           </View>
         )}
