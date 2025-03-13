@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, Pressable, Modal } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 
 interface HeaderProps {
   title?: string;
@@ -28,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({
   optionIconColor = "#0b1d2d",
   owner = true,
 }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
   const handleBackPress = () => {
@@ -78,7 +79,11 @@ const Header: React.FC<HeaderProps> = ({
               onPress={() => {}}
             >
               <Icon name="warning-outline" size={24} color="black" />
-              <Text className="ml-2 text-base">Báo cáo tin đăng này</Text>
+              {owner ? (
+                <Text className="ml-2 text-base">Báo cáo tin đăng này</Text>
+              ) : (
+                <Text className="ml-2 text-base">Báo cáo người dùng này</Text>
+              )}
             </Pressable>
             {owner && (
               <Pressable

@@ -14,6 +14,7 @@ import Header from "../../../components/Header";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { TextInput } from "react-native-gesture-handler";
 import LoadingButton from "../../../components/LoadingButton";
+import NegotiateModal from "../../../components/NegotiateModal";
 
 const AccpectRejectExchange: React.FC = () => {
   const [feedback, setFeedback] = useState("");
@@ -258,70 +259,13 @@ const AccpectRejectExchange: React.FC = () => {
           )}
         </ScrollView>
       </SafeAreaView>
-      <Modal
-        transparent={true}
+
+      <NegotiateModal
         visible={modalVisible}
-        animationType="fade"
-        onRequestClose={handleCancel}
-      >
-        <Pressable
-          className="flex-1 bg-[rgba(0,0,0,0.2)]"
-          onPress={handleCancel}
-        >
-          <View className="absolute inset-0 flex justify-center items-center">
-            <View className="w-[85%] bg-white rounded-lg p-5">
-              <Text className="text-center text-xl font-bold text-[#00B0B9]">
-                Negotiated Price
-              </Text>
-              <Text className="text-center text-sm text-gray-500 mt-1">
-                Please input a negotiated price
-              </Text>
+        onCancel={handleCancel}
+        onSet={handleSet}
+      />
 
-              <View className="flex-row justify-between items-center mt-4 mb-2">
-                <View>
-                  <Text className="text-base font-medium text-gray-800">
-                    Estimated difference
-                  </Text>
-                  <Text className="text-lg font-bold text-[#00B0B9]">
-                    350.000 VND
-                  </Text>
-                </View>
-                <Icon name="cash-outline" size={40} color="#00B0B9" />
-              </View>
-
-              <View className="border border-[#00B0B9] rounded-md px-3 py-2">
-                <Text className="text-[#00B0B9] font-bold">
-                  Negotiated price
-                </Text>
-                <View className="flex-row items-center justify-between">
-                  <TextInput
-                    placeholder="0"
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                    className="flex-1 text-base text-gray-700 font-semibold"
-                  />
-                  <Text className="text-gray-500 ml-1 font-semibold">đ</Text>
-                </View>
-              </View>
-
-              <View className="flex-row mt-5">
-                <Pressable
-                  onPress={handleCancel}
-                  className="flex-1 border border-[#00B0B9] rounded-md py-3 mr-2 items-center"
-                >
-                  <Text className="text-[#00B0B9] font-bold">Cancel</Text>
-                </Pressable>
-                <Pressable
-                  onPress={handleSet}
-                  className="flex-1 bg-[#00B0B9] rounded-md py-3 ml-2 items-center"
-                >
-                  <Text className="text-white font-bold">Set</Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
-        </Pressable>
-      </Modal>
       <View
         className={`${
           Platform.OS === "ios" ? "pt-4 pb-7" : "py-3"
@@ -342,12 +286,6 @@ const AccpectRejectExchange: React.FC = () => {
             buttonClassName="p-4 border-2 border-transparent"
           />
         </View>
-        {/* <Pressable className="flex-1 border-[1px] border-[#00B0B9] bg-white p-4 rounded-lg mx-2 items-center flex-row justify-center active:bg-[rgb(0,176,185,0.1)]">
-          <Text className="text-[#00B0B9] font-bold ml-1">Reject</Text>
-        </Pressable> */}
-        {/* <Pressable className="flex-1 bg-[#00B0B9] p-4 rounded-lg items-center flex-row justify-center active:bg-[rgb(0,176,185,0.9)]">
-          <Text className="text-white font-bold ml-1">Accpect</Text>
-        </Pressable> */}
       </View>
     </>
   );

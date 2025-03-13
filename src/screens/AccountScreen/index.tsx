@@ -1,5 +1,5 @@
-import React, { useCallback, memo } from "react";
-import { View, Text, Pressable } from "react-native";
+import React, { useCallback, memo, useState } from "react";
+import { View, Text, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,6 +10,8 @@ import { logout } from "../../redux/slices/authSlice";
 import Header from "../../components/Header";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import LoadingButton from "../../components/LoadingButton";
+import LanguageSwitchModal from "../LanguageSwitch";
+import { useTranslation } from "react-i18next";
 
 type AccountListItemProps = {
   iconName: string;
@@ -39,9 +41,12 @@ const AccountListItem: React.FC<AccountListItemProps> = memo(
 );
 
 const Account: React.FC = () => {
+  const { t } = useTranslation();
+
   const { user, accessToken } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [languageSwitchVisible, setLanguageSwitchVisible] = useState(false);
 
   const isLoggedIn = !!user;
 
@@ -68,12 +73,16 @@ const Account: React.FC = () => {
     () => navigation.navigate("Statistics"),
     [navigation]
   );
-  const navigateToLanguage = useCallback(
-    () => navigation.navigate("ChatHistory"),
-    [navigation]
-  );
   const navigateToFavorite = useCallback(
     () => navigation.navigate("Favorite"),
+    [navigation]
+  );
+  const navigateToPremium = useCallback(
+    () => navigation.navigate("Premium"),
+    [navigation]
+  );
+  const navigateToAbout = useCallback(
+    () => navigation.navigate("About"),
     [navigation]
   );
   const navigateToSignIn = useCallback(
@@ -85,9 +94,16 @@ const Account: React.FC = () => {
     [navigation]
   );
 
+  const handleCancel = () => {
+    setLanguageSwitchVisible(false);
+  };
+
   return (
     <SafeAreaView className="bg-[#00B0B9] flex-1" edges={["top"]}>
-      <View className="flex-1 bg-white">
+      <ScrollView
+        className="flex-1 bg-white"
+        showsVerticalScrollIndicator={false}
+      >
         <Header
           title="Account"
           backgroundColor="bg-[#00B0B9]"
@@ -139,7 +155,7 @@ const Account: React.FC = () => {
         <View className="h-full">
           <AccountListItem
             iconName="person-outline"
-            label="Personal information"
+            label={t("Personal information")}
             onPress={navigateToProfile}
           />
           <AccountListItem
@@ -155,7 +171,7 @@ const Account: React.FC = () => {
           <AccountListItem
             iconName="globe-outline"
             label="Language"
-            // onPress={navigateToLanguage}
+            onPress={() => setLanguageSwitchVisible(!languageSwitchVisible)}
           />
           <AccountListItem
             iconName="heart-outline"
@@ -163,17 +179,29 @@ const Account: React.FC = () => {
             onPress={navigateToFavorite}
           />
           <AccountListItem
-            iconName="information-circle-outline"
-            label="About"
+            iconName="wallet-outline"
+            label="Premium"
+            onPress={navigateToPremium}
           />
           <AccountListItem
-            iconName="log-out-outline"
-            label="Sign Out"
-            onPress={handleLogout}
-            iconColor="#F44336"
+            iconName="information-circle-outline"
+            label="About"
+            onPress={navigateToAbout}
           />
+          {!isLoggedIn && (
+            <AccountListItem
+              iconName="log-out-outline"
+              label="Sign Out"
+              onPress={handleLogout}
+              iconColor="#F44336"
+            />
+          )}
         </View>
-      </View>
+      </ScrollView>
+      <LanguageSwitchModal
+        visible={languageSwitchVisible}
+        onCancel={handleCancel}
+      />
     </SafeAreaView>
   );
 };

@@ -4,6 +4,10 @@
     "settings": "Settings",
     "welcome": "Welcome to My App",
     "language": "Language",
-    "favorite": "Favorite"
+    "favorite": "Favorite",
+    "Personal information": "Personal information",
+    "Select Language": "Select Language",
+    "Please choose your language": "Please choose your language",
+    "Confirm": "Confirm"
   }
   

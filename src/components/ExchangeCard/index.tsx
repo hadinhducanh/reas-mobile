@@ -4,6 +4,7 @@ import { View, Text, Pressable } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import LoadingButton from "../LoadingButton";
+import { string } from "zod";
 
 interface ExchangeCardProps {
   status: string;
@@ -17,7 +18,7 @@ const statusStyles: Record<
     textColor: "text-[#00b0b9]",
     backgroundColor: "bg-[rgba(0,176,185,0.2)]",
   },
-  Agreed: {
+  Approved: {
     textColor: "text-[#FFA43D]",
     backgroundColor: "bg-[rgba(255,164,61,0.4)]",
   },
@@ -42,7 +43,7 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status }) => {
     if (status === "Pending") {
       navigation.navigate("AccpectRejectExchange");
     } else {
-      navigation.navigate("ExchangeDetail");
+      navigation.navigate("ExchangeDetail", { statusDetail: status });
     }
   };
 

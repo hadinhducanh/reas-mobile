@@ -35,7 +35,7 @@ import OwnerFeedback from "../screens/Owner/OwnerFeedback";
 import Favorite from "../screens/Favortie";
 import Notifications from "../screens/Notification";
 import FilterMap from "../screens/FilterMap";
-import UploadScreen from "../screens/PostItemScreen/Upload";
+import UploadScreen from "../screens/PostItemScreen";
 import TypeOfItemScreen from "../screens/PostItemScreen/TypeOfItem";
 import TypeOfItemDetailScreen from "../screens/PostItemScreen/TypeOfItemDetail";
 import ItemConditionScreen from "../screens/PostItemScreen/ItemCondition";
@@ -46,6 +46,14 @@ import ExchangeDesiredItemBrandSelectionScreen from "../screens/PostItemScreen/E
 import ExchangeDesiredItemConditionScreen from "../screens/PostItemScreen/ExchangeDesiredItem/ItemCondition";
 import ItemDetails from "../screens/ItemDetail";
 import ItemManagement from "../screens/ItemManagement";
+import ItemPreview from "../screens/ItemManagement/ItemPreview";
+import ItemExpire from "../screens/ItemManagement/ItemExpire";
+import LanguageSwitch from "../screens/LanguageSwitch";
+import LanguageSwitchModal from "../screens/LanguageSwitch";
+import ExchangeDesiredItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem";
+import Premium from "../screens/Premium";
+import ExtendPremium from "../screens/Premium/ExtendPremium";
+import About from "../screens/About";
 
 export type ItemType = {
   id: number;
@@ -70,11 +78,12 @@ export type RootStackParamList = {
   SignUp: undefined;
   Profile: undefined;
   ExchangeHistory: undefined;
-  ExchangeDetail: undefined;
+  ExchangeDetail: { statusDetail: string };
   ChatHistory: undefined;
   ChatDetails: undefined;
   Statistics: undefined;
   ItemDetails: { itemId: number };
+  ItemPreview: { itemId: number };
   TypeOfItemScreen: undefined;
   TypeOfItemDetailScreen: undefined;
   ItemConditionScreen: undefined;
@@ -100,6 +109,9 @@ export type RootStackParamList = {
   FilterMap: undefined;
   ExchangeDesiredItemBrandSelectionScreen: undefined;
   ExchangeDesiredItemConditionScreen: undefined;
+  Premium: undefined;
+  ExtendPremium: undefined;
+  About: undefined;
 };
 
 const TabArr = [
@@ -220,6 +232,14 @@ export default function RootNavigator() {
         <Stack.Screen name="Favorite" component={Favorite} />
         <Stack.Screen name="Notifications" component={Notifications} />
         <Stack.Screen name="FilterMap" component={FilterMap} />
+        <Stack.Screen name="ItemPreview" component={ItemExpire} />
+        <Stack.Screen name="Premium" component={Premium} />
+        <Stack.Screen name="ExtendPremium" component={ExtendPremium} />
+        <Stack.Screen name="About" component={About} />
+        <Stack.Screen
+          name="ExchangeDesiredItemScreen"
+          component={ExchangeDesiredItemScreen}
+        />
         <Stack.Screen name="TypeOfItemScreen" component={TypeOfItemScreen} />
         <Stack.Screen
           name="TypeOfItemDetailScreen"

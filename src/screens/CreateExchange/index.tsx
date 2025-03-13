@@ -268,7 +268,7 @@ const CreateExchange: React.FC = () => {
         } px-5 bg-white mt-auto rounded-t-xl flex-row items-center`}
       >
         <LoadingButton
-          buttonClassName="p-3"
+          buttonClassName="p-4"
           title="Propose exchange"
           onPress={handleProposeExchange}
         />

@@ -75,7 +75,8 @@ const ItemManagement: React.FC = () => {
       id: 3,
       name: "Samsung Galaxy S24",
       price: 30000000,
-      images: "https://via.placeholder.com/150",
+      images:
+        "https://goldsun.vn/pic/ProductItem/Noi-com-d_637625508222561223.jpg",
       location: "District 3, HCMC",
       description: "Latest Samsung flagship phone1.",
       isFavorited: false,
@@ -125,7 +126,6 @@ const ItemManagement: React.FC = () => {
                   />
                 </View>
               ))}
-              {/* Nếu hàng chỉ có 1 item, thêm View trống để lấp đầy không gian */}
               {row.length === 1 && <View className="flex-1" />}
             </View>
           ))}

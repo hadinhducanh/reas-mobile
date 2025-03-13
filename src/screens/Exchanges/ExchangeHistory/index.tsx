@@ -15,7 +15,7 @@ const ExchangeHistory: React.FC = () => {
 
   const data: ExchangeData[] = [
     { id: 1, status: "Pending" },
-    { id: 2, status: "Agreed" },
+    { id: 2, status: "Approved" },
     { id: 3, status: "Completed" },
     { id: 4, status: "Rejected" },
     { id: 5, status: "Rejected" },
@@ -28,8 +28,8 @@ const ExchangeHistory: React.FC = () => {
       count: data.filter((item) => item.status === "Pending").length,
     },
     {
-      label: "Agreed",
-      count: data.filter((item) => item.status === "Agreed").length,
+      label: "Approved",
+      count: data.filter((item) => item.status === "Approved").length,
     },
     {
       label: "Rejected",

@@ -19,11 +19,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ItemType, RootStackParamList } from "../../../navigation/AppNavigator";
 import Header from "../../../components/Header";
 import LoadingButton from "../../../components/LoadingButton";
+import DeleteConfirmModal from "../../../components/DeleteConfirmModal";
 
 const { width } = Dimensions.get("window");
 
 const ItemPreview: React.FC = () => {
-  const [itemList, setItemList] = useState<ItemType[]>([
+  const [itemList] = useState<ItemType[]>([
     {
       id: 1,
       name: "iPhone 20",
@@ -61,32 +62,33 @@ const ItemPreview: React.FC = () => {
     { label: "Loại giao dịch", value: "Giao dịch mở" },
   ];
 
+  const [deletedVisible, setDeletedVisible] = useState(false);
+
   const route = useRoute<RouteProp<RootStackParamList, "ItemDetails">>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { itemId } = route.params;
   const item = itemList.find((item) => item.id === itemId);
-  const [isFavorite, setIsFavorite] = useState(item?.isFavorited);
 
   const imageArray = item?.images ? item.images.split(",") : [];
-
-  const setFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
-
-  const toggleLike = (itemId: number) => {
-    setItemList((prevList) =>
-      prevList.map((it) =>
-        it.id === itemId ? { ...it, isFavorited: !it.isFavorited } : it
-      )
-    );
-  };
 
   const formatPrice = (price: number | undefined): string => {
     return price !== undefined ? price.toLocaleString("vi-VN") : "0";
   };
 
-  const handleSend = async () => {
+  const handleUpdate = async () => {
     await new Promise((resolve) => setTimeout(resolve, 3000));
+  };
+
+  const handleDelete = async () => {
+    setDeletedVisible(true);
+  };
+
+  const handleCancel = () => {
+    setDeletedVisible(false);
+  };
+
+  const handleConfirm = () => {
+    setDeletedVisible(false);
   };
 
   const renderContent = () => (
@@ -104,16 +106,6 @@ const ItemPreview: React.FC = () => {
               className="w-full h-60 bg-gray-300"
               style={{ width: width, height: 340 }}
             />
-            <Pressable
-              className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
-              onPress={setFavorite}
-            >
-              <Icon
-                name={isFavorite ? "heart" : "heart-outline"}
-                size={24}
-                color="#ff0000"
-              />
-            </Pressable>
           </View>
         )}
       />
@@ -244,7 +236,7 @@ const ItemPreview: React.FC = () => {
   return (
     <>
       <SafeAreaView className="flex-1 bg-gray-100" edges={["top"]}>
-        <Header title="" setFavorites={setFavorite} />
+        <Header title="" showOption={false} />
         <FlatList
           data={[{}]}
           keyExtractor={(_, index) => index.toString()}
@@ -259,24 +251,12 @@ const ItemPreview: React.FC = () => {
           Platform.OS === "ios" ? "pt-4 pb-7" : "py-5"
         } px-5 bg-white rounded-t-xl flex-row items-center`}
       >
-        <View className="flex-1">
+        <View className="flex-1 mr-2">
           <LoadingButton
-            title="Call"
-            onPress={handleSend}
+            title="Update"
+            onPress={handleUpdate}
             buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
-            iconName="call-outline"
-            iconSize={25}
-            iconColor="#00B0B9"
-            showIcon={true}
-            textColor="text-[#00B0B9]"
-          />
-        </View>
-        <View className="flex-1 mx-2">
-          <LoadingButton
-            title="SMS"
-            onPress={handleSend}
-            buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
-            iconName="chatbubble-outline"
+            iconName="reader-outline"
             iconSize={25}
             iconColor="#00B0B9"
             showIcon={true}
@@ -285,10 +265,10 @@ const ItemPreview: React.FC = () => {
         </View>
         <View className="flex-1">
           <LoadingButton
-            title="Exchange"
-            onPress={() => navigation.navigate("CreateExchange", { itemId })}
+            title="Delete"
+            onPress={handleDelete}
             buttonClassName="p-3 border-transparent border-2 bg-[#00B0B9]"
-            iconName="swap-horizontal"
+            iconName="trash-outline"
             iconSize={25}
             iconColor="white"
             showIcon={true}
@@ -296,6 +276,11 @@ const ItemPreview: React.FC = () => {
           />
         </View>
       </View>
+      <DeleteConfirmModal
+        visible={deletedVisible}
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+      />
     </>
   );
 };

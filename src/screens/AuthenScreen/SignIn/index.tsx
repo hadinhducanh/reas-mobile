@@ -147,7 +147,7 @@ const SignIn: React.FC = () => {
           {/* Content Container */}
           <View className="flex-1 justify-between">
             {/* Form Container */}
-            <View className="flex-1 flex-col justify-center bg-white rounded-tl-[10px] rounded-tr-[10px] mx-[20px] px-[20px] mt-[25px] mb-[10px]">
+            <View className="flex-1 flex-col justify-center bg-white rounded-tl-[10px] rounded-tr-[10px] mx-[20px] px-[20px] mb-[10px]">
               <Text className="text-[28px] font-bold leading-[36px] text-[#0b1d2d] mb-[10px]">
                 Welcome Back!
               </Text>
@@ -168,6 +168,15 @@ const SignIn: React.FC = () => {
                     value={email}
                     onChangeText={setEmail}
                   />
+                  {email && (
+                    <Icon
+                      name="close-circle-outline"
+                      size={20}
+                      color="black"
+                      onPress={() => setEmail("")}
+                      style={{ marginLeft: 10 }}
+                    />
+                  )}
                   {validationIcon}
                 </View>
               </View>
@@ -186,6 +195,15 @@ const SignIn: React.FC = () => {
                     value={password}
                     onChangeText={setPassword}
                   />
+                  {password && (
+                    <Icon
+                      name="close-circle-outline"
+                      size={20}
+                      color="black"
+                      onPress={() => setPassword("")}
+                      style={{ marginLeft: 10 }}
+                    />
+                  )}
                   <Icon
                     name={passwordVisible ? "eye-off-outline" : "eye-outline"}
                     size={20}
@@ -225,24 +243,28 @@ const SignIn: React.FC = () => {
                 buttonClassName="py-4"
               />
 
-              <Pressable onPress={handleNavigateToSignUp}>
-                <Text className="text-sm mt-3 text-[#738aa0]">
-                  Don’t have an account?{" "}
-                  <Text className="text-[#00b0b9]">Sign up.</Text>
+              <View className="flex-row items-center my-5 px-20">
+                <View className="flex-1 h-px bg-gray-500" />
+                <Text className="text-sm font-semibold text-gray-500 mx-5">
+                  Or
                 </Text>
-              </Pressable>
-            </View>
-
-            {/* Social Buttons Container */}
-            <View className="flex-row justify-between mx-5 mb-5">
-              <View className="w-[48%] h-[50px] bg-white rounded-bl-lg rounded-br-lg justify-center items-center">
-                <Icon name="logo-facebook" size={25} color="blue" />
+                <View className="flex-1 h-px bg-gray-500" />
               </View>
-              <Pressable
-                className="w-[48%] h-[50px] bg-white rounded-bl-lg rounded-br-lg justify-center items-center active:bg-gray-200"
-                onPress={handleGoogleSignIn}
-              >
-                <Icon name="logo-google" size={25} color="red" />
+
+              <View className="items-center">
+                <Pressable
+                  className="w-3/12 py-3 bg-red-400 rounded-full justify-center items-center active:bg-red-300"
+                  onPress={handleGoogleSignIn}
+                >
+                  <Icon name="logo-google" size={25} color="white" />
+                </Pressable>
+              </View>
+
+              <Pressable onPress={handleNavigateToSignUp}>
+                <Text className="text-sm text-center mt-3 text-[#738aa0]">
+                  Don’t have an account?{" "}
+                  <Text className="text-[#00b0b9]">Create account</Text>
+                </Text>
               </Pressable>
             </View>
           </View>

@@ -27,6 +27,8 @@ const emailRegex =
   /^[^\.][a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
 const passwordRegex =
   /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+const specialCharsRegex = /[!@#$%^&*()_\-+={[}\]|\\:;"'<,>.?/`~]/;
+
 const signUpSchema = z
   .object({
     email: z.string().min(1, "Email is required").email("Email is invalid"),
@@ -38,13 +40,7 @@ const signUpSchema = z
         passwordRegex,
         "Password must be at least 8 characters long, contain one uppercase letter, one digit, and one special character"
       ),
-    confirmPassword: z
-      .string()
-      .min(1, "Confirm Password is required")
-      .regex(
-        passwordRegex,
-        "Password must be at least 8 characters long, contain one uppercase letter, one digit, and one special character"
-      ),
+    confirmPassword: z.string().min(1, "Confirm Password is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -64,6 +60,13 @@ const SignUp: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(true);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(true);
+  const [isLengthValid, setIsLengthValid] = useState(false);
+  const [hasUpperCase, setHasUpperCase] = useState(false);
+  const [hasLowerCase, setHasLowerCase] = useState(false);
+  const [hasDigit, setHasDigit] = useState(false);
+  const [hasSpecialChar, setHasSpecialChar] = useState(false);
+
+  // Mẫu regex để bắt các ký tự đặc biệt có thể tùy chỉnh thêm
 
   const validationIcon = useMemo(() => {
     const trimmedEmail = email.trim();
@@ -155,12 +158,29 @@ const SignUp: React.FC = () => {
     }
   }, [accessToken, dispatch, navigation]);
 
+  useEffect(() => {
+    // Độ dài từ 8 đến 20 ký tự
+    setIsLengthValid(password.length >= 8 && password.length <= 20);
+
+    // Có ít nhất 1 chữ viết hoa
+    setHasUpperCase(/[A-Z]/.test(password));
+
+    // Có ít nhất 1 chữ thường
+    setHasLowerCase(/[a-z]/.test(password));
+
+    // Có ít nhất 1 chữ số
+    setHasDigit(/[0-9]/.test(password));
+
+    // Có ít nhất 1 ký tự đặc biệt
+    setHasSpecialChar(specialCharsRegex.test(password));
+  }, [password]);
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView className="flex-1 bg-[#F6F9F9]">
         <KeyboardAwareScrollView
           contentContainerStyle={{ flexGrow: 1 }}
-          extraScrollHeight={20} // Điều chỉnh khoảng cách thêm khi input bị che
+          extraScrollHeight={20}
           enableOnAndroid={true}
           keyboardShouldPersistTaps="handled"
         >
@@ -169,9 +189,9 @@ const SignUp: React.FC = () => {
           {/* Content Container */}
           <View className="flex-1 justify-between">
             {/* Form Container */}
-            <View className="flex-1 flex-col justify-center bg-white rounded-tl-[10px] rounded-tr-[10px] mx-[20px] px-[20px] mt-[25px] mb-[10px]">
+            <View className="flex-1 flex-col justify-center bg-white rounded-tl-[10px] rounded-tr-[10px] mx-[20px] px-[20px]  mb-[10px]">
               <Text className="text-[28px] font-bold leading-[36px] text-[#0b1d2d] mb-[10px]">
-                Welcome to REAS!
+                Welcome to <Text className="text-[#00b0b9]">REAS!</Text>
               </Text>
               <Text className="text-[16px] font-bold leading-[24px] text-[#738aa0] mb-[20px]">
                 Sign up to continue
@@ -190,6 +210,15 @@ const SignUp: React.FC = () => {
                     value={fullName}
                     onChangeText={setFullName}
                   />
+                  {fullName && (
+                    <Icon
+                      name="close-circle-outline"
+                      size={20}
+                      color="black"
+                      onPress={() => setFullName("")}
+                      style={{ marginLeft: 10 }}
+                    />
+                  )}
                 </View>
               </View>
 
@@ -206,6 +235,15 @@ const SignUp: React.FC = () => {
                     value={email}
                     onChangeText={setEmail}
                   />
+                  {email && (
+                    <Icon
+                      name="close-circle-outline"
+                      size={20}
+                      color="black"
+                      onPress={() => setEmail("")}
+                      style={{ marginLeft: 10 }}
+                    />
+                  )}
                   {validationIcon}
                 </View>
               </View>
@@ -224,6 +262,15 @@ const SignUp: React.FC = () => {
                     value={password}
                     onChangeText={setPassword}
                   />
+                  {password && (
+                    <Icon
+                      name="close-circle-outline"
+                      size={20}
+                      color="black"
+                      onPress={() => setPassword("")}
+                      style={{ marginLeft: 10 }}
+                    />
+                  )}
                   <Icon
                     name={passwordVisible ? "eye-off-outline" : "eye-outline"}
                     size={20}
@@ -234,8 +281,7 @@ const SignUp: React.FC = () => {
                 </View>
               </View>
 
-              {/* Confirm Password Input */}
-              <View className="w-full h-[50px] mb-[20px]">
+              <View className="w-full h-[50px] mb-3">
                 <View className="flex-row h-[50px] px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
                   <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
                     <Icon name="key-outline" size={20} color="#ffffff" />
@@ -248,6 +294,15 @@ const SignUp: React.FC = () => {
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                   />
+                  {confirmPassword && (
+                    <Icon
+                      name="close-circle-outline"
+                      size={20}
+                      color="black"
+                      onPress={() => setConfirmPassword("")}
+                      style={{ marginLeft: 10 }}
+                    />
+                  )}
                   <Icon
                     name={
                       confirmPasswordVisible ? "eye-off-outline" : "eye-outline"
@@ -260,6 +315,45 @@ const SignUp: React.FC = () => {
                 </View>
               </View>
 
+              <View className="mb-5 px-2">
+                <View className="flex-row items-center mb-1">
+                  <Icon
+                    name="checkmark-circle-outline"
+                    size={18}
+                    color={isLengthValid ? "#00b0b9" : "gray"}
+                  />
+                  <Text className="ml-2 text-base text-gray-500">
+                    Mật khẩu phải từ 8 đến 20 ký tự
+                  </Text>
+                </View>
+
+                <View className="flex-row items-center mb-1">
+                  <Icon
+                    name="checkmark-circle-outline"
+                    size={18}
+                    color={
+                      hasUpperCase && hasLowerCase && hasDigit
+                        ? "#00b0b9"
+                        : "gray"
+                    }
+                  />
+                  <Text className="ml-2 text-base text-gray-500">
+                    Bao gồm số, chữ viết hoa, chữ viết thường
+                  </Text>
+                </View>
+
+                <View className="flex-row items-center mb-1">
+                  <Icon
+                    name="checkmark-circle-outline"
+                    size={18}
+                    color={hasSpecialChar ? "#00b0b9" : "gray"}
+                  />
+                  <Text className="ml-2 text-base text-gray-500">
+                    Bao gồm ít nhất một ký tự đặc biệt !@#$%^&*()_-
+                  </Text>
+                </View>
+              </View>
+
               {/* Sign Up Button */}
               <LoadingButton
                 title="Sign up"
@@ -267,23 +361,31 @@ const SignUp: React.FC = () => {
                 loading={loading}
                 buttonClassName="py-4"
               />
+
+              <View className="flex-row items-center my-5 px-20">
+                <View className="flex-1 h-px bg-gray-500" />
+                <Text className="text-sm font-semibold text-gray-500 mx-5">
+                  Or
+                </Text>
+                <View className="flex-1 h-px bg-gray-500" />
+              </View>
+
+              <View className="items-center">
+                <Pressable
+                  className="w-3/12 py-3 bg-red-400 rounded-full justify-center items-center active:bg-red-300"
+                  // onPress={handleGoogleSignIn}
+                >
+                  <Icon name="logo-google" size={25} color="white" />
+                </Pressable>
+              </View>
+
               {/* Sign In Link */}
               <Pressable onPress={handleNavigateToSignIn}>
-                <Text className="text-sm text-[#738aa0] mt-3">
+                <Text className="text-sm text-center text-[#738aa0] mt-3">
                   Already have an account?
                   <Text className="text-[#00b0b9]"> Sign in.</Text>
                 </Text>
               </Pressable>
-            </View>
-
-            {/* Social Buttons Container */}
-            <View className="flex-row justify-between mx-[20px] mb-[20px]">
-              <View className="w-[48%] h-[50px] bg-white rounded-bl-[10px] rounded-br-[10px] justify-center items-center">
-                <Icon name="logo-facebook" size={25} color="blue" />
-              </View>
-              <View className="w-[48%] h-[50px] bg-white rounded-bl-[10px] rounded-br-[10px] justify-center items-center">
-                <Icon name="logo-google" size={25} color="red" />
-              </View>
             </View>
           </View>
         </KeyboardAwareScrollView>

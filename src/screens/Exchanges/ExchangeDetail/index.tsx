@@ -1,11 +1,44 @@
-import { useNavigation } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import Header from "../../../components/Header";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { UploadEvidence } from "../../../components/UploadEvidence";
+
+const statusStyles: Record<
+  string,
+  { textColor: string; backgroundColor: string }
+> = {
+  Pending: {
+    textColor: "text-[#00b0b9]",
+    backgroundColor: "bg-[rgba(0,176,185,0.2)]",
+  },
+  Approved: {
+    textColor: "text-[#FFA43D]",
+    backgroundColor: "bg-[rgba(255,164,61,0.4)]",
+  },
+  Rejected: {
+    textColor: "text-[#FA5555]",
+    backgroundColor: "bg-[rgba(250,85,85,0.2)]",
+  },
+  Completed: {
+    textColor: "text-[#16A34A]",
+    backgroundColor: "bg-[rgba(22,163,74,0.2)]",
+  },
+  Canceled: {
+    textColor: "text-gray-500",
+    backgroundColor: "bg-[rgba(116,139,150,0.2)]",
+  },
+};
 
 const ExchangeDetail: React.FC = () => {
+  const route = useRoute<RouteProp<RootStackParamList, "ExchangeDetail">>();
+  const { statusDetail } = route.params;
+
+  const { textColor, backgroundColor } = statusStyles[statusDetail];
+
   return (
     <>
       <SafeAreaView className="flex-1 bg-[#f6f9f9]" edges={["top"]}>
@@ -20,8 +53,10 @@ const ExchangeDetail: React.FC = () => {
                 #EX12356
               </Text>
             </View>
-            <Text className="items-center text-sm font-medium text-[#00b0b9] bg-[rgb(0,176,185,0.2)] rounded-full px-5 py-2">
-              Pending
+            <Text
+              className={`items-center text-[13px] font-medium ${textColor} ${backgroundColor} rounded-full px-5 py-2`}
+            >
+              {statusDetail}
             </Text>
           </View>
           <View className="flex-row justify-between items-center py-5">
@@ -184,7 +219,13 @@ const ExchangeDetail: React.FC = () => {
               <View className="border-[0.2px] border-gray-300 my-2"></View>
               <View className="flex-row items-center justify-between">
                 <Text className="font-bold text-lg">Additional payment</Text>
-                <Text className="font-bold text-lg text-[#00b0b9]">
+                <Text
+                  className={`font-bold text-lg ${
+                    statusDetail === "Approved"
+                      ? "text-gray-800"
+                      : "text-[#00b0b9]"
+                  } `}
+                >
                   350.000 VND
                 </Text>
               </View>
@@ -193,6 +234,32 @@ const ExchangeDetail: React.FC = () => {
               </View>
             </View>
           </View>
+
+          {statusDetail === "Approved" && (
+            <View className="mb-8">
+              <View className="flex-row justify-between">
+                <Text className="font-bold text-lg text-gray-500">
+                  Negotiated price
+                </Text>
+              </View>
+
+              <View className="bg-white mt-2 rounded-lg p-4 flex-col justify-center h-fit">
+                <View className="flex-row items-center justify-between">
+                  <Text className="font-bold text-lg">After adjusting</Text>
+                  <Text className="font-bold text-lg text-[#00b0b9]">
+                    300.000 VND
+                  </Text>
+                </View>
+                <View className="flex-row items-center justify-end">
+                  <Text className="text-sm text-gray-500">
+                    2 offer remaining
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          <UploadEvidence status={statusDetail} />
         </ScrollView>
       </SafeAreaView>
     </>
