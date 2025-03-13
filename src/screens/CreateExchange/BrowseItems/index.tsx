@@ -1,31 +1,20 @@
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { ItemType, RootStackParamList } from "../../../navigation/AppNavigator";
 import Header from "../../../components/Header";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
 import ItemCard from "../../../components/CardItem";
-
-type ItemType = {
-  id: number;
-  name: string;
-  price: string;
-  image: string;
-  location: string;
-  description: string;
-  isFavorited: boolean;
-};
 
 const BrowseItems: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const [itemList, setItemList] = useState<ItemType[]>([
+  const [itemList] = useState<ItemType[]>([
     {
       id: 1,
       name: "iPhone 20",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "Vinhome Grand Park",
       description: "Brand new iPhone 20 with latest features.",
       isFavorited: false,
@@ -33,8 +22,8 @@ const BrowseItems: React.FC = () => {
     {
       id: 2,
       name: "Samsung Galaxy S25",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "District 1, HCMC",
       description: "Latest Samsung flagship phone.",
       isFavorited: false,
@@ -42,8 +31,8 @@ const BrowseItems: React.FC = () => {
     {
       id: 3,
       name: "Samsung Galaxy S24",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
+      price: 30000000,
+      images: "https://via.placeholder.com/150",
       location: "District 3, HCMC",
       description: "Latest Samsung flagship phone1.",
       isFavorited: false,

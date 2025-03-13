@@ -1,23 +1,19 @@
 import React from "react";
-import { View, Text, ImageBackground } from "react-native";
+import { View, Text, ImageBackground, Image } from "react-native";
+import { LOGO } from "../../common/constant";
 
 const Splash: React.FC = () => {
   return (
     <View className="flex-1 justify-center items-center h-full bg-[#00b0b9]">
       {/* Outer circle */}
       <View className="w-[228px] h-[228px] rounded-full border-[6px] border-white justify-center items-center">
-        {/* Inner circle */}
         <View className="w-[216px] h-[216px] rounded-full bg-[#00b0b9] justify-center items-center">
-          {/* Image container */}
           <View className="w-[200px] h-[200px] rounded-full overflow-hidden">
-            <ImageBackground
+            <Image
               source={{
-                uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1739892939/REAS/Logo/lpjfdwhauzuca2uxvtf4.png",
+                uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1739892939/REAS/Logo/Logo.png",
               }}
-              style={{
-                width: "100%",
-                height: "100%",
-              }}
+              style={{ width: "100%", height: "100%" }}
               resizeMode="cover"
             />
           </View>

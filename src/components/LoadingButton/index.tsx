@@ -35,7 +35,7 @@ const LoadingButton: React.FC<ButtonProps> = ({
     <Pressable
       onPress={onPress}
       disabled={loading}
-      className={`w-full rounded-lg justify-center items-center bg-[${baseBackgroundColor}] ${buttonClassName} active:bg-[rgb(0,176,185,0.5)]
+      className={`w-full rounded-full justify-center items-center bg-[${baseBackgroundColor}] ${buttonClassName} active:bg-[rgb(0,176,185,0.5)]
       `}
     >
       {loading ? (

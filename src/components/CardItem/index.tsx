@@ -23,8 +23,10 @@ const CardItem: React.FC<CardItemProps> = ({
   const handlePress = () => {
     if (mode === "selectable" && onSelect) {
       onSelect(item.id);
-    } else if (navigation) {
+    } else if (mode === "default") {
       navigation.navigate("ItemDetails", { itemId: item.id });
+    } else {
+      navigation.navigate("ItemPreview", { itemId: item.id });
     }
   };
 
@@ -79,7 +81,9 @@ const CardItem: React.FC<CardItemProps> = ({
       </View>
 
       <View className="mt-3 py-3">
-        <Text className="text-gray-500 text-base font-medium">{item.name}</Text>
+        <Text className="text-gray-500 text-base font-medium" numberOfLines={1}>
+          {item.name}
+        </Text>
         <Text className="text-gray-900 text-base font-semibold">
           {formatPrice(item.price)} VND
         </Text>
