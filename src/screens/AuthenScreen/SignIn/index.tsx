@@ -102,7 +102,6 @@ const SignIn: React.FC = () => {
 
       if (res.accessToken) {
         dispatch(fetchUserInfoThunk());
-        console.log("Access Token:", res.accessToken);
         navigation.navigate("MainTabs", { screen: "Account" });
       }
     } catch (err: any) {
@@ -117,10 +116,6 @@ const SignIn: React.FC = () => {
   const toggleRemember = useCallback(() => {
     setRemember((prev) => !prev);
   }, []);
-
-  const handleGoBack = useCallback(() => {
-    navigation.goBack();
-  }, [navigation]);
 
   const handleNavigateToSignUp = useCallback(() => {
     navigation.navigate("SignUp");

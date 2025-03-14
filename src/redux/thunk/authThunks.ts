@@ -6,7 +6,6 @@ import {
   SignupDto,
   UserResponse,
 } from "../../common/models/auth";
-import ApiService from "../../services/AuthService";
 import { RootState } from "../store";
 import AuthService from "../../services/AuthService";
 
@@ -18,7 +17,7 @@ export const authenticateUserThunk = createAsyncThunk<
 
   async (credentials, thunkAPI) => {
     try {
-      const data = await ApiService.authenticateUser(credentials);
+      const data = await AuthService.authenticateUser(credentials);
       return data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data || "Sign in failed");
@@ -31,7 +30,7 @@ export const signupUserThunk = createAsyncThunk<JWTAuthResponse, SignupDto>(
 
   async (credentials, thunkAPI) => {
     try {
-      const data = await ApiService.signupUser(credentials);
+      const data = await AuthService.signupUser(credentials);
       return data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data || "Sign up failed");
@@ -44,7 +43,7 @@ export const sendOtpThunk = createAsyncThunk<string, SignupDto>(
 
   async (credentials, thunkAPI) => {
     try {
-      const data = await ApiService.sendOtp(credentials);
+      const data = await AuthService.sendOtp(credentials);
       return data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data || "Send OTP failed");

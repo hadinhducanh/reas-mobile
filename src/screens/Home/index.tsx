@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import {
   View,
   ScrollView,
@@ -6,85 +6,86 @@ import {
   Image,
   Text,
   Pressable,
+  ActivityIndicator,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { ItemType, RootStackParamList } from "../../navigation/AppNavigator";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ItemCard from "../../components/CardItem";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../redux/store";
+import { getAllItemAvailableThunk } from "../../redux/thunk/itemThunks";
+import { ItemResponse } from "../../common/models/item";
 
 type HomeScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
   "ItemDetails"
 >;
+const categories = [
+  { id: 1, name: "Kitchen" },
+  { id: 2, name: "Cleaning" },
+  { id: 3, name: "Cooling" },
+  { id: 4, name: "Electric" },
+  { id: 5, name: "Lighting" },
+  { id: 6, name: "Living room" },
+  { id: 7, name: "Bedroom" },
+  { id: 8, name: "Bathroom" },
+];
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const dispatch = useDispatch<AppDispatch>();
+  const { itemAvailable, loading } = useSelector(
+    (state: RootState) => state.item
+  );
+  const { content, pageNo, last } = itemAvailable;
 
-  const categories = [
-    { id: 1, name: "Kitchen" },
-    { id: 2, name: "Cleaning" },
-    { id: 3, name: "Cooling" },
-    { id: 4, name: "Electric" },
-    { id: 5, name: "Lighting" },
-    { id: 6, name: "Living room" },
-    { id: 7, name: "Bedroom" },
-    { id: 8, name: "Bathroom" },
-  ];
-
-  const [itemList, setItemList] = useState<ItemType[]>([
-    {
-      id: 1,
-      name: "iPhone 20",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "Vinhome Grand Park",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-    {
-      id: 2,
-      name: "Samsung Galaxy S25",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "District 1, HCMC",
-      description: "Latest Samsung flagship phone.",
-      isFavorited: false,
-    },
-    {
-      id: 3,
-      name: "Samsung Galaxy S24",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "District 3, HCMC",
-      description: "Latest Samsung flagship phone1.",
-      isFavorited: false,
-    },
-  ]);
-
-  const chunkArray = (array: ItemType[], size: number) => {
-    const chunked: ItemType[][] = [];
+  const chunkArray = (array: ItemResponse[], size: number) => {
+    const chunked: ItemResponse[][] = [];
     for (let i = 0; i < array.length; i += size) {
       chunked.push(array.slice(i, i + size));
     }
     return chunked;
   };
 
-  const toggleLike = (itemId: number) => {
-    setItemList((prevList) =>
-      prevList.map((item) =>
-        item.id === itemId ? { ...item, isFavorited: !item.isFavorited } : item
-      )
+  const rows = chunkArray(content, 2);
+
+  const isCloseToBottom = ({
+    layoutMeasurement,
+    contentOffset,
+    contentSize,
+  }: any) => {
+    const paddingToBottom = 80;
+    return (
+      layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom
     );
   };
 
-  const rows = chunkArray(itemList, 2);
+  const handleLoadMore = () => {
+    if (!loading && !last) {
+      dispatch(getAllItemAvailableThunk(pageNo + 1));
+    }
+  };
+
+  useEffect(() => {
+    dispatch(getAllItemAvailableThunk(0));
+  }, [dispatch]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
-      <ScrollView className="bg-gray-100" showsVerticalScrollIndicator={false}>
-        {/* Header với thanh tìm kiếm */}
+      <ScrollView
+        className="bg-gray-100"
+        showsVerticalScrollIndicator={false}
+        onScroll={({ nativeEvent }) => {
+          if (isCloseToBottom(nativeEvent)) {
+            handleLoadMore();
+          }
+        }}
+        scrollEventThrottle={100}
+      >
         <View className="h-20 bg-[#00B0B9] w-full flex-row justify-between items-center px-4">
           <View className="flex-1 mr-5">
             <View className="bg-white rounded-xl flex-row items-center px-2">
@@ -110,14 +111,12 @@ const HomeScreen: React.FC = () => {
                 color="#ffffff"
               />
             </Pressable>
-
             <Pressable onPress={() => navigation.navigate("ChatHistory")}>
               <Icon name="chatbox-outline" size={34} color="#ffffff" />
             </Pressable>
           </View>
         </View>
 
-        {/* Banner Image */}
         <View>
           <Image
             source={{
@@ -163,29 +162,30 @@ const HomeScreen: React.FC = () => {
             </ScrollView>
           </View>
 
-          {/* Danh sách item mới */}
           <View className="mt-5">
             <Text className="text-[#0b1d2d] text-xl font-bold">New items</Text>
           </View>
-
-          <View className="mt-3">
-            {rows.map((row, rowIndex) => (
-              <View key={rowIndex} className="flex flex-row mb-2 gap-x-2">
-                {row.map((item) => (
-                  <View key={item.id} className="flex-1">
-                    <ItemCard
-                      item={item}
-                      navigation={navigation}
-                      toggleLike={toggleLike}
-                      mode="default"
-                    />
-                  </View>
-                ))}
-                {/* Nếu hàng chỉ có 1 item, thêm View trống để lấp đầy không gian */}
-                {row.length === 1 && <View className="flex-1" />}
-              </View>
-            ))}
-          </View>
+          {content && (
+            <View className="mt-3">
+              {rows.map((row, rowIndex) => (
+                <View key={rowIndex} className="flex flex-row mb-2 gap-x-2">
+                  {row.map((item) => (
+                    <View key={item.id} className="flex-1">
+                      <ItemCard
+                        item={item}
+                        navigation={navigation}
+                        mode="default"
+                      />
+                    </View>
+                  ))}
+                  {row.length === 1 && <View className="flex-1" />}
+                </View>
+              ))}
+            </View>
+          )}
+          {loading && (
+            <ActivityIndicator size="large" color="#00b0b9" className="mb-5" />
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -1,16 +1,12 @@
 import axios from "axios";
-import { Brand } from "../common/models/brand";
-import { API_BASE_URL } from "../common/models/constants";
+import { API_BASE_URL } from "../common/constant";
+import { BrandResponse } from "../common/models/brand";
 
-const getBrands = async (accessToken: string): Promise<Brand[]> => {
-  const response = await axios.get<Brand[]>(`${API_BASE_URL}/brands`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+const getAllBrand = async (): Promise<BrandResponse[]> => {
+  const response = await axios.get<BrandResponse[]>(`${API_BASE_URL}/brand`);
   return response.data;
 };
 
 export default {
-  getBrands,
+  getAllBrand,
 };

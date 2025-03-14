@@ -1,98 +1,76 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback } from "react";
 import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Header from "../../../components/Header";
+import { MethodExchange } from "../../../common/enums/MethodExchange";
+import LoadingButton from "../../../components/LoadingButton";
+import { useUploadItem } from "../../../context/ItemContext";
 
-// Danh sách chuẩn với value là chuỗi
+// Danh sách phương thức giao dịch
 const exchangeMethods = [
-  { label: "Pick up in person", value: "PICK_UP_IN_PERSON" },
-  { label: "Delivery", value: "DELIVERY" },
-  { label: "Meet at a given location", value: "MEET_AT_GIVEN_LOCATION" },
+  { label: "Pick up in person", value: MethodExchange.PICK_UP_IN_PERSON },
+  { label: "Delivery", value: MethodExchange.DELIVERY },
+  {
+    label: "Meet at a given location",
+    value: MethodExchange.MEET_AT_GIVEN_LOCATION,
+  },
 ];
 
 const MethodOfExchangeScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [selectedMethods, setSelectedMethods] = useState<{ label: string; value: string }[]>([]);
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { uploadItem, setUploadItem } = useUploadItem();
 
-  // Lấy dữ liệu từ AsyncStorage khi vào màn hình
-  useEffect(() => {
-    const getStoredMethods = async () => {
-      try {
-        const storedData = await AsyncStorage.getItem("selectedMethods");
-        if (storedData) {
-          const parsedData = JSON.parse(storedData);
+  const selectedMethodExchanges = new Set(uploadItem.methodExchanges || []);
 
-          // Loại bỏ các mục có `value` là số
-          const filteredData = parsedData
-            .filter((item: any) => typeof item.value === "string")
-            .map((item: any) => {
-              const matchedMethod = exchangeMethods.find((m) => m.value === item.value);
-              return matchedMethod || item;
-            });
+  const toggleMethod = useCallback(
+    (methodValue: MethodExchange) => {
+      const updatedMethods = new Set(selectedMethodExchanges);
 
-          setSelectedMethods(filteredData);
-        }
-      } catch (error) {
-        console.error("Failed to retrieve methods:", error);
+      if (updatedMethods.has(methodValue)) {
+        updatedMethods.delete(methodValue);
+      } else {
+        updatedMethods.add(methodValue);
       }
-    };
-    getStoredMethods();
-  }, []);
 
-  // Hàm xử lý lựa chọn phương thức giao dịch
-  const toggleMethod = (method: { label: string; value: string }) => {
-    setSelectedMethods((prev) =>
-      prev.some((m) => m.value === method.value)
-        ? prev.filter((m) => m.value !== method.value)
-        : [...prev, method]
-    );
-  };
+      setUploadItem((prev) => ({
+        ...prev,
+        methodExchanges: Array.from(updatedMethods),
+      }));
+    },
+    [selectedMethodExchanges, setUploadItem]
+  );
 
-  // Xác nhận lựa chọn -> Lưu & Điều hướng về UploadScreen
-  const handleConfirm = async () => {
-    if (selectedMethods.length > 0) {
-      try {
-        await AsyncStorage.setItem("selectedMethods", JSON.stringify(selectedMethods));
-        console.log("✅ Saved selected methods:", selectedMethods);
-        navigation.goBack();
-      } catch (error) {
-        console.error("Failed to save methods:", error);
-      }
-    } else {
-      alert("Please select at least one method!");
-    }
-  };
+  const handleConfirm = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <ScrollView className="flex-1">
-        {/* Header */}
-        <View className="w-full h-14 flex-row items-center px-4">
-          <TouchableOpacity onPress={() => navigation.goBack()} className="w-10">
-            <Icon name="arrow-back-ios" size={20} color="black" />
-          </TouchableOpacity>
-          <View className="flex-1 items-center">
-            <Text className="text-2xl font-semibold text-black">Method of Exchange</Text>
-          </View>
-          <View className="w-10" />
-        </View>
+      <Header title="Method of exchange" showOption={false} />
 
-        {/* Danh sách phương thức giao dịch */}
-        {exchangeMethods.map((method, index) => {
-          const isSelected = selectedMethods.some((m) => m.value === method.value);
+      <ScrollView className="flex-1 mx-5">
+        {exchangeMethods.map((method) => {
+          const isSelected = selectedMethodExchanges.has(method.value);
           return (
             <TouchableOpacity
-              key={index}
-              onPress={() => toggleMethod(method)}
-              className={`w-11/12 h-16 rounded-lg mt-2 ml-4 flex-row justify-between items-center px-4 ${
+              key={method.value}
+              onPress={() => toggleMethod(method.value)}
+              className={`p-5 rounded-lg mt-3 flex-row justify-between items-center ${
                 isSelected ? "bg-[#00b0b91A]" : "bg-white"
               }`}
             >
-              <Text className={`text-lg font-normal ${isSelected ? "text-[#00b0b9] font-bold" : "text-black"}`}>
+              <Text
+                className={`text-lg ${
+                  isSelected
+                    ? "text-[#00b0b9] font-bold"
+                    : "text-black font-normal"
+                }`}
+              >
                 {method.label}
               </Text>
               <Icon
@@ -104,13 +82,11 @@ const MethodOfExchangeScreen = () => {
           );
         })}
 
-        {/* Nút xác nhận */}
-        <TouchableOpacity
+        <LoadingButton
+          title="Confirm"
           onPress={handleConfirm}
-          className="w-11/12 h-14 bg-[#00b0b9] rounded-lg mt-6 ml-4 flex items-center justify-center"
-        >
-          <Text className="text-lg font-semibold text-white">Confirm</Text>
-        </TouchableOpacity>
+          buttonClassName="p-4 mt-3"
+        />
       </ScrollView>
     </SafeAreaView>
   );

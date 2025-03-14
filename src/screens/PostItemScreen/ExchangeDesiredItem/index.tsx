@@ -14,6 +14,7 @@ import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../components/Header";
+import LoadingButton from "../../../components/LoadingButton";
 
 const ExchangeDesiredItemScreen = () => {
   const navigation =
@@ -60,7 +61,7 @@ const ExchangeDesiredItemScreen = () => {
       : "";
   };
 
-  const handleDonePress = async () => {
+  const handleDone = async () => {
     const min = parseInt(minPrice.replace(/,/g, ""), 10) || 0;
     const max = parseInt(maxPrice.replace(/,/g, ""), 10) || 0;
 
@@ -132,115 +133,113 @@ const ExchangeDesiredItemScreen = () => {
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
       <Header title="Your desired item for exchange" showOption={false} />
+      <ScrollView className="flex-1 mx-5">
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("ExchangeDesiredItemTypeOfItemScreen")
+          }
+          className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
+        >
+          <View>
+            <Text className="text-base text-black">Type of item</Text>
+            <Text
+              className={`text-lg font-semibold ${
+                selectedExchangeDesiredItemType
+                  ? "text-[#00b0b9]"
+                  : "text-black"
+              }  mt-1`}
+            >
+              {selectedExchangeDesiredItemType || "Select type"}
+            </Text>
+          </View>
+          <Icon name="arrow-forward-ios" size={20} color="black" />
+        </TouchableOpacity>
 
-      <ScrollView showsHorizontalScrollIndicator={false} className="flex-1">
-        {/* Content */}
-        <View className="items-center mt-4">
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("ExchangeDesiredItemTypeOfItemScreen")
-            }
-            className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
-          >
-            {/* Dòng chữ "Type of item" */}
-            <View>
-              <Text className="text-base font-normal text-black">
-                Type of item
-              </Text>
-              <Text className="text-lg font-semibold text-black mt-1">
-                {selectedExchangeDesiredItemType || "Select type of item"}
-              </Text>
-            </View>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("ExchangeDesiredItemBrandSelectionScreen")
+          }
+          className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
+        >
+          <View>
+            <Text className="text-base text-black">Brand</Text>
+            <Text
+              className={`text-lg font-semibold ${
+                selectedExchangeDesiredItemBrand
+                  ? "text-[#00b0b9]"
+                  : "text-black"
+              }  mt-1`}
+            >
+              {selectedExchangeDesiredItemBrand || "Select brand"}
+            </Text>
+          </View>
+          <Icon name="arrow-forward-ios" size={20} color="black" />
+        </TouchableOpacity>
 
-            {/* Biểu tượng mũi tên qua phải */}
-            <Icon name="arrow-forward-ios" size={20} color="#6b7280" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("ExchangeDesiredItemBrandSelectionScreen")
-            }
-            className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
-          >
-            {/* Dòng chữ "Type of item" */}
-            <View>
-              <Text className="text-base font-normal text-black">Brand</Text>
-              <Text className="text-lg font-semibold text-black mt-1">
-                {selectedExchangeDesiredItemBrand || "Select type of item"}
-              </Text>
-            </View>
-
-            {/* Biểu tượng mũi tên qua phải */}
-            <Icon name="arrow-forward-ios" size={20} color="#6b7280" />
-          </TouchableOpacity>
-
-          {/* Min & Max Price */}
-          <View className="flex flex-row justify-center gap-4 mt-4 mb-2">
-            {/* Min Price */}
-            <View className="w-52 h-20 rounded-md border border-[#00B0B9] bg-white px-2 py-1">
-              <Text className="text-teal-500 text-base font-bold text-center">
-                Min price
-              </Text>
-              <View className="flex flex-row justify-between items-center mt-1">
-                <TextInput
-                  className="flex-1 text-slate-500 text-lg font-normal px-1"
-                  placeholder="0"
-                  value={minPrice}
-                  onChangeText={(value) => setMinPrice(formatPrice(value))}
-                  keyboardType="numeric"
-                  onEndEditing={validateMinPrice} // Kiểm tra khi người dùng nhập xong
-                />
-                <Text className="text-slate-500 text-lg font-normal">đ</Text>
-              </View>
-            </View>
-
-            {/* Max Price */}
-            <View className="w-52 h-20 rounded-md border border-[#00B0B9] bg-white px-2 py-1">
-              <Text className="text-teal-500 text-base font-bold text-center">
-                Max price
-              </Text>
-              <View className="flex flex-row justify-between items-center mt-1">
-                <TextInput
-                  className="flex-1 text-slate-500 text-lg font-normal px-1"
-                  placeholder="0"
-                  value={maxPrice}
-                  onChangeText={(value) => setMaxPrice(formatPrice(value))}
-                  keyboardType="numeric"
-                  onEndEditing={validateMaxPrice} // Kiểm tra khi người dùng nhập xong
-                />
-                <Text className="text-slate-500 text-lg font-normal">đ</Text>
-              </View>
+        <View className="flex flex-row justify-center gap-4 mt-4 mb-2">
+          {/* Min Price */}
+          <View className="w-52 h-20 rounded-md border border-[#00B0B9] bg-white px-2 py-1">
+            <Text className="text-teal-500 text-base font-bold text-center">
+              Min price
+            </Text>
+            <View className="flex flex-row justify-between items-center mt-1">
+              <TextInput
+                className="flex-1 text-slate-500 text-lg font-normal px-1"
+                placeholder="0"
+                value={minPrice}
+                onChangeText={(value) => setMinPrice(formatPrice(value))}
+                keyboardType="numeric"
+                onEndEditing={validateMinPrice}
+              />
+              <Text className="text-slate-500 text-lg font-normal">đ</Text>
             </View>
           </View>
 
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("ExchangeDesiredItemConditionScreen")
-            }
-            className="w-11/12 h-20 bg-white rounded-lg mt-4 flex-row justify-between items-center px-4"
-          >
-            {/* Dòng chữ "Type of item" */}
-            <View>
-              <Text className="text-base font-normal text-black">
-                Item condition
-              </Text>
-              <Text className="text-lg font-semibold text-black mt-1">
-                {selectedExchangeDesiredItemCondition ||
-                  "Select item condition"}
-              </Text>
+          {/* Max Price */}
+          <View className="w-52 h-20 rounded-md border border-[#00B0B9] bg-white px-2 py-1">
+            <Text className="text-teal-500 text-base font-bold text-center">
+              Max price
+            </Text>
+            <View className="flex flex-row justify-between items-center mt-1">
+              <TextInput
+                className="flex-1 text-slate-500 text-lg font-normal px-1"
+                placeholder="0"
+                value={maxPrice}
+                onChangeText={(value) => setMaxPrice(formatPrice(value))}
+                keyboardType="numeric"
+                onEndEditing={validateMaxPrice}
+              />
+              <Text className="text-slate-500 text-lg font-normal">đ</Text>
             </View>
-
-            {/* Biểu tượng mũi tên qua phải */}
-            <Icon name="arrow-forward-ios" size={20} color="#6b7280" />
-          </TouchableOpacity>
-          {/* Done Button */}
-          <TouchableOpacity
-            className="w-11/12 h-14 bg-[#00B0B9] rounded-lg mt-6 flex items-center justify-center"
-            onPress={handleDonePress}
-          >
-            <Text className="text-white text-lg font-semibold">Done</Text>
-          </TouchableOpacity>
+          </View>
         </View>
+
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("ExchangeDesiredItemConditionScreen")
+          }
+          className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
+        >
+          <View>
+            <Text className="text-base text-black">Condition</Text>
+            <Text
+              className={`text-lg font-semibold ${
+                selectedExchangeDesiredItemCondition
+                  ? "text-[#00b0b9]"
+                  : "text-black"
+              }  mt-1`}
+            >
+              {selectedExchangeDesiredItemCondition || "Select condition"}
+            </Text>
+          </View>
+          <Icon name="arrow-forward-ios" size={20} color="black" />
+        </TouchableOpacity>
+
+        <LoadingButton
+          title="Done"
+          onPress={handleDone}
+          buttonClassName="p-4 mt-4"
+        />
       </ScrollView>
     </SafeAreaView>
   );

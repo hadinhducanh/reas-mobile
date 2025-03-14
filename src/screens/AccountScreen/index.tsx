@@ -188,7 +188,7 @@ const Account: React.FC = () => {
             label="About"
             onPress={navigateToAbout}
           />
-          {!isLoggedIn && (
+          {isLoggedIn && (
             <AccountListItem
               iconName="log-out-outline"
               label="Sign Out"

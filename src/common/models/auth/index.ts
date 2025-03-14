@@ -1,36 +1,45 @@
 import { Gender } from "../../enums/Gender";
 import { RoleName } from "../../enums/RoleName";
 import { StatusEntity } from "../../enums/StatusEntity";
+import { LocationDto } from "../location";
 
 export interface JWTAuthResponse {
-  accessToken: string | undefined;
-  refreshToken: string | undefined;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface LoginDto {
-  userNameOrEmailOrPhone: string | undefined;
-  password: string | undefined;
+  userNameOrEmailOrPhone: string;
+  password: string;
 }
 
 export interface SignupDto {
-  email: string | undefined;
-  password: string | undefined;
-  fullName: string | undefined;
+  email: string;
+  password: string;
+  fullName: string;
 }
 
 export interface UserResponse {
-  id: number | undefined;
-  userName: string | undefined;
-  fullName: string | undefined;
-  email: string | undefined;
-  phone: string | undefined;
-  gender: Gender | undefined;
-  statusEntity: StatusEntity | undefined;
-  image: string | undefined;
-  roleName: RoleName | undefined;
+  id: number;
+  userName: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  gender: Gender;
+  statusEntity: StatusEntity;
+  image: string;
+  roleName: RoleName;
 }
 
 export interface PasswordChangeRequest{
-  oldPassword: string | undefined;
-  newPassword: string | undefined;
+  oldPassword: string;
+  newPassword: string;
+}
+
+export interface UserLocationDto{
+  id: number;
+  userId: number;
+  specificAddress: string;
+  isPrimary: boolean;
+  location: LocationDto;
 }
