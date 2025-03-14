@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -20,6 +20,9 @@ import Header from "../../components/Header";
 import { ItemType, RootStackParamList } from "../../navigation/AppNavigator";
 import HorizontalSection from "../../components/HorizontalSection";
 import LoadingButton from "../../components/LoadingButton";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../redux/store";
+import { getItemDetailThunk } from "../../redux/thunk/itemThunks";
 
 const { width } = Dimensions.get("window");
 
@@ -84,6 +87,13 @@ const ItemDetails: React.FC = () => {
     },
   ];
 
+  const route = useRoute<RouteProp<RootStackParamList, "ItemDetails">>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { itemId } = route.params;
+  const dispatch = useDispatch<AppDispatch>();
+  const { itemDetail, loading } = useSelector((state: RootState) => state.item);
+  // const item = itemList.find((item) => item.id === itemId);
+  // const [isFavorite, setIsFavorite] = useState(item?.isFavorited);
   const data = [
     { label: "Tình trạng", value: "Đã sử dụng" },
     { label: "Thiết bị", value: "Máy giặt" },
@@ -91,18 +101,11 @@ const ItemDetails: React.FC = () => {
     { label: "Phương thức trao đổi", value: "Tự đến lấy" },
     { label: "Loại giao dịch", value: "Giao dịch mở" },
   ];
+  const imageArray = itemDetail?.imageUrl ? itemDetail.imageUrl.split(",") : [];
 
-  const route = useRoute<RouteProp<RootStackParamList, "ItemDetails">>();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { itemId } = route.params;
-  const item = itemList.find((item) => item.id === itemId);
-  const [isFavorite, setIsFavorite] = useState(item?.isFavorited);
-
-  const imageArray = item?.images ? item.images.split(",") : [];
-
-  const setFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
+  // const setFavorite = () => {
+  //   setIsFavorite(!isFavorite);
+  // };
 
   const toggleLike = (itemId: number) => {
     setItemList((prevList) =>
@@ -119,6 +122,10 @@ const ItemDetails: React.FC = () => {
   const handleSend = async () => {
     await new Promise((resolve) => setTimeout(resolve, 3000));
   };
+
+  useEffect(() => {
+    dispatch(getItemDetailThunk(itemId));
+  }, [dispatch]);
 
   const renderContent = () => (
     <View>
@@ -137,22 +144,20 @@ const ItemDetails: React.FC = () => {
             />
             <Pressable
               className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
-              onPress={setFavorite}
+              // onPress={setFavorite}
             >
-              <Icon
-                name={isFavorite ? "heart" : "heart-outline"}
-                size={24}
-                color="#ff0000"
-              />
+              <Icon name={"heart-outline"} size={24} color="#ff0000" />
             </Pressable>
           </View>
         )}
       />
 
       <View className="p-5 bg-white">
-        <Text className="text-2xl font-bold text-gray-900">{item?.name}</Text>
+        <Text className="text-2xl font-bold text-gray-900">
+          {itemDetail?.itemName}
+        </Text>
         <Text className="text-2xl font-semibold text-[#00B0B9] mt-1">
-          {formatPrice(item?.price)} VND
+          {formatPrice(itemDetail?.price)} VND
         </Text>
         <Text
           className="text-gray-500 font-bold text-base mt-1"
@@ -165,7 +170,7 @@ const ItemDetails: React.FC = () => {
           <View className="flex flex-row items-center">
             <Icon name="location-outline" size={25} color="black" />
             <Text className="ml-1 text-gray-500 text-lg">
-              {item?.location}, HCM
+              {itemDetail?.userLocation.specificAddress}
             </Text>
           </View>
           <View className="flex flex-row items-center mt-2">
@@ -181,9 +186,11 @@ const ItemDetails: React.FC = () => {
           >
             <Icon name="person-circle-outline" size={70} color="gray" />
             <View>
-              <Text className="text-lg font-bold">Ngọc Cường</Text>
+              <Text className="text-lg font-bold">
+                {itemDetail?.owner.fullName}
+              </Text>
               <Text className="text-gray-500 my-1">
-                Phản hồi 94%:{" "}
+                Phản hồi 94%:
                 <Text className="underline text-black">10 đã bán</Text>
               </Text>
               <View className="flex-row items-center">
@@ -210,7 +217,9 @@ const ItemDetails: React.FC = () => {
 
         {/* Display */}
         <View className="mb-3">
-          <Text className="text-lg font-semibold mb-1">Display:</Text>
+          <Text className="text-lg font-semibold mb-1">
+            {itemDetail?.description}
+          </Text>
           <View className="pl-3">
             <Text className="text-base mb-0.5">
               • Technology: Super Retina XDR OLED
@@ -289,7 +298,7 @@ const ItemDetails: React.FC = () => {
   return (
     <>
       <SafeAreaView className="flex-1 bg-gray-100" edges={["top"]}>
-        <Header title="" setFavorites={setFavorite} />
+        <Header title="" />
         <FlatList
           data={[{}]}
           keyExtractor={(_, index) => index.toString()}
@@ -318,7 +327,7 @@ const ItemDetails: React.FC = () => {
         </View>
         <View className="flex-1 mx-2">
           <LoadingButton
-            title="SMS"
+            title="Chat"
             onPress={handleSend}
             buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
             iconName="chatbubble-outline"

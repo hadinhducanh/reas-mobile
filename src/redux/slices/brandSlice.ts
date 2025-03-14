@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getBrandsThunk } from "../thunk/brandThunks";
-import { Brand } from "../../common/models/brand";
+import { BrandResponse } from "../../common/models/brand";
+import { getAllBrandThunk } from "../thunk/brandThunks";
 
 interface BrandState {
-  brands: Brand[];
+  brands: BrandResponse[];
   loading: boolean;
   error: string | null;
 }
@@ -20,17 +20,17 @@ const brandSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(getBrandsThunk.pending, (state) => {
+      .addCase(getAllBrandThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getBrandsThunk.fulfilled, (state, action: PayloadAction<Brand[]>) => {
+      .addCase(getAllBrandThunk.fulfilled, (state, action: PayloadAction<BrandResponse[]>) => {
         state.loading = false;
         state.brands = action.payload;
       })
-      .addCase(getBrandsThunk.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(getAllBrandThunk.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
-        state.error = action.payload || "Get brands failed";
+        state.error = action.payload || "Get all brand failed";
       });
   },
 });

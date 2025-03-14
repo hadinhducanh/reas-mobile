@@ -6,81 +6,68 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ConditionItem } from "../../../common/enums/ConditionItem";
+import { useUploadItem } from "../../../context/ItemContext";
+import Header from "../../../components/Header";
 
-// Mảng chứa cả nhãn hiển thị và giá trị tương ứng
 const options = [
-  { label: "Brand new", value: "BRAND_NEW" },
-  { label: "Like new", value: "LIKE_NEW" },
-  { label: "Excellent condition", value: "EXCELLENT" },
-  { label: "Good condition", value: "GOOD" },
-  { label: "Fair condition", value: "FAIR" },
-  { label: "Poor condition", value: "POOR" },
-  { label: "For parts / Not working", value: "NOT_WORKING" },
+  { label: "Brand new", value: ConditionItem.BRAND_NEW },
+  { label: "Like new", value: ConditionItem.LIKE_NEW },
+  { label: "Excellent condition", value: ConditionItem.EXCELLENT },
+  { label: "Good condition", value: ConditionItem.GOOD },
+  { label: "Fair condition", value: ConditionItem.FAIR },
+  { label: "Poor condition", value: ConditionItem.POOR },
+  { label: "For parts / Not working", value: ConditionItem.NOT_WORKING },
 ];
 
 const ItemConditionScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [selectedOption, setSelectedOption] = useState<{ label: string; value: string } | null>(null);
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { uploadItem, setUploadItem } = useUploadItem();
 
-  // Lấy dữ liệu từ AsyncStorage khi vào màn hình
-  useEffect(() => {
-    const getStoredCondition = async () => {
-      try {
-        const storedCondition = await AsyncStorage.getItem("selectedCondition");
-        if (storedCondition) {
-          setSelectedOption(JSON.parse(storedCondition));
-        }
-      } catch (error) {
-        console.error("Failed to retrieve condition:", error);
-      }
-    };
-    getStoredCondition();
-  }, []);
+  const selectedItemCondition = uploadItem.conditionItem;
 
-  // Khi chọn một option, lưu vào AsyncStorage và quay về UploadScreen
-  const handleSelectCondition = async (condition: { label: string; value: string }) => {
-    try {
-      await AsyncStorage.setItem("selectedCondition", JSON.stringify(condition));
-      setSelectedOption(condition);
-      navigation.goBack();
-    } catch (error) {
-      console.error("Failed to save condition:", error);
+  const handleSelectCondition = async (conditionItem: ConditionItem) => {
+    if (selectedItemCondition === conditionItem) {
+      setUploadItem({
+        ...uploadItem,
+        conditionItem: ConditionItem.NO_CONDITION,
+      });
+    } else {
+      setUploadItem({ ...uploadItem, conditionItem });
     }
+    navigation.goBack();
   };
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <ScrollView contentInsetAdjustmentBehavior="automatic" className="flex-1">
-        {/* Header */}
-        <View className="w-full h-14 flex-row items-center px-4">
-          <TouchableOpacity onPress={() => navigation.goBack()} className="w-10">
-            <Icon name="arrow-back-ios" size={20} color="black" />
-          </TouchableOpacity>
-          <View className="flex-1 items-center">
-            <Text className="text-2xl font-semibold text-black">Item condition</Text>
-          </View>
-          <View className="w-10" />
-        </View>
+      <Header title="Item condition" showOption={false} />
 
+      <ScrollView className="flex-1 mx-5">
         {/* Danh sách lựa chọn */}
         {options.map((option, index) => {
-          const isSelected = selectedOption?.value === option.value;
+          const isSelected = selectedItemCondition === option.value;
           return (
             <TouchableOpacity
               key={index}
-              onPress={() => handleSelectCondition(option)}
-              className={`w-11/12 h-16 rounded-lg mt-2 ml-4 flex-row justify-between items-center px-4 ${
+              onPress={() => handleSelectCondition(option.value)}
+              className={`p-5 rounded-lg mt-3 flex-row justify-between items-center${
                 isSelected ? "bg-[#00b0b91A]" : "bg-white"
               }`}
             >
-              {/* Text hiển thị nội dung */}
-              <Text className={`text-lg font-normal ${isSelected ? "text-[#00b0b9] font-bold" : "text-black"}`}>
+              <Text
+                className={`text-lg ${
+                  isSelected
+                    ? "text-[#00b0b9] font-bold"
+                    : "text-black font-normal"
+                }`}
+              >
                 {option.label}
               </Text>
-
-              {/* Radio Button */}
               <Icon
-                name={isSelected ? "radio-button-checked" : "radio-button-unchecked"}
+                name={
+                  isSelected ? "radio-button-checked" : "radio-button-unchecked"
+                }
                 size={24}
                 color="#00b0b9"
               />

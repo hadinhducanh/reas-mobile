@@ -1,9 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -11,8 +8,6 @@ import {
   View,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import * as ImagePicker from "expo-image-picker";
-import { ActionSheetIOS } from "react-native";
 import {
   useFocusEffect,
   useNavigation,
@@ -29,14 +24,53 @@ import { postItemThunk } from "../../redux/thunk/itemThunks";
 import Header from "../../components/Header";
 import ChooseImage from "../../components/ChooseImage";
 import LoadingButton from "../../components/LoadingButton";
+import { useUploadItem } from "../../context/ItemContext";
+import { ConditionItem } from "../../common/enums/ConditionItem";
+import { MethodExchange } from "../../common/enums/MethodExchange";
+
+const itemConditions = [
+  { label: "Brand new", value: ConditionItem.BRAND_NEW },
+  { label: "Like new", value: ConditionItem.LIKE_NEW },
+  { label: "Excellent condition", value: ConditionItem.EXCELLENT },
+  { label: "Good condition", value: ConditionItem.GOOD },
+  { label: "Fair condition", value: ConditionItem.FAIR },
+  { label: "Poor condition", value: ConditionItem.BRAND_NEW },
+  { label: "For parts / Not working", value: ConditionItem.NOT_WORKING },
+];
+const methodExchanges = [
+  { label: "Pick up in person", value: MethodExchange.PICK_UP_IN_PERSON },
+  { label: "Delivery", value: MethodExchange.DELIVERY },
+  {
+    label: "Meet at a given location",
+    value: MethodExchange.MEET_AT_GIVEN_LOCATION,
+  },
+];
 
 export default function UploadScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { brands } = useSelector((state: RootState) => state.brand);
+  const { categories } = useSelector((state: RootState) => state.category);
+  const dispatch = useDispatch<AppDispatch>();
+
   const [isCheckedFree, setIsCheckedFree] = useState(false);
   const [isCheckedDesiredItem, setIsCheckedDesiredItem] = useState(false);
+  const { uploadItem } = useUploadItem();
+
+  const selectedBrand = brands.find((brand) => brand.id === uploadItem.brandId);
+  const selectedTypeItemDetail = categories.find(
+    (category) => category.id === uploadItem.categoryId
+  );
+  const selectedItemCondition = itemConditions.find(
+    (itemCondition) => itemCondition.value === uploadItem.conditionItem
+  );
+  const selectedMethodExchanges = methodExchanges
+    .filter((method) => uploadItem.methodExchanges.includes(method.value))
+    .map((method) => method.label)
+    .join(", ");
+
   const [price, setPrice] = useState<number | null>(null);
-  const [title, setTitle] = useState<string | null>(null);
+  const [title, setTitle] = useState<string>("");
   const [description1, setDescription1] = useState("");
   const [quantity, setQuantity] = useState("");
   const [condition, setCondition] = useState("");
@@ -51,124 +85,114 @@ export default function UploadScreen() {
   const [selectedConditionValue, setSelectedConditionValue] = useState<
     string | null
   >(null);
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
-  const [selectedBrandId, setSelectedBrandId] = useState<number | null>(null);
+  // const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  // const [selectedBrandId, setSelectedBrandId] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedTypeValue, setSelectedTypeValue] = useState<string | null>(
     null
   );
 
-  const { loading } = useSelector((state: RootState) => state.item);
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const fetchStoredData = async () => {
+  //       try {
+  //         const [methods, condition, brand, type] = await Promise.all([
+  //           AsyncStorage.getItem("selectedMethods"),
+  //           AsyncStorage.getItem("selectedCondition"),
+  //           AsyncStorage.getItem("selectedBrand"),
+  //           AsyncStorage.getItem("selectedType"),
+  //         ]);
 
-  const dispatch = useDispatch<AppDispatch>();
+  //         if (methods) {
+  //           const parsedMethods = JSON.parse(methods);
+  //           setSelectedMethodsValue(
+  //             parsedMethods.map((method: { value: string }) => method.value)
+  //           );
+  //           setSelectedMethods(
+  //             parsedMethods.map((method: { label: string }) => method.label)
+  //           );
+  //         }
+  //         if (condition) {
+  //           const parsedCondition = JSON.parse(condition);
+  //           setSelectedConditionValue(parsedCondition.value);
+  //           setSelectedCondition(parsedCondition.label);
+  //         }
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchStoredData = async () => {
-        try {
-          const [methods, condition, brand, type] = await Promise.all([
-            AsyncStorage.getItem("selectedMethods"),
-            AsyncStorage.getItem("selectedCondition"),
-            AsyncStorage.getItem("selectedBrand"),
-            AsyncStorage.getItem("selectedType"),
-          ]);
+  //         if (brand) {
+  //           const parsedBrand = JSON.parse(brand);
+  //           setSelectedBrand(parsedBrand.brandName);
+  //           setSelectedBrandId(parsedBrand.id);
+  //         }
+  //         if (type) {
+  //           const parsedType = JSON.parse(type);
+  //           setSelectedTypeValue(parsedType.value);
+  //           setSelectedType(parsedType.label);
+  //         }
+  //       } catch (error) {
+  //         console.error("Failed to retrieve or delete data:", error);
+  //       }
+  //     };
 
-          if (methods) {
-            const parsedMethods = JSON.parse(methods);
-            setSelectedMethodsValue(
-              parsedMethods.map((method: { value: string }) => method.value)
-            );
-            setSelectedMethods(
-              parsedMethods.map((method: { label: string }) => method.label)
-            );
-          }
-          if (condition) {
-            const parsedCondition = JSON.parse(condition);
-            setSelectedConditionValue(parsedCondition.value);
-            setSelectedCondition(parsedCondition.label);
-          }
-
-          if (brand) {
-            const parsedBrand = JSON.parse(brand);
-            setSelectedBrand(parsedBrand.brandName);
-            setSelectedBrandId(parsedBrand.id);
-          }
-          if (type) {
-            const parsedType = JSON.parse(type);
-            setSelectedTypeValue(parsedType.value);
-            setSelectedType(parsedType.label);
-          }
-        } catch (error) {
-          console.error("Failed to retrieve or delete data:", error);
-        }
-      };
-
-      fetchStoredData();
-    }, [])
-  );
+  //     fetchStoredData();
+  //   }, [])
+  // );
 
   const handleCreateItem = async () => {
-    const missingFields = [];
-
-    if (!title) missingFields.push("title");
-    if (!selectedType) missingFields.push("selectedType");
-    if (!selectedBrandId) missingFields.push("selectedBrandId");
-    if (!selectedCondition) missingFields.push("selectedCondition");
-
-    if (missingFields.length > 0) {
-      console.log("❌ Missing fields:", missingFields.join(", "));
-      Alert.alert(
-        "Error",
-        `Please fill in all required fields: ${missingFields.join(", ")}`
-      );
-      return;
-    }
-
-    const newItem = {
-      itemName: title || "",
-      description: description1 || "",
-      price: isCheckedFree ? 0 : price || 0,
-      conditionItem: selectedConditionValue || "",
-      imageUrl: images.length > 0 ? images[0] : "",
-      // imageUrl: "hehehege",
-      methodExchanges: selectedMethodsValue || [],
-      isMoneyAccepted: !isCheckedDesiredItem,
-      typeExchange: isCheckedDesiredItem
-        ? "EXCHANGE_WITH_DESIRED_ITEM"
-        : "OPEN_EXCHANGE",
-      typeItem: selectedTypeValue || "",
-      termsAndConditionsExchange: condition || "",
-      categoryId: 2, // Đúng với dữ liệu mẫu
-      brandId: selectedBrandId ?? 2, // Đúng với dữ liệu mẫu
-      desiredItem: isCheckedDesiredItem
-        ? {
-            typeItem: "LIVING_ROOM_APPLIANCES",
-            categoryId: 2,
-            brandId: 2,
-            conditionItem: "LIKE_NEW",
-            minPrice: 1000,
-            maxPrice: 100000,
-          }
-        : undefined,
-    };
-
-    console.log("🛠 Sending newItem data:", JSON.stringify(newItem, null, 2)); // Log toàn bộ dữ liệu item
-
-    try {
-      const resultAction = await dispatch(postItemThunk(newItem)).unwrap();
-      console.log("✅ Success:", resultAction);
-      Alert.alert("Success", "Item created successfully!");
-    } catch (err) {
-      console.log("❌ Error creating item:", err);
-
-      if (err instanceof Error) {
-        console.log("🛠 Error message:", err.message);
-        Alert.alert("Error", err.message || "Failed to create item.");
-      } else {
-        console.log("🛠 Unknown error:", JSON.stringify(err, null, 2));
-        Alert.alert("Error", "Failed to create item.");
-      }
-    }
+    //   const missingFields = [];
+    //   if (!title) missingFields.push("title");
+    //   if (!selectedType) missingFields.push("selectedType");
+    //   if (!selectedBrandId) missingFields.push("selectedBrandId");
+    //   if (!selectedCondition) missingFields.push("selectedCondition");
+    //   if (missingFields.length > 0) {
+    //     console.log("❌ Missing fields:", missingFields.join(", "));
+    //     Alert.alert(
+    //       "Error",
+    //       `Please fill in all required fields: ${missingFields.join(", ")}`
+    //     );
+    //     return;
+    //   }
+    //   const newItem = {
+    //     itemName: title || "",
+    //     description: description1 || "",
+    //     price: isCheckedFree ? 0 : price || 0,
+    //     conditionItem: selectedConditionValue || "",
+    //     imageUrl: images.length > 0 ? images[0] : "",
+    //     // imageUrl: "hehehege",
+    //     methodExchanges: selectedMethodsValue || [],
+    //     isMoneyAccepted: !isCheckedDesiredItem,
+    //     typeExchange: isCheckedDesiredItem
+    //       ? "EXCHANGE_WITH_DESIRED_ITEM"
+    //       : "OPEN_EXCHANGE",
+    //     typeItem: selectedTypeValue || "",
+    //     termsAndConditionsExchange: condition || "",
+    //     categoryId: 2, // Đúng với dữ liệu mẫu
+    //     brandId: selectedBrandId ?? 2, // Đúng với dữ liệu mẫu
+    //     desiredItem: isCheckedDesiredItem
+    //       ? {
+    //           typeItem: "LIVING_ROOM_APPLIANCES",
+    //           categoryId: 2,
+    //           brandId: 2,
+    //           conditionItem: "LIKE_NEW",
+    //           minPrice: 1000,
+    //           maxPrice: 100000,
+    //         }
+    //       : undefined,
+    //   };
+    //   console.log("🛠 Sending newItem data:", JSON.stringify(newItem, null, 2)); // Log toàn bộ dữ liệu item
+    //   try {
+    //     const resultAction = await dispatch(postItemThunk(newItem)).unwrap();
+    //     console.log("✅ Success:", resultAction);
+    //     Alert.alert("Success", "Item created successfully!");
+    //   } catch (err) {
+    //     console.log("❌ Error creating item:", err);
+    //     if (err instanceof Error) {
+    //       console.log("🛠 Error message:", err.message);
+    //       Alert.alert("Error", err.message || "Failed to create item.");
+    //     } else {
+    //       console.log("🛠 Unknown error:", JSON.stringify(err, null, 2));
+    //       Alert.alert("Error", "Failed to create item.");
+    //     }
+    //   }
   };
 
   const toggleCheckboxFree = () => {
@@ -198,8 +222,12 @@ export default function UploadScreen() {
         >
           <View>
             <Text className="text-base text-black">Type of item</Text>
-            <Text className="text-lg font-semibold text-[#00b0b9] mt-1">
-              {selectedCondition || "Select type"}
+            <Text
+              className={`text-lg font-semibold ${
+                selectedTypeItemDetail ? "text-[#00b0b9]" : "text-black"
+              }  mt-1`}
+            >
+              {selectedTypeItemDetail?.categoryName || "Select type"}
             </Text>
           </View>
           <Icon name="arrow-forward-ios" size={20} color="black" />
@@ -211,8 +239,12 @@ export default function UploadScreen() {
         >
           <View>
             <Text className="text-base text-black">Brand</Text>
-            <Text className="text-lg font-semibold text-[#00b0b9] mt-1">
-              {selectedBrand || "Select brand"}
+            <Text
+              className={`text-lg font-semibold ${
+                selectedBrand ? "text-[#00b0b9]" : "text-black"
+              }  mt-1`}
+            >
+              {selectedBrand?.brandName || "Select brand"}
             </Text>
           </View>
           <Icon name="arrow-forward-ios" size={20} color="black" />
@@ -224,8 +256,12 @@ export default function UploadScreen() {
         >
           <View>
             <Text className="text-base text-black">Condition</Text>
-            <Text className="text-lg font-semibold text-[#00b0b9] mt-1">
-              {selectedCondition || "Select condition"}
+            <Text
+              className={`text-lg font-semibold ${
+                selectedItemCondition ? "text-[#00b0b9]" : "text-black"
+              }  mt-1`}
+            >
+              {selectedItemCondition?.label || "Select condition"}
             </Text>
           </View>
           <Icon name="arrow-forward-ios" size={20} color="black" />
@@ -263,7 +299,7 @@ export default function UploadScreen() {
             className="flex-1 text-base font-normal text-[#00B0B9]"
             placeholder="Title"
             placeholderTextColor="#d1d5db"
-            // value={title}
+            value={title}
             onChangeText={setTitle}
           />
         </View>
@@ -298,9 +334,15 @@ export default function UploadScreen() {
         >
           <View>
             <Text className="text-base text-black">Method of exchange</Text>
-            <Text className="text-lg font-semibold text-[#00B0B9] mt-1">
-              {selectedMethods.length > 0
-                ? selectedMethods.join(", ")
+            <Text
+              className={`text-lg font-semibold ${
+                selectedMethodExchanges ? "text-[#00b0b9]" : "text-black"
+              }  mt-1`}
+            >
+              {uploadItem.methodExchanges.length === 3
+                ? "All method exchanges"
+                : uploadItem.methodExchanges.length > 0
+                ? selectedMethodExchanges
                 : "Select methods"}
             </Text>
           </View>
@@ -336,7 +378,7 @@ export default function UploadScreen() {
           </TouchableOpacity>
         )}
 
-        <Text className="text-base font-semibold mt-8 px-5 text-gray-500">
+        <Text className="text-lg font-semibold mt-8 px-5 text-gray-500">
           Exchange’s terms and conditions
         </Text>
 

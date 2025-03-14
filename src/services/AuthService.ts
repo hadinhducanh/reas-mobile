@@ -6,7 +6,7 @@ import {
   SignupDto,
   PasswordChangeRequest,
 } from "../common/models/auth";
-import { API_BASE_URL, API_BASE_URL_LOG_OUT } from "../common/models/constants";
+import { API_BASE_URL, API_BASE_URL_LOG_OUT } from "../common/constant";
 
 const authenticateUser = async (
   credentials: LoginDto
