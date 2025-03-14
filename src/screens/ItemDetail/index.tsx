@@ -97,8 +97,8 @@ const ItemDetails: React.FC = () => {
   const { itemId } = route.params;
   const item = itemList.find((item) => item.id === itemId);
   const [isFavorite, setIsFavorite] = useState(item?.isFavorited);
-
   const imageArray = item?.images ? item.images.split(",") : [];
+  const [sellerUserName, setSellerUserName] = useState<String>("ngoccuong");
 
   const setFavorite = () => {
     setIsFavorite(!isFavorite);
@@ -116,7 +116,10 @@ const ItemDetails: React.FC = () => {
     return price !== undefined ? price.toLocaleString("vi-VN") : "0";
   };
 
-  const handleSend = async () => {
+  const handleSend = async (sendTo: String) => {
+    if (sendTo != "" && sendTo === "ChatHistory"){
+        navigation.navigate("ChatHistory", { username: sellerUserName });
+    }
     await new Promise((resolve) => setTimeout(resolve, 3000));
   };
 
@@ -307,7 +310,7 @@ const ItemDetails: React.FC = () => {
         <View className="flex-1">
           <LoadingButton
             title="Call"
-            onPress={handleSend}
+            onPress={() => handleSend("")}
             buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
             iconName="call-outline"
             iconSize={25}
@@ -319,7 +322,7 @@ const ItemDetails: React.FC = () => {
         <View className="flex-1 mx-2">
           <LoadingButton
             title="SMS"
-            onPress={handleSend}
+            onPress={() => handleSend("ChatHistory")}
             buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
             iconName="chatbubble-outline"
             iconSize={25}

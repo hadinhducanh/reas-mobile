@@ -79,7 +79,7 @@ export type RootStackParamList = {
   Profile: undefined;
   ExchangeHistory: undefined;
   ExchangeDetail: { statusDetail: string };
-  ChatHistory: undefined;
+  ChatHistory: { username: String };
   ChatDetails: undefined;
   Statistics: undefined;
   ItemDetails: { itemId: number };
