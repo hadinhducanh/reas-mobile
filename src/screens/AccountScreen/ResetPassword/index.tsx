@@ -9,6 +9,8 @@ import { AppDispatch, RootState } from "../../../redux/store";
 import { changePasswordThunk } from "../../../redux/thunk/authThunks";
 import { z } from "zod";
 import Header from "../../../components/Header";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
 
 // Schema xác thực mật khẩu với Zod (oldPassword và newPassword phải giống nhau)
 const passwordRegex =
@@ -26,7 +28,8 @@ const passwordSchema = z.object({
 
 const ResetPassword: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { loading } = useSelector((state: RootState) => state.auth);
 
   const [oldPassword, setOldPassword] = useState<string>("");
@@ -90,7 +93,13 @@ const ResetPassword: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header title="Reset password" showOption={false} />
+      <Header
+        title="Reset password"
+        showOption={false}
+        onBackPress={() =>
+          navigation.navigate("MainTabs", { screen: "Account" })
+        }
+      />
 
       {/* Form */}
       <View className="bg-white rounded-tl-[10px] rounded-tr-[10px] mx-5 p-5">

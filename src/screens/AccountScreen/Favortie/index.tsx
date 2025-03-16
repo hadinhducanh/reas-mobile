@@ -1,64 +1,38 @@
 import React, { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Header from "../../components/Header";
-import ItemCard from "../../components/CardItem";
+import Header from "../../../components/Header";
+import ItemCard from "../../../components/CardItem";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { ItemType, RootStackParamList } from "../../navigation/AppNavigator";
+import { ItemType, RootStackParamList } from "../../../navigation/AppNavigator";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../redux/store";
+import HorizontalSection from "../../../components/HorizontalSection";
+import { ItemResponse } from "../../../common/models/item";
 
 const Favorite: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
+  const { itemRecommnand } = useSelector((state: RootState) => state.item);
   const isEmpty = false;
 
-  const [itemList, setItemList] = useState<ItemType[]>([
-    {
-      id: 1,
-      name: "iPhone 20",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "Vinhome Grand Park",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: true,
-    },
-    {
-      id: 2,
-      name: "Samsung Galaxy S25",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "District 1, HCMC",
-      description: "Latest Samsung flagship phone.",
-      isFavorited: true,
-    },
-    {
-      id: 3,
-      name: "Samsung Galaxy S24",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "District 3, HCMC",
-      description: "Latest Samsung flagship phone1.",
-      isFavorited: true,
-    },
-  ]);
-
-  const chunkArray = (array: ItemType[], size: number) => {
-    const chunked: ItemType[][] = [];
+  const chunkArray = (array: ItemResponse[], size: number) => {
+    const chunked: ItemResponse[][] = [];
     for (let i = 0; i < array.length; i += size) {
       chunked.push(array.slice(i, i + size));
     }
     return chunked;
   };
 
-  const toggleLike = (itemId: number) => {
-    setItemList((prevList) =>
-      prevList.map((item) =>
-        item.id === itemId ? { ...item, isFavorited: !item.isFavorited } : item
-      )
-    );
-  };
+  // const toggleLike = (itemId: number) => {
+  //   setItemList((prevList) =>
+  //     prevList.map((item) =>
+  //       item.id === itemId ? { ...item, isFavorited: !item.isFavorited } : item
+  //     )
+  //   );
+  // };
 
   // Chia itemList thành các hàng, mỗi hàng có 2 item
-  const rows = chunkArray(itemList, 2);
+  const rows = chunkArray(itemRecommnand.content, 2);
 
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
@@ -70,6 +44,9 @@ const Favorite: React.FC = () => {
         textColor="text-white"
         optionIconColor="white"
         showOption={false}
+        onBackPress={() =>
+          navigation.navigate("MainTabs", { screen: "Account" })
+        }
       />
 
       {/* Phần còn lại của màn hình */}
@@ -95,30 +72,14 @@ const Favorite: React.FC = () => {
                 </Text>
               </View>
 
-              {/* Nếu muốn hiển thị "New items" phía dưới khi list rỗng */}
-              <View className="mt-5 w-full">
-                <Text className="text-[#0b1d2d] text-xl font-bold mb-3">
-                  New items
-                </Text>
-                {rows.map((row, rowIndex) => (
-                  <View key={rowIndex} className="flex flex-row mb-2 gap-x-2">
-                    {row.map((item) => (
-                      <View key={item.id} className="flex-1">
-                        <ItemCard
-                          item={item}
-                          navigation={navigation}
-                          toggleLike={toggleLike}
-                          mode="default"
-                        />
-                      </View>
-                    ))}
-                    {row.length === 1 && <View className="flex-1" />}
-                  </View>
-                ))}
-              </View>
+              <HorizontalSection
+                title="Bài đăng tương tự"
+                data={itemRecommnand.content}
+                // toggleLike={toggleLike}
+                navigation={navigation}
+              />
             </View>
           ) : (
-            // Nếu isEmpty = false, hiển thị danh sách item
             <View className="flex-1 px-5">
               <View className="mt-3">
                 {rows.map((row, rowIndex) => (
@@ -128,7 +89,7 @@ const Favorite: React.FC = () => {
                         <ItemCard
                           item={item}
                           navigation={navigation}
-                          toggleLike={toggleLike}
+                          // toggleLike={toggleLike}
                           mode="default"
                         />
                       </View>

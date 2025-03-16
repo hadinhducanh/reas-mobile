@@ -16,82 +16,24 @@ import {
   NavigationProp,
 } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Header from "../../components/Header";
-import { ItemType, RootStackParamList } from "../../navigation/AppNavigator";
-import HorizontalSection from "../../components/HorizontalSection";
-import LoadingButton from "../../components/LoadingButton";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../redux/store";
-import { getItemDetailThunk } from "../../redux/thunk/itemThunks";
+import { ItemType, RootStackParamList } from "../../../navigation/AppNavigator";
+import { AppDispatch, RootState } from "../../../redux/store";
+import { getItemDetailThunk } from "../../../redux/thunk/itemThunks";
+import HorizontalSection from "../../../components/HorizontalSection";
+import Header from "../../../components/Header";
+import LoadingButton from "../../../components/LoadingButton";
 
 const { width } = Dimensions.get("window");
 
 const ItemDetails: React.FC = () => {
-  const [itemList, setItemList] = useState<ItemType[]>([
-    {
-      id: 1,
-      name: "iPhone 20",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "Vinhome Grand Park",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-    {
-      id: 2,
-      name: "Samsung Galaxy S25",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "District 1, HCMC",
-      description: "Latest Samsung flagship phone.",
-      isFavorited: false,
-    },
-    {
-      id: 3,
-      name: "Samsung Galaxy S24",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "District 3, HCMC",
-      description: "Latest Samsung flagship phone1.",
-      isFavorited: false,
-    },
-  ]);
-
-  const otherItems: ItemType[] = [
-    {
-      id: 4,
-      name: "MacBook Pro M3",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "Hà Nội",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-    {
-      id: 5,
-      name: "AirPods Pro 2",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "Hồ Chí Minh",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-    {
-      id: 6,
-      name: "iPad Air 5",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "Đà Nẵng",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-  ];
-
   const route = useRoute<RouteProp<RootStackParamList, "ItemDetails">>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { itemId } = route.params;
   const dispatch = useDispatch<AppDispatch>();
-  const { itemDetail, loading } = useSelector((state: RootState) => state.item);
+  const { itemDetail, itemRecommnand } = useSelector(
+    (state: RootState) => state.item
+  );
   // const item = itemList.find((item) => item.id === itemId);
   // const [isFavorite, setIsFavorite] = useState(item?.isFavorited);
   const data = [
@@ -107,13 +49,13 @@ const ItemDetails: React.FC = () => {
   //   setIsFavorite(!isFavorite);
   // };
 
-  const toggleLike = (itemId: number) => {
-    setItemList((prevList) =>
-      prevList.map((it) =>
-        it.id === itemId ? { ...it, isFavorited: !it.isFavorited } : it
-      )
-    );
-  };
+  // const toggleLike = (itemId: number) => {
+  //   setItemList((prevList) =>
+  //     prevList.map((it) =>
+  //       it.id === itemId ? { ...it, isFavorited: !it.isFavorited } : it
+  //     )
+  //   );
+  // };
 
   const formatPrice = (price: number | undefined): string => {
     return price !== undefined ? price.toLocaleString("vi-VN") : "0";
@@ -277,15 +219,15 @@ const ItemDetails: React.FC = () => {
 
       <HorizontalSection
         title="Bài đăng khác của Ngọc Cường"
-        data={otherItems}
-        toggleLike={toggleLike}
+        data={itemRecommnand.content}
+        // toggleLike={toggleLike}
         navigation={navigation}
       />
 
       <HorizontalSection
         title="Bài đăng tương tự"
-        data={otherItems}
-        toggleLike={toggleLike}
+        data={itemRecommnand.content}
+        // toggleLike={toggleLike}
         navigation={navigation}
       />
     </View>
@@ -294,7 +236,12 @@ const ItemDetails: React.FC = () => {
   return (
     <>
       <SafeAreaView className="flex-1 bg-gray-100" edges={["top"]}>
-        <Header title="" />
+        <Header
+          title=""
+          onBackPress={() =>
+            navigation.navigate("MainTabs", { screen: "Home" })
+          }
+        />
         <FlatList
           data={[{}]}
           keyExtractor={(_, index) => index.toString()}

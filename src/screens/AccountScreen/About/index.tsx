@@ -8,11 +8,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Header from "../../components/Header";
+import Header from "../../../components/Header";
 import Icon from "react-native-vector-icons/Ionicons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "../../navigation/AppNavigator";
-import LoadingButton from "../../components/LoadingButton";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
+import LoadingButton from "../../../components/LoadingButton";
 
 const About: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -28,6 +28,9 @@ const About: React.FC = () => {
         textColor="text-white"
         optionIconColor="white"
         showOption={false}
+        onBackPress={() =>
+          navigation.navigate("MainTabs", { screen: "Account" })
+        }
       />
 
       <ScrollView className="flex-1 bg-white px-4 py-6">

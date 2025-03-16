@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -8,25 +8,22 @@ import {
   View,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import {
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppDispatch, RootState } from "../../redux/store";
 import { useDispatch, useSelector } from "react-redux";
-import { postItemThunk } from "../../redux/thunk/itemThunks";
 import Header from "../../components/Header";
 import ChooseImage from "../../components/ChooseImage";
 import LoadingButton from "../../components/LoadingButton";
-import { useUploadItem } from "../../context/ItemContext";
+import { defaultUploadItem, useUploadItem } from "../../context/ItemContext";
 import { ConditionItem } from "../../common/enums/ConditionItem";
 import { MethodExchange } from "../../common/enums/MethodExchange";
+import { TypeExchange } from "../../common/enums/TypeExchange";
+import { uploadItemThunk } from "../../redux/thunk/itemThunks";
+import { resetItemDetail } from "../../redux/slices/itemSlice";
 
 const itemConditions = [
   { label: "Brand new", value: ConditionItem.BRAND_NEW },
@@ -34,7 +31,7 @@ const itemConditions = [
   { label: "Excellent condition", value: ConditionItem.EXCELLENT },
   { label: "Good condition", value: ConditionItem.GOOD },
   { label: "Fair condition", value: ConditionItem.FAIR },
-  { label: "Poor condition", value: ConditionItem.BRAND_NEW },
+  { label: "Poor condition", value: ConditionItem.POOR },
   { label: "For parts / Not working", value: ConditionItem.NOT_WORKING },
 ];
 const methodExchanges = [
@@ -51,11 +48,18 @@ export default function UploadScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { brands } = useSelector((state: RootState) => state.brand);
   const { categories } = useSelector((state: RootState) => state.category);
+  const { itemUpload, loading } = useSelector((state: RootState) => state.item);
   const dispatch = useDispatch<AppDispatch>();
+  const {
+    uploadItem,
+    setUploadItem,
+    isCheckFreeContext,
+    setIsCheckFreeContext,
+  } = useUploadItem();
 
-  const [isCheckedFree, setIsCheckedFree] = useState(false);
-  const [isCheckedDesiredItem, setIsCheckedDesiredItem] = useState(false);
-  const { uploadItem } = useUploadItem();
+  const [isCheckedFree, setIsCheckedFree] =
+    useState<boolean>(isCheckFreeContext);
+  const [isMoneyAccepted, setIsMoneyAccepted] = useState(false);
 
   const selectedBrand = brands.find((brand) => brand.id === uploadItem.brandId);
   const selectedTypeItemDetail = categories.find(
@@ -69,137 +73,138 @@ export default function UploadScreen() {
     .map((method) => method.label)
     .join(", ");
 
-  const [price, setPrice] = useState<number | null>(null);
-  const [title, setTitle] = useState<string>("");
-  const [description1, setDescription1] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [condition, setCondition] = useState("");
-  const [images, setImages] = useState<string>("");
-  const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
-  const [selectedMethodsValue, setSelectedMethodsValue] = useState<string[]>(
-    []
+  const [price, setPrice] = useState<string>(uploadItem.price.toString());
+  const [itemName, setItemName] = useState<string>(uploadItem.itemName);
+  const [description, setDescription] = useState<string>(
+    uploadItem.description
   );
-  const [selectedCondition, setSelectedCondition] = useState<string | null>(
-    null
+  const [termCondition, setTermCondition] = useState<string>(
+    uploadItem.termsAndConditionsExchange
   );
-  const [selectedConditionValue, setSelectedConditionValue] = useState<
-    string | null
-  >(null);
-  // const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
-  // const [selectedBrandId, setSelectedBrandId] = useState<number | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedTypeValue, setSelectedTypeValue] = useState<string | null>(
-    null
-  );
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     const fetchStoredData = async () => {
-  //       try {
-  //         const [methods, condition, brand, type] = await Promise.all([
-  //           AsyncStorage.getItem("selectedMethods"),
-  //           AsyncStorage.getItem("selectedCondition"),
-  //           AsyncStorage.getItem("selectedBrand"),
-  //           AsyncStorage.getItem("selectedType"),
-  //         ]);
-
-  //         if (methods) {
-  //           const parsedMethods = JSON.parse(methods);
-  //           setSelectedMethodsValue(
-  //             parsedMethods.map((method: { value: string }) => method.value)
-  //           );
-  //           setSelectedMethods(
-  //             parsedMethods.map((method: { label: string }) => method.label)
-  //           );
-  //         }
-  //         if (condition) {
-  //           const parsedCondition = JSON.parse(condition);
-  //           setSelectedConditionValue(parsedCondition.value);
-  //           setSelectedCondition(parsedCondition.label);
-  //         }
-
-  //         if (brand) {
-  //           const parsedBrand = JSON.parse(brand);
-  //           setSelectedBrand(parsedBrand.brandName);
-  //           setSelectedBrandId(parsedBrand.id);
-  //         }
-  //         if (type) {
-  //           const parsedType = JSON.parse(type);
-  //           setSelectedTypeValue(parsedType.value);
-  //           setSelectedType(parsedType.label);
-  //         }
-  //       } catch (error) {
-  //         console.error("Failed to retrieve or delete data:", error);
-  //       }
-  //     };
-
-  //     fetchStoredData();
-  //   }, [])
-  // );
+  const [images, setImages] = useState<string>(uploadItem.imageUrl);
 
   const handleCreateItem = async () => {
-    //   const missingFields = [];
-    //   if (!title) missingFields.push("title");
-    //   if (!selectedType) missingFields.push("selectedType");
-    //   if (!selectedBrandId) missingFields.push("selectedBrandId");
-    //   if (!selectedCondition) missingFields.push("selectedCondition");
-    //   if (missingFields.length > 0) {
-    //     console.log("❌ Missing fields:", missingFields.join(", "));
-    //     Alert.alert(
-    //       "Error",
-    //       `Please fill in all required fields: ${missingFields.join(", ")}`
-    //     );
-    //     return;
-    //   }
-    //   const newItem = {
-    //     itemName: title || "",
-    //     description: description1 || "",
-    //     price: isCheckedFree ? 0 : price || 0,
-    //     conditionItem: selectedConditionValue || "",
-    //     imageUrl: images.length > 0 ? images[0] : "",
-    //     // imageUrl: "hehehege",
-    //     methodExchanges: selectedMethodsValue || [],
-    //     isMoneyAccepted: !isCheckedDesiredItem,
-    //     typeExchange: isCheckedDesiredItem
-    //       ? "EXCHANGE_WITH_DESIRED_ITEM"
-    //       : "OPEN_EXCHANGE",
-    //     typeItem: selectedTypeValue || "",
-    //     termsAndConditionsExchange: condition || "",
-    //     categoryId: 2, // Đúng với dữ liệu mẫu
-    //     brandId: selectedBrandId ?? 2, // Đúng với dữ liệu mẫu
-    //     desiredItem: isCheckedDesiredItem
-    //       ? {
-    //           typeItem: "LIVING_ROOM_APPLIANCES",
-    //           categoryId: 2,
-    //           brandId: 2,
-    //           conditionItem: "LIKE_NEW",
-    //           minPrice: 1000,
-    //           maxPrice: 100000,
-    //         }
-    //       : undefined,
-    //   };
-    //   console.log("🛠 Sending newItem data:", JSON.stringify(newItem, null, 2)); // Log toàn bộ dữ liệu item
-    //   try {
-    //     const resultAction = await dispatch(postItemThunk(newItem)).unwrap();
-    //     console.log("✅ Success:", resultAction);
-    //     Alert.alert("Success", "Item created successfully!");
-    //   } catch (err) {
-    //     console.log("❌ Error creating item:", err);
-    //     if (err instanceof Error) {
-    //       console.log("🛠 Error message:", err.message);
-    //       Alert.alert("Error", err.message || "Failed to create item.");
-    //     } else {
-    //       console.log("🛠 Unknown error:", JSON.stringify(err, null, 2));
-    //       Alert.alert("Error", "Failed to create item.");
-    //     }
-    //   }
+    const priceItem = isCheckedFree
+      ? 0
+      : parseInt(price.toString().replace(/,/g, ""), 10) || 0;
+
+    if (description.trim().length < 20) {
+      Alert.alert(
+        "Invalid Description",
+        "Description must be at least 20 characters long."
+      );
+      return;
+    }
+
+    if (
+      !images ||
+      !selectedTypeItemDetail ||
+      !selectedBrand ||
+      !selectedItemCondition ||
+      (!price && priceItem > 0 && isCheckedFree) ||
+      !itemName ||
+      !description ||
+      !selectedMethodExchanges
+    ) {
+      Alert.alert("Missing Information", "All fields is required.");
+      return;
+    } else {
+      if (uploadItem.desiredItem?.categoryId !== 0) {
+        setUploadItem({
+          ...uploadItem,
+          typeExchange: TypeExchange.EXCHANGE_WITH_DESIRED_ITEM,
+        });
+      }
+
+      const uploadItemRequest = {
+        itemName: uploadItem.itemName,
+        description: uploadItem.description,
+        price: uploadItem.price,
+        conditionItem: uploadItem.conditionItem,
+        imageUrl: "abc",
+        methodExchanges: uploadItem.methodExchanges,
+        isMoneyAccepted: uploadItem.isMoneyAccepted,
+        typeExchange: uploadItem.typeExchange,
+        typeItem: uploadItem.typeItem,
+        termsAndConditionsExchange: uploadItem.termsAndConditionsExchange,
+        categoryId: uploadItem.categoryId,
+        brandId: uploadItem.brandId,
+        desiredItem:
+          uploadItem.desiredItem?.categoryId !== 0
+            ? uploadItem.desiredItem
+            : null,
+      };
+
+      // console.log(uploadItemRequest);
+
+      await dispatch(uploadItemThunk(uploadItemRequest));
+    }
   };
+
+  useEffect(() => {
+    if (itemUpload?.itemName.length) {
+      setUploadItem(defaultUploadItem);
+      setIsCheckFreeContext(false);
+      setItemName("");
+      setImages("");
+      setDescription("");
+      setPrice("");
+      dispatch(resetItemDetail());
+      navigation.navigate("UploadItemSuccess");
+    }
+  }, [itemUpload, dispatch]);
 
   const toggleCheckboxFree = () => {
     setIsCheckedFree(!isCheckedFree);
+    setIsCheckFreeContext(!isCheckedFree);
   };
   const toggleCheckboxDesiredItem = () => {
-    setIsCheckedDesiredItem(!isCheckedDesiredItem);
+    setIsMoneyAccepted(!isMoneyAccepted);
+    setUploadItem({
+      ...uploadItem,
+      isMoneyAccepted: isMoneyAccepted,
+    });
+  };
+
+  const formatPrice = (value: string): string => {
+    const numericValue = value.replace(/\D/g, "");
+    return numericValue
+      ? parseInt(numericValue, 10).toLocaleString("en-US")
+      : "";
+  };
+
+  const handlePriceChange = (value: string) => {
+    const priceItem = parseInt(value.replace(/,/g, ""), 10) || 0;
+    setPrice(value);
+
+    setUploadItem({
+      ...uploadItem,
+      price: priceItem,
+    });
+  };
+
+  const handleNameChange = (value: string) => {
+    setItemName(value);
+    setUploadItem({
+      ...uploadItem,
+      itemName: value,
+    });
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+    setUploadItem({
+      ...uploadItem,
+      description: value,
+    });
+  };
+
+  const handleTermConditionChange = (value: string) => {
+    setTermCondition(value);
+    setUploadItem({
+      ...uploadItem,
+      termsAndConditionsExchange: value,
+    });
   };
 
   return (
@@ -280,51 +285,51 @@ export default function UploadScreen() {
         </View>
 
         {!isCheckedFree && (
-          <View className="w-full bg-white rounded-lg mt-4 flex-row items-center justify-between px-5 py-3">
-            <TextInput
-              className="flex-1 text-base font-normal text-black"
-              placeholder="Price"
-              placeholderTextColor="#d1d5db"
-              value={price !== null ? price.toString() : ""}
-              onChangeText={(text) => setPrice(text ? parseFloat(text) : null)}
-              keyboardType="numeric"
-            />
+          <View className="w-full bg-white rounded-lg mt-4 px-5 py-3">
+            <Text className="text-black text-base">Min price</Text>
+            <View className="flex-row justify-between items-center mt-1">
+              <TextInput
+                className="flex-1 text-lg font-normal text-black"
+                placeholder="0"
+                placeholderTextColor="#d1d5db"
+                value={formatPrice(price)}
+                onChangeText={handlePriceChange}
+                keyboardType="numeric"
+              />
 
-            <Text className="font-bold text-[#00B0B9]">VND</Text>
+              <Text className="font-bold text-[#00B0B9] text-lg">VND</Text>
+            </View>
           </View>
         )}
 
-        <View className="w-full bg-white rounded-lg mt-4 flex-row items-center justify-between px-5 py-3">
-          <TextInput
-            className="flex-1 text-base font-normal text-[#00B0B9]"
-            placeholder="Title"
-            placeholderTextColor="#d1d5db"
-            value={title}
-            onChangeText={setTitle}
-          />
+        <View className="w-full bg-white rounded-lg mt-4 px-5 py-3">
+          <Text className="text-black text-base">Name</Text>
+          <View className="mt-1">
+            <TextInput
+              className="flex-1 text-lg font-normal text-[#00B0B9]"
+              placeholder="Aaaaa"
+              placeholderTextColor="#d1d5db"
+              value={itemName}
+              onChangeText={handleNameChange}
+            />
+          </View>
         </View>
 
-        <View className="w-full h-36 bg-white rounded-lg mt-4 px-5 py-3">
+        <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
+          <Text className="text-black text-base">
+            Description{" "}
+            <Text className="text-[#00b0b9] font-semibold">
+              (at least 20 characters)
+            </Text>
+          </Text>
           <TextInput
-            className="flex-1 text-base font-normal text-black"
-            placeholder="Description"
+            className="flex-1 text-lg font-normal text-black"
+            placeholder="Aaaaa"
             placeholderTextColor="#d1d5db"
-            value={description1}
-            onChangeText={setDescription1}
+            value={description}
+            onChangeText={handleDescriptionChange}
             multiline={true}
             textAlignVertical="top"
-          />
-        </View>
-
-        <View className="w-full bg-white rounded-lg mt-4 px-5 py-3">
-          <TextInput
-            className="flex-1 text-base font-normal text-black"
-            placeholder="Quantity"
-            placeholderTextColor="#d1d5db"
-            value={quantity}
-            onChangeText={setQuantity}
-            keyboardType="numeric"
-            inputMode="numeric"
           />
         </View>
 
@@ -349,46 +354,55 @@ export default function UploadScreen() {
           <Icon name="arrow-forward-ios" size={20} color="black" />
         </TouchableOpacity>
 
-        <View className="flex-row items-center justify-between mt-4 px-5">
-          <Text className="text-lg font-medium text-gray-500">
-            I want to desire an item for exchanging
-          </Text>
-          <TouchableOpacity
-            onPress={toggleCheckboxDesiredItem}
-            className="w-6 h-6 bg-white rounded-sm justify-center items-center border-2 border-[#00b0b9]"
-          >
-            {isCheckedDesiredItem && (
-              <Icon name="check" size={15} color="#00B0B9" />
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {isCheckedDesiredItem && (
-          <TouchableOpacity
-            onPress={() => navigation.navigate("ExchangeDesiredItemScreen")}
-            className="w-full bg-[rgb(0,176,185,0.2)] rounded-lg mt-8 flex-row justify-between items-center px-5 py-5"
-          >
-            <View>
-              <Text className="text-sm font-medium text-[#00B0B9]">
-                Add your desired item for exchanging (optional)
-              </Text>
-            </View>
-
-            <Icon name="arrow-forward-ios" size={20} color="#00B0B9" />
-          </TouchableOpacity>
+        {!isCheckedFree && (
+          <View className="flex-row items-center justify-between mt-4 px-5">
+            <Text className="text-lg font-medium text-gray-500">
+              Accept exchanging with money
+            </Text>
+            <TouchableOpacity
+              onPress={toggleCheckboxDesiredItem}
+              className="w-6 h-6 bg-white rounded-sm justify-center items-center border-2 border-[#00b0b9]"
+            >
+              {isMoneyAccepted && (
+                <Icon name="check" size={15} color="#00B0B9" />
+              )}
+            </TouchableOpacity>
+          </View>
         )}
 
-        <Text className="text-lg font-semibold mt-8 px-5 text-gray-500">
-          Exchange’s terms and conditions
-        </Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("ExchangeDesiredItemScreen")}
+          className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
+        >
+          <View>
+            <Text className="text-base font-normal text-black">
+              Add your desired item for exchanging
+            </Text>
+            {uploadItem.desiredItem?.categoryId !== 0 ? (
+              <Text
+                className="text-[#00b0b9] text-lg underline font-bold"
+                onPress={() => navigation.navigate("ExchangeDesiredItemScreen")}
+              >
+                Detail
+              </Text>
+            ) : (
+              <Text className="text-lg font-bold">(Optional)</Text>
+            )}
+          </View>
 
-        <View className="w-full h-36 bg-white rounded-lg mt-4 px-5 py-3">
+          <Icon name="arrow-forward-ios" size={20} color="black" />
+        </TouchableOpacity>
+
+        <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3 border-2 border-[#00B0B9]">
+          <Text className="text-black text-base">
+            Exchange’s terms and conditions
+          </Text>
           <TextInput
-            className="text-base font-normal text-black pt-2"
-            placeholder="Write your terms and conditions here..."
+            className="flex-1 text-lg font-normal text-black"
+            placeholder="Aaaaa"
             placeholderTextColor="#d1d5db"
-            value={condition}
-            onChangeText={setCondition}
+            value={termCondition}
+            onChangeText={handleTermConditionChange}
             multiline={true}
             textAlignVertical="top"
           />
@@ -399,6 +413,7 @@ export default function UploadScreen() {
             title="Create"
             buttonClassName="p-4"
             onPress={handleCreateItem}
+            loading={loading}
           />
         </View>
       </ScrollView>

@@ -2,13 +2,16 @@ import React, { useState } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useNavigation } from "@react-navigation/native";
-import { StatsCard } from "../../components/StatsCard";
-import { SegmentedControl } from "../../components/SegmentedControl";
-import { MyLineChart } from "../../components/MyLineChart";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { SegmentedControl } from "../../../components/SegmentedControl";
+import { MyLineChart } from "../../../components/MyLineChart";
+import { StatsCard } from "../../../components/StatsCard";
+import Header from "../../../components/Header";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
 
 const Statistics: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
   // State quản lý chế độ Weekly / Monthly / Yearly
   const [selectedSegment, setSelectedSegment] = useState("Monthly");
 
@@ -38,19 +41,17 @@ const Statistics: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]">
-      <View>
-        <View className="relative flex-row items-center justify-center h-[60px]">
-          <Text className="text-[18px] font-bold text-white">Statistics</Text>
-          <Pressable
-            className="absolute left-[20px] flex-row"
-            onPress={() => {
-              navigation.goBack();
-            }}
-          >
-            <Icon name="chevron-back-outline" size={24} color="#fff" />
-          </Pressable>
-        </View>
-      </View>
+      <Header
+        title="Statistics"
+        backgroundColor="bg-[#00B0B9]"
+        backIconColor="white"
+        textColor="text-white"
+        optionIconColor="white"
+        showOption={false}
+        onBackPress={() =>
+          navigation.navigate("MainTabs", { screen: "Account" })
+        }
+      />
       <ScrollView className="flex-1 bg-gray-100 p-4">
         <SegmentedControl
           selected={selectedSegment}

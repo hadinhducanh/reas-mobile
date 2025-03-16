@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, SafeAreaView, View, Platform } from "react-native";
+import { Text, View, Platform } from "react-native";
 import {
   NavigationContainer,
   NavigatorScreenParams,
@@ -18,11 +18,9 @@ import ExchangeHistoryScreen from "../screens/Exchanges/ExchangeHistory";
 import ChatHistoryScreen from "../screens/Chat/ChatHistory";
 import ExchangeDetailScreen from "../screens/Exchanges/ExchangeDetail";
 import ChatDetailsScreen from "../screens/Chat/ChatDetails";
-import StatisticsScreen from "../screens/Statistics";
 import OTPScreen from "../screens/AuthenScreen/OTP";
 import SignUpSuccessScreen from "../screens/AuthenScreen/SignUpSuccess";
-import ItemDetailScreen from "../screens/ItemDetail";
-import ResetPassword from "../screens/AuthenScreen/ResetPassword";
+import ResetPassword from "../screens/AccountScreen/ResetPassword";
 import CreateExchange from "../screens/CreateExchange";
 import BrowseItems from "../screens/CreateExchange/BrowseItems";
 import DifferentItem from "../screens/CreateExchange/DifferentItem";
@@ -32,28 +30,26 @@ import FeedbackItem from "../screens/AccountScreen/FeedbackItem";
 import SearchResult from "../screens/SearchResult";
 import OwnerItem from "../screens/Owner/OwnerItem";
 import OwnerFeedback from "../screens/Owner/OwnerFeedback";
-import Favorite from "../screens/Favortie";
+import Favorite from "../screens/AccountScreen/Favortie";
 import Notifications from "../screens/Notification";
-import FilterMap from "../screens/FilterMap";
 import UploadScreen from "../screens/PostItemScreen";
 import TypeOfItemScreen from "../screens/PostItemScreen/TypeOfItem";
 import TypeOfItemDetailScreen from "../screens/PostItemScreen/TypeOfItemDetail";
 import ItemConditionScreen from "../screens/PostItemScreen/ItemCondition";
 import MethodOfExchangeScreen from "../screens/PostItemScreen/MethodOfExchange";
-import ExchangeDesiredItemTypeOfItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem/TypeOfItem";
 import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelectionScreen";
-import ExchangeDesiredItemBrandSelectionScreen from "../screens/PostItemScreen/ExchangeDesiredItem/BrandSelectionScreen";
-import ExchangeDesiredItemConditionScreen from "../screens/PostItemScreen/ExchangeDesiredItem/ItemCondition";
-import ItemDetails from "../screens/ItemDetail";
 import ItemManagement from "../screens/ItemManagement";
-import ItemPreview from "../screens/ItemManagement/ItemPreview";
 import ItemExpire from "../screens/ItemManagement/ItemExpire";
-import LanguageSwitch from "../screens/LanguageSwitch";
-import LanguageSwitchModal from "../screens/LanguageSwitch";
 import ExchangeDesiredItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem";
-import Premium from "../screens/Premium";
-import ExtendPremium from "../screens/Premium/ExtendPremium";
-import About from "../screens/About";
+import Premium from "../screens/AccountScreen/Premium";
+import About from "../screens/AccountScreen/About";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
+import UploadItemSuccess from "../screens/PostItemScreen/UploadItemSuccess";
+import ExtendPremium from "../screens/AccountScreen/Premium/ExtendPremium";
+import Statistics from "../screens/AccountScreen/Statistics";
+import ItemDetails from "../screens/ItemManagement/ItemDetail";
+import FilterMap from "../screens/SearchResult/FilterMap";
 
 export type ItemType = {
   id: number;
@@ -67,9 +63,10 @@ export type ItemType = {
 
 export type MainTabsParamList = {
   Home: undefined;
-  UploadScreen: undefined;
+  Upload: undefined;
   Exchanges: undefined;
   Account: undefined;
+  Items: undefined;
 };
 
 export type RootStackParamList = {
@@ -87,7 +84,7 @@ export type RootStackParamList = {
   TypeOfItemScreen: undefined;
   TypeOfItemDetailScreen: undefined;
   ItemConditionScreen: undefined;
-  UploadScreen: undefined;
+  Upload: undefined;
   MethodOfExchangeScreen: undefined;
   ExchangeDesiredItemScreen: undefined;
   ExchangeDesiredItemTypeOfItemScreen: undefined;
@@ -112,6 +109,7 @@ export type RootStackParamList = {
   Premium: undefined;
   ExtendPremium: undefined;
   About: undefined;
+  UploadItemSuccess: undefined;
 };
 
 const TabArr = [
@@ -144,8 +142,9 @@ const TabArr = [
 
 const Tab = createBottomTabNavigator();
 
-// Bottom Tab Navigator
 function BottomTabs() {
+  const { accessToken } = useSelector((state: RootState) => state.auth);
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -163,6 +162,20 @@ function BottomTabs() {
           key={index}
           name={item.route}
           component={item.component}
+          listeners={
+            item.route === "Upload" ||
+            item.route === "Items" ||
+            item.route === "Exchanges"
+              ? ({ navigation }) => ({
+                  tabPress: (e) => {
+                    if (!accessToken) {
+                      e.preventDefault();
+                      navigation.navigate("SignIn");
+                    }
+                  },
+                })
+              : undefined
+          }
           options={{
             tabBarIcon: ({ focused }) => {
               if (item.route === "Upload") {
@@ -219,7 +232,7 @@ export default function RootNavigator() {
         <Stack.Screen name="ExchangeDetail" component={ExchangeDetailScreen} />
         <Stack.Screen name="ChatHistory" component={ChatHistoryScreen} />
         <Stack.Screen name="ChatDetails" component={ChatDetailsScreen} />
-        <Stack.Screen name="Statistics" component={StatisticsScreen} />
+        <Stack.Screen name="Statistics" component={Statistics} />
         <Stack.Screen name="OTP" component={OTPScreen} />
         <Stack.Screen name="SignUpSuccess" component={SignUpSuccessScreen} />
         <Stack.Screen name="ItemDetails" component={ItemDetails} />
@@ -236,6 +249,7 @@ export default function RootNavigator() {
         <Stack.Screen name="Premium" component={Premium} />
         <Stack.Screen name="ExtendPremium" component={ExtendPremium} />
         <Stack.Screen name="About" component={About} />
+        <Stack.Screen name="UploadItemSuccess" component={UploadItemSuccess} />
         <Stack.Screen
           name="ExchangeDesiredItemScreen"
           component={ExchangeDesiredItemScreen}
@@ -249,7 +263,7 @@ export default function RootNavigator() {
           name="ItemConditionScreen"
           component={ItemConditionScreen}
         />
-        <Stack.Screen name="UploadScreen" component={UploadScreen} />
+        <Stack.Screen name="Upload" component={UploadScreen} />
         <Stack.Screen
           name="MethodOfExchangeScreen"
           component={MethodOfExchangeScreen}
@@ -262,20 +276,8 @@ export default function RootNavigator() {
           component={AccpectRejectExchange}
         />
         <Stack.Screen
-          name="ExchangeDesiredItemTypeOfItemScreen"
-          component={ExchangeDesiredItemTypeOfItemScreen}
-        />
-        <Stack.Screen
           name="BrandSelectionScreen"
           component={BrandSelectionScreen}
-        />
-        <Stack.Screen
-          name="ExchangeDesiredItemBrandSelectionScreen"
-          component={ExchangeDesiredItemBrandSelectionScreen}
-        />
-        <Stack.Screen
-          name="ExchangeDesiredItemConditionScreen"
-          component={ExchangeDesiredItemConditionScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

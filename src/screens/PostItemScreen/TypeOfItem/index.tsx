@@ -41,22 +41,70 @@ const TypeOfItemScreen = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
   const { uploadItem, setUploadItem } = useUploadItem();
-  const selectedTypeItem = uploadItem.typeItem;
 
-  const handleSelectTypeItem = (typeItem: TypeItem) => {
-    if (selectedTypeItem === typeItem) {
-      setUploadItem({ ...uploadItem, typeItem: TypeItem.NO_TYPE });
-      setUploadItem({ ...uploadItem, categoryId: 0 });
-      navigation.goBack();
-    } else {
-      setUploadItem({ ...uploadItem, typeItem });
-      dispatch(getAllByTypeItemThunk(typeItem));
-      navigation.navigate("TypeOfItemDetailScreen");
-    }
-  };
+  const routes = navigation.getState().routes;
+
+  let selectedTypeItem: TypeItem = TypeItem.NO_TYPE;
+  let handleSelectTypeItem: (typeItem: TypeItem) => void;
+
+  if (
+    routes.length > 1 &&
+    (routes[routes.length - 2].name as string) === "ExchangeDesiredItemScreen"
+  ) {
+    selectedTypeItem = uploadItem.desiredItem?.typeItem || TypeItem.NO_TYPE;
+    handleSelectTypeItem = (typeItem: TypeItem) => {
+      if (selectedTypeItem === typeItem) {
+        setUploadItem({
+          ...uploadItem,
+          desiredItem: {
+            ...uploadItem.desiredItem!,
+            typeItem: TypeItem.NO_TYPE,
+            categoryId: 0,
+          },
+        });
+        navigation.navigate("ExchangeDesiredItemScreen");
+      } else {
+        setUploadItem({
+          ...uploadItem,
+          desiredItem: {
+            ...uploadItem.desiredItem!,
+            typeItem,
+          },
+        });
+        dispatch(getAllByTypeItemThunk(typeItem));
+        navigation.navigate("TypeOfItemDetailScreen");
+      }
+    };
+  } else {
+    selectedTypeItem = uploadItem.typeItem;
+    handleSelectTypeItem = (typeItem: TypeItem) => {
+      if (selectedTypeItem === typeItem) {
+        setUploadItem({
+          ...uploadItem,
+          typeItem: TypeItem.NO_TYPE,
+          categoryId: 0,
+        });
+        navigation.navigate("MainTabs", { screen: "Upload" });
+      } else {
+        setUploadItem({ ...uploadItem, typeItem });
+        dispatch(getAllByTypeItemThunk(typeItem));
+        navigation.navigate("TypeOfItemDetailScreen");
+      }
+    };
+  }
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header title="Type of item" showOption={false} />
+      <Header
+        title="Type of item"
+        showOption={false}
+        onBackPress={
+          routes.length > 1 &&
+          (routes[routes.length - 2].name as string) ===
+            "ExchangeDesiredItemScreen"
+            ? () => navigation.navigate("ExchangeDesiredItemScreen")
+            : () => navigation.navigate("MainTabs", { screen: "Upload" })
+        }
+      />
       <ScrollView className="flex-1 mx-5">
         {options.map((option, index) => {
           const isSelected = selectedTypeItem === option.value;

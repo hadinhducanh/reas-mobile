@@ -1,11 +1,8 @@
 import React, { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Icon from "react-native-vector-icons/Ionicons";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "../../../navigation/AppNavigator";
-import Header from "../../../components/Header";
-import LoadingButton from "../../../components/LoadingButton";
+import Header from "../../../../components/Header";
+import LoadingButton from "../../../../components/LoadingButton";
 
 const ExtendPremium: React.FC = () => {
   const handleSubcribe = () => {};
