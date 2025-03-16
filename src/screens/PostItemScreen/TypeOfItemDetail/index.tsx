@@ -42,7 +42,7 @@ const TypeOfItemDetailScreen = () => {
             categoryId: 0,
           },
         });
-        navigation.navigate("MainTabs", { screen: "Upload" });
+        navigation.navigate("TypeOfItemScreen");
       } else {
         setUploadItem({
           ...uploadItem,
@@ -59,7 +59,7 @@ const TypeOfItemDetailScreen = () => {
     handleSelectType = async (categoryId: number) => {
       if (selectedTypeItemDetail === categoryId) {
         setUploadItem({ ...uploadItem, categoryId: 0 });
-        navigation.navigate("MainTabs", { screen: "Upload" });
+        navigation.navigate("TypeOfItemScreen");
       } else {
         setUploadItem({ ...uploadItem, categoryId });
         navigation.navigate("MainTabs", { screen: "Upload" });

@@ -73,7 +73,17 @@ const BrandSelectionScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header title="Brand" showOption={false} />
+      <Header
+        title="Brand"
+        showOption={false}
+        onBackPress={
+          routes.length > 1 &&
+          (routes[routes.length - 2].name as string) ===
+            "ExchangeDesiredItemScreen"
+            ? () => navigation.navigate("ExchangeDesiredItemScreen")
+            : () => navigation.navigate("MainTabs", { screen: "Upload" })
+        }
+      />
 
       <ScrollView className="flex-1 mx-5">
         {loading && <ActivityIndicator size="large" color="#00b0b9" />}

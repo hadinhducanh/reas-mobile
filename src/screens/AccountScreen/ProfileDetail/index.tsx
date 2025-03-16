@@ -5,6 +5,8 @@ import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../../../components/Header";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
 
 const ProfileDetail: React.FC = () => {
   // State quản lý chế độ chỉnh sửa
@@ -93,11 +95,17 @@ const ProfileDetail: React.FC = () => {
       isEditing ? "font-normal" : "font-bold"
     }`;
 
-  const navigation = useNavigation();
-
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header title="Profile" showOption={false} />
+      <Header
+        title="Profile"
+        showOption={false}
+        onBackPress={() =>
+          navigation.navigate("MainTabs", { screen: "Account" })
+        }
+      />
 
       {/* Content Container */}
       <View className="flex-1 mb-5">

@@ -73,7 +73,17 @@ const ItemConditionScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header title="Item condition" showOption={false} />
+      <Header
+        title="Item condition"
+        showOption={false}
+        onBackPress={
+          routes.length > 1 &&
+          (routes[routes.length - 2].name as string) ===
+            "ExchangeDesiredItemScreen"
+            ? () => navigation.navigate("ExchangeDesiredItemScreen")
+            : () => navigation.navigate("MainTabs", { screen: "Upload" })
+        }
+      />
 
       <ScrollView className="flex-1 mx-5">
         {/* Danh sách lựa chọn */}

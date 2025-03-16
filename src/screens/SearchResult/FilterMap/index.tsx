@@ -4,8 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import MapView, { Marker, Circle, PROVIDER_GOOGLE } from "react-native-maps";
 import Slider from "@react-native-community/slider";
-import LoadingButton from "../../components/LoadingButton";
 import { useNavigation } from "@react-navigation/native";
+import LoadingButton from "../../../components/LoadingButton";
 
 const FilterMap: React.FC = () => {
   const navigation = useNavigation();

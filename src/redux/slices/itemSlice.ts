@@ -6,6 +6,7 @@ import { ResponseEntityPagination } from "../../common/models/pagination";
 interface ItemState {
   itemDetail: ItemResponse | null;
   itemAvailable: ResponseEntityPagination<ItemResponse>;
+  itemRecommnand: ResponseEntityPagination<ItemResponse>;
   itemUpload: ItemResponse | null
   loading: boolean;
   error: string | null;
@@ -14,6 +15,14 @@ interface ItemState {
 const initialState: ItemState = {
   itemDetail: null,
   itemAvailable: {
+    pageNo: 0,
+    pageSize: 10,
+    totalPages: 0,
+    totalRecords: 0,
+    last: false,
+    content: []
+  },  
+  itemRecommnand: {
     pageNo: 0,
     pageSize: 10,
     totalPages: 0,
@@ -42,7 +51,7 @@ const itemSlice = createSlice({
       })
       .addCase(uploadItemThunk.fulfilled, (state, action: PayloadAction<ItemResponse>) => {
         state.loading = false;
-        state.itemDetail = action.payload;
+        state.itemUpload = action.payload;
       })
       .addCase(uploadItemThunk.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
@@ -58,6 +67,7 @@ const itemSlice = createSlice({
         state.loading = false;
         if (action.payload.pageNo === 0) {
           state.itemAvailable = action.payload;
+          state.itemRecommnand = action.payload
         } else {
           state.itemAvailable = {
             ...action.payload,

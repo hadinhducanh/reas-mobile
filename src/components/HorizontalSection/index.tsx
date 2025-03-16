@@ -1,13 +1,16 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import CardItem from "../CardItem";
 import { ItemType, RootStackParamList } from "../../navigation/AppNavigator";
 import { NavigationProp } from "@react-navigation/native";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { ItemResponse } from "../../common/models/item";
 
 interface HorizontalSectionProps {
   title?: string;
-  data: ItemType[];
+  data: ItemResponse[];
   toggleLike?: (itemId: number) => void;
   navigation: NavigationProp<RootStackParamList>;
 }
@@ -18,6 +21,7 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({
   toggleLike,
   navigation,
 }) => {
+  const { loading } = useSelector((state: RootState) => state.item);
   return (
     <View className="p-5">
       <View className="flex-row justify-between items-center mb-2">
@@ -26,6 +30,9 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({
           Tất cả
         </Text>
       </View>
+      {loading && (
+        <ActivityIndicator size="large" color="#00b0b9" className="mb-5" />
+      )}
       <View className="py-1">
         <FlatList
           data={data}

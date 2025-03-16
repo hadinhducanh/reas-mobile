@@ -13,7 +13,7 @@ const uploadItem = async (request: UploadItemRequest, accessToken: string): Prom
 };
 
 const getAllItemAvailable = async (pageNo: number): Promise<ResponseEntityPagination<ItemResponse>> => {
-  const response = await axios.get<ResponseEntityPagination<ItemResponse>>(`${API_BASE_URL}/item/search?pageNo=${pageNo}&pageSize=4&sortBy=id&sortDir=asc`);
+  const response = await axios.get<ResponseEntityPagination<ItemResponse>>(`${API_BASE_URL}/item/search?pageNo=${pageNo}&pageSize=5&sortBy=id&sortDir=asc`);
   return response.data;
 };
 const getItemDetail = async (id: number): Promise<ItemResponse> => {
