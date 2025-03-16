@@ -10,7 +10,7 @@ import { logout } from "../../redux/slices/authSlice";
 import Header from "../../components/Header";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import LoadingButton from "../../components/LoadingButton";
-import LanguageSwitchModal from "../LanguageSwitch";
+import LanguageSwitchModal from "./LanguageSwitch";
 import { useTranslation } from "react-i18next";
 
 type AccountListItemProps = {

@@ -7,6 +7,7 @@ import {
   Text,
   Pressable,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
@@ -18,21 +19,33 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux/store";
 import { getAllItemAvailableThunk } from "../../redux/thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
+import {
+  BATHROOM_TYPE_IMAGE,
+  BEDROOM_TYPE_IMAGE,
+  CLEANING_TYPE_IMAGE,
+  COOLING_TYPE_IMAGE,
+  ELECTRICTION_TYPE_IMAGE,
+  KITCHEN_TYPE_IMAGE,
+  LIGHTING_TYPE_IMAGE,
+  LIVINGROOM_TYPE_IMAGE,
+} from "../../common/constant";
 
 type HomeScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
   "ItemDetails"
 >;
 const categories = [
-  { id: 1, name: "Kitchen" },
-  { id: 2, name: "Cleaning" },
-  { id: 3, name: "Cooling" },
-  { id: 4, name: "Electric" },
-  { id: 5, name: "Lighting" },
-  { id: 6, name: "Living room" },
-  { id: 7, name: "Bedroom" },
-  { id: 8, name: "Bathroom" },
+  { id: 1, name: "Kitchen", image: KITCHEN_TYPE_IMAGE },
+  { id: 2, name: "Cleaning", image: CLEANING_TYPE_IMAGE },
+  { id: 3, name: "Cooling", image: COOLING_TYPE_IMAGE },
+  { id: 4, name: "Electric", image: ELECTRICTION_TYPE_IMAGE },
+  { id: 5, name: "Lighting", image: LIGHTING_TYPE_IMAGE },
+  { id: 6, name: "Living room", image: LIVINGROOM_TYPE_IMAGE },
+  { id: 7, name: "Bedroom", image: BEDROOM_TYPE_IMAGE },
+  { id: 8, name: "Bathroom", image: BATHROOM_TYPE_IMAGE },
 ];
+
+const { width, height } = Dimensions.get("window"); // Lấy kích thước màn hình
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -86,7 +99,7 @@ const HomeScreen: React.FC = () => {
         }}
         scrollEventThrottle={100}
       >
-        <View className="h-20 bg-[#00B0B9] w-full flex-row justify-between items-center px-4">
+        <View className="h-20 bg-[#00B0B9] w-full flex-row justify-between items-center px-2">
           <View className="flex-1 mr-5">
             <View className="bg-white rounded-xl flex-row items-center px-2">
               <Pressable
@@ -126,8 +139,8 @@ const HomeScreen: React.FC = () => {
           />
         </View>
 
-        <View className="mx-4">
-          <View className="mx-auto relative rounded-lg mt-5 p-4 bg-white">
+        <View className="">
+          <View className="mx-5 relative rounded-lg mt-5 p-4 bg-white">
             <Text className="text-[#0b1d2d] text-lg font-bold capitalize mb-3">
               Explore Category
             </Text>
@@ -150,7 +163,17 @@ const HomeScreen: React.FC = () => {
                           key={category.id}
                           className="flex flex-col items-center mb-5"
                         >
-                          <View className="p-8 bg-gray-100 rounded-lg"></View>
+                          <View className="bg-gray-100 rounded-lg">
+                            <Image
+                              source={{ uri: category.image }}
+                              style={{
+                                width: 80,
+                                height: 80,
+                                alignSelf: "center",
+                              }}
+                              resizeMode="contain"
+                            />
+                          </View>
                           <Text className="text-sm font-medium text-black capitalize mt-1">
                             {category.name}
                           </Text>
@@ -162,11 +185,21 @@ const HomeScreen: React.FC = () => {
             </ScrollView>
           </View>
 
-          <View className="mt-5">
+          <View className="my-8">
+            <Image
+              source={{
+                uri: "https://cdn.chotot.com/admincentre/sZAVd-1sX7QEWxhi_hCWw5MbfVkTaBj80jUdAMPJNSs/preset:raw/plain/40d5af2875486372da8349afd2b4a157-2882896384210177312.jpg",
+              }}
+              style={{ width: width, height: 155 }}
+              resizeMode="cover"
+            />
+          </View>
+
+          <View className="mx-5 ">
             <Text className="text-[#0b1d2d] text-xl font-bold">New items</Text>
           </View>
           {content && (
-            <View className="mt-3">
+            <View className="mx-3 mt-5">
               {rows.map((row, rowIndex) => (
                 <View key={rowIndex} className="flex flex-row mb-2 gap-x-2">
                   {row.map((item) => (

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, Modal, Pressable, Image } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
-import LoadingButton from "../../components/LoadingButton";
+import LoadingButton from "../../../components/LoadingButton";
 
 interface LanguageSwitchModalProps {
   visible: boolean;

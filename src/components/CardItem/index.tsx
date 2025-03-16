@@ -86,7 +86,7 @@ const CardItem: React.FC<CardItemProps> = ({
         </Text>
         {mode === "default" && (
           <Text className="text-gray-400 text-sm" numberOfLines={1}>
-            14 mins ago |
+            14 mins ago | {item?.userLocation.specificAddress}
           </Text>
         )}
       </View>

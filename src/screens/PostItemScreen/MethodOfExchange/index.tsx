@@ -51,7 +51,13 @@ const MethodOfExchangeScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header title="Method of exchange" showOption={false} />
+      <Header
+        title="Method of exchange"
+        showOption={false}
+        onBackPress={() =>
+          navigation.navigate("MainTabs", { screen: "Upload" })
+        }
+      />
 
       <ScrollView className="flex-1 mx-5">
         {exchangeMethods.map((method) => {

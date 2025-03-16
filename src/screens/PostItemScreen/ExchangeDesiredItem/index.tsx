@@ -94,7 +94,13 @@ const ExchangeDesiredItemScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header title="Your desired item for exchange" showOption={false} />
+      <Header
+        title="Your desired item for exchange"
+        showOption={false}
+        onBackPress={() =>
+          navigation.navigate("MainTabs", { screen: "Upload" })
+        }
+      />
       <ScrollView className="flex-1 mx-5">
         <TouchableOpacity
           onPress={() => navigation.navigate("TypeOfItemScreen")}

@@ -48,7 +48,7 @@ export default function UploadScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { brands } = useSelector((state: RootState) => state.brand);
   const { categories } = useSelector((state: RootState) => state.category);
-  const { itemDetail, loading } = useSelector((state: RootState) => state.item);
+  const { itemUpload, loading } = useSelector((state: RootState) => state.item);
   const dispatch = useDispatch<AppDispatch>();
   const {
     uploadItem,
@@ -142,7 +142,7 @@ export default function UploadScreen() {
   };
 
   useEffect(() => {
-    if (itemDetail?.itemName.length) {
+    if (itemUpload?.itemName.length) {
       setUploadItem(defaultUploadItem);
       setIsCheckFreeContext(false);
       setItemName("");
@@ -152,7 +152,7 @@ export default function UploadScreen() {
       dispatch(resetItemDetail());
       navigation.navigate("UploadItemSuccess");
     }
-  }, [itemDetail, dispatch]);
+  }, [itemUpload, dispatch]);
 
   const toggleCheckboxFree = () => {
     setIsCheckedFree(!isCheckedFree);

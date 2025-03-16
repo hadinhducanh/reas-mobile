@@ -62,7 +62,7 @@ const TypeOfItemScreen = () => {
             categoryId: 0,
           },
         });
-        navigation.navigate("MainTabs", { screen: "Upload" });
+        navigation.navigate("ExchangeDesiredItemScreen");
       } else {
         setUploadItem({
           ...uploadItem,
@@ -94,7 +94,17 @@ const TypeOfItemScreen = () => {
   }
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header title="Type of item" showOption={false} />
+      <Header
+        title="Type of item"
+        showOption={false}
+        onBackPress={
+          routes.length > 1 &&
+          (routes[routes.length - 2].name as string) ===
+            "ExchangeDesiredItemScreen"
+            ? () => navigation.navigate("ExchangeDesiredItemScreen")
+            : () => navigation.navigate("MainTabs", { screen: "Upload" })
+        }
+      />
       <ScrollView className="flex-1 mx-5">
         {options.map((option, index) => {
           const isSelected = selectedTypeItem === option.value;
