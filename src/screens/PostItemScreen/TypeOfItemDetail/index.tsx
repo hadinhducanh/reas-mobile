@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   ScrollView,
   Text,
-  View,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -24,21 +22,58 @@ const TypeOfItemDetailScreen = () => {
     (state: RootState) => state.category
   );
   const { uploadItem, setUploadItem } = useUploadItem();
-  const selectedTypeItemDetail = uploadItem.categoryId;
 
-  const handleSelectType = async (categoryId: number) => {
-    if (selectedTypeItemDetail === categoryId) {
-      setUploadItem({ ...uploadItem, categoryId: 0 });
-      navigation.goBack();
-    } else {
-      setUploadItem({ ...uploadItem, categoryId });
-      navigation.navigate("UploadScreen");
-    }
-  };
+  const routes = navigation.getState().routes;
+
+  let selectedTypeItemDetail: number = 0;
+  let handleSelectType: (categoryId: number) => void;
+
+  if (
+    routes.length > 1 &&
+    (routes[routes.length - 3].name as string) === "ExchangeDesiredItemScreen"
+  ) {
+    selectedTypeItemDetail = uploadItem.desiredItem?.categoryId || 0;
+    handleSelectType = (categoryId: number) => {
+      if (selectedTypeItemDetail === categoryId) {
+        setUploadItem({
+          ...uploadItem,
+          desiredItem: {
+            ...uploadItem.desiredItem!,
+            categoryId: 0,
+          },
+        });
+        navigation.navigate("MainTabs", { screen: "Upload" });
+      } else {
+        setUploadItem({
+          ...uploadItem,
+          desiredItem: {
+            ...uploadItem.desiredItem!,
+            categoryId,
+          },
+        });
+        navigation.navigate("ExchangeDesiredItemScreen");
+      }
+    };
+  } else {
+    selectedTypeItemDetail = uploadItem.categoryId;
+    handleSelectType = async (categoryId: number) => {
+      if (selectedTypeItemDetail === categoryId) {
+        setUploadItem({ ...uploadItem, categoryId: 0 });
+        navigation.navigate("MainTabs", { screen: "Upload" });
+      } else {
+        setUploadItem({ ...uploadItem, categoryId });
+        navigation.navigate("MainTabs", { screen: "Upload" });
+      }
+    };
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header title="Type of item" showOption={false} />
+      <Header
+        title="Type of item"
+        showOption={false}
+        onBackPress={() => navigation.navigate("TypeOfItemScreen")}
+      />
 
       <ScrollView className="flex-1 mx-5">
         {/* Header */}

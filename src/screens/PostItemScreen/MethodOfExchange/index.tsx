@@ -46,7 +46,7 @@ const MethodOfExchangeScreen = () => {
   );
 
   const handleConfirm = useCallback(() => {
-    navigation.goBack();
+    navigation.navigate("MainTabs", { screen: "Upload" });
   }, [navigation]);
 
   return (

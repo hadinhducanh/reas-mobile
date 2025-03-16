@@ -25,16 +25,47 @@ const BrandSelectionScreen = () => {
   );
   const { uploadItem, setUploadItem } = useUploadItem();
 
-  const selectedBrandId = uploadItem.brandId;
+  const routes = navigation.getState().routes;
 
-  const handleSelectBrand = (brandId: number) => {
-    if (selectedBrandId === brandId) {
-      setUploadItem({ ...uploadItem, brandId: 0 });
-    } else {
-      setUploadItem({ ...uploadItem, brandId });
-    }
-    navigation.goBack();
-  };
+  let selectedBrandId: number = 0;
+  let handleSelectBrand: (brandId: number) => void;
+
+  if (
+    routes.length > 1 &&
+    (routes[routes.length - 2].name as string) === "ExchangeDesiredItemScreen"
+  ) {
+    selectedBrandId = uploadItem.desiredItem?.brandId || 0;
+    handleSelectBrand = (brandId: number) => {
+      if (selectedBrandId === brandId) {
+        setUploadItem({
+          ...uploadItem,
+          desiredItem: {
+            ...uploadItem.desiredItem!,
+            brandId: 0,
+          },
+        });
+      } else {
+        setUploadItem({
+          ...uploadItem,
+          desiredItem: {
+            ...uploadItem.desiredItem!,
+            brandId,
+          },
+        });
+      }
+      navigation.navigate("ExchangeDesiredItemScreen");
+    };
+  } else {
+    selectedBrandId = uploadItem.brandId;
+    handleSelectBrand = (brandId: number) => {
+      if (selectedBrandId === brandId) {
+        setUploadItem({ ...uploadItem, brandId: 0 });
+      } else {
+        setUploadItem({ ...uploadItem, brandId });
+      }
+      navigation.navigate("MainTabs", { screen: "Upload" });
+    };
+  }
 
   useEffect(() => {
     dispatch(getAllBrandThunk());

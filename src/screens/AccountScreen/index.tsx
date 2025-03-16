@@ -1,4 +1,4 @@
-import React, { useCallback, memo, useState } from "react";
+import React, { useCallback, memo, useState, useMemo } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -23,7 +23,7 @@ type AccountListItemProps = {
 const AccountListItem: React.FC<AccountListItemProps> = memo(
   ({ iconName, label, onPress, iconColor = "#00B0B9" }) => (
     <Pressable
-      className="h-[70px] bg-white border-t-[1px] border-[#DBE9F5] flex-row items-center pl-5 active:bg-gray-200"
+      className="h-[70px] bg-white border-t border-[#DBE9F5] flex-row items-center pl-5 active:bg-gray-200"
       onPress={onPress}
     >
       <View className="relative mr-2">
@@ -42,61 +42,75 @@ const AccountListItem: React.FC<AccountListItemProps> = memo(
 
 const Account: React.FC = () => {
   const { t } = useTranslation();
-
   const { user, accessToken } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [languageSwitchVisible, setLanguageSwitchVisible] = useState(false);
-
   const isLoggedIn = !!user;
+
+  const navigateScreens = useCallback(
+    <T extends keyof RootStackParamList>(
+      route: T,
+      requireAuth: boolean = false,
+      params?: RootStackParamList[T]
+    ) => {
+      if (requireAuth && !accessToken) {
+        navigation.navigate("SignIn", undefined);
+      } else {
+        navigation.navigate(route as any, params as any);
+      }
+    },
+    [navigation, accessToken]
+  );
 
   const handleLogout = useCallback(() => {
     dispatch(logout());
     dispatch(logoutUserThunk());
   }, [dispatch]);
 
-  const navigateToProfile = useCallback(() => {
-    if (!accessToken) {
-      navigation.navigate("SignIn");
-    } else {
-      navigation.navigate("Profile");
-    }
-  }, [navigation]);
-  const navigateToChangePassword = useCallback(() => {
-    if (!accessToken) {
-      navigation.navigate("SignIn");
-    } else {
-      navigation.navigate("ResetPassword");
-    }
-  }, [navigation]);
-  const navigateToStatistics = useCallback(
-    () => navigation.navigate("Statistics"),
-    [navigation]
-  );
-  const navigateToFavorite = useCallback(
-    () => navigation.navigate("Favorite"),
-    [navigation]
-  );
-  const navigateToPremium = useCallback(
-    () => navigation.navigate("Premium"),
-    [navigation]
-  );
-  const navigateToAbout = useCallback(
-    () => navigation.navigate("About"),
-    [navigation]
-  );
-  const navigateToSignIn = useCallback(
-    () => navigation.navigate("SignIn"),
-    [navigation]
-  );
-  const navigateToSignUp = useCallback(
-    () => navigation.navigate("SignUp"),
-    [navigation]
-  );
+  const toggleLanguageModal = useCallback(() => {
+    setLanguageSwitchVisible((prev) => !prev);
+  }, []);
 
-  const handleCancel = () => {
-    setLanguageSwitchVisible(false);
-  };
+  const accountItems = useMemo(() => {
+    return [
+      {
+        iconName: "person-outline",
+        label: t("Personal information"),
+        route: "Profile",
+        requireAuth: true,
+      },
+      {
+        iconName: "key-outline",
+        label: "Change password",
+        route: "ResetPassword",
+        requireAuth: true,
+      },
+      {
+        iconName: "stats-chart-sharp",
+        label: "Statistics",
+        route: "Statistics",
+        requireAuth: true,
+      },
+      {
+        iconName: "globe-outline",
+        label: "Language",
+        onPress: toggleLanguageModal,
+      },
+      {
+        iconName: "heart-outline",
+        label: "Favorites",
+        route: "Favorite",
+        requireAuth: true,
+      },
+      { iconName: "wallet-outline", label: "Premium", route: "Premium" },
+      {
+        iconName: "information-circle-outline",
+        label: "About",
+        route: "About",
+      },
+    ];
+  }, [t, toggleLanguageModal]);
 
   return (
     <SafeAreaView className="bg-[#00B0B9] flex-1" edges={["top"]}>
@@ -113,7 +127,7 @@ const Account: React.FC = () => {
         />
 
         {isLoggedIn ? (
-          <View className="mx-5 h-[100px] justify-start flex-row items-center ">
+          <View className="mx-5 h-[100px] flex-row items-center">
             <Icon name="person-circle-outline" size={85} color="gray" />
             <View className="ml-3">
               <Text className="text-[18px] font-bold">{user?.fullName}</Text>
@@ -129,14 +143,13 @@ const Account: React.FC = () => {
             </View>
           </View>
         ) : (
-          <View className="px-5 h-[100px] justify-between flex-row items-center bg-white">
+          <View className="px-5 h-[100px] flex-row items-center bg-white justify-between">
             <Icon name="person-circle-outline" size={85} color="gray" />
-
             <View className="flex-row w-[60%]">
               <View className="flex-1 mr-2">
                 <LoadingButton
                   title="Sign in"
-                  onPress={navigateToSignIn}
+                  onPress={() => navigateScreens("SignIn")}
                   buttonClassName="border-2 border-[#00B0B9] py-3 bg-white"
                   textColor="text-[#00B0B9]"
                 />
@@ -144,7 +157,7 @@ const Account: React.FC = () => {
               <View className="flex-1">
                 <LoadingButton
                   title="Sign up"
-                  onPress={navigateToSignUp}
+                  onPress={() => navigateScreens("SignUp")}
                   buttonClassName="py-3 border-2 border-transparent"
                 />
               </View>
@@ -153,41 +166,22 @@ const Account: React.FC = () => {
         )}
 
         <View className="h-full">
-          <AccountListItem
-            iconName="person-outline"
-            label={t("Personal information")}
-            onPress={navigateToProfile}
-          />
-          <AccountListItem
-            iconName="key-outline"
-            label="Change password"
-            onPress={navigateToChangePassword}
-          />
-          <AccountListItem
-            iconName="stats-chart-sharp"
-            label="Statistics"
-            onPress={navigateToStatistics}
-          />
-          <AccountListItem
-            iconName="globe-outline"
-            label="Language"
-            onPress={() => setLanguageSwitchVisible(!languageSwitchVisible)}
-          />
-          <AccountListItem
-            iconName="heart-outline"
-            label="Favorites"
-            onPress={navigateToFavorite}
-          />
-          <AccountListItem
-            iconName="wallet-outline"
-            label="Premium"
-            onPress={navigateToPremium}
-          />
-          <AccountListItem
-            iconName="information-circle-outline"
-            label="About"
-            onPress={navigateToAbout}
-          />
+          {accountItems.map((item, index) => (
+            <AccountListItem
+              key={index}
+              iconName={item.iconName}
+              label={item.label}
+              onPress={
+                item.onPress
+                  ? item.onPress
+                  : () =>
+                      navigateScreens(
+                        item.route as keyof RootStackParamList,
+                        item.requireAuth
+                      )
+              }
+            />
+          ))}
           {isLoggedIn && (
             <AccountListItem
               iconName="log-out-outline"
@@ -200,10 +194,10 @@ const Account: React.FC = () => {
       </ScrollView>
       <LanguageSwitchModal
         visible={languageSwitchVisible}
-        onCancel={handleCancel}
+        onCancel={() => setLanguageSwitchVisible(false)}
       />
     </SafeAreaView>
   );
 };
 
-export default React.memo(Account);
+export default Account;

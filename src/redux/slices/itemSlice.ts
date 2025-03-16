@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getAllItemAvailableThunk, getItemDetailThunk, postItemThunk } from "../thunk/itemThunks";
+import { getAllItemAvailableThunk, getItemDetailThunk, uploadItemThunk } from "../thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
 
 interface ItemState {
   itemDetail: ItemResponse | null;
   itemAvailable: ResponseEntityPagination<ItemResponse>;
+  itemUpload: ItemResponse | null
   loading: boolean;
   error: string | null;
 }
@@ -20,6 +21,7 @@ const initialState: ItemState = {
     last: false,
     content: []
   },  
+  itemUpload: null,
   loading: false,
   error: null,
 };
@@ -27,20 +29,24 @@ const initialState: ItemState = {
 const itemSlice = createSlice({
   name: "item",
   initialState,
-  reducers: {},
+  reducers: {
+    resetItemDetail: (state) => {
+      state.itemDetail = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(postItemThunk.pending, (state) => {
+      .addCase(uploadItemThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(postItemThunk.fulfilled, (state, action: PayloadAction<ItemResponse>) => {
+      .addCase(uploadItemThunk.fulfilled, (state, action: PayloadAction<ItemResponse>) => {
         state.loading = false;
         state.itemDetail = action.payload;
       })
-      .addCase(postItemThunk.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(uploadItemThunk.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
-        state.error = action.payload || "Post item failed";
+        state.error = action.payload || "Upload item failed";
       });
 
     builder
@@ -80,4 +86,5 @@ const itemSlice = createSlice({
   },
 });
 
+export const { resetItemDetail } = itemSlice.actions;
 export default itemSlice.reducer;

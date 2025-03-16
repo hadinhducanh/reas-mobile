@@ -8,7 +8,7 @@ import { NavigationProp } from "@react-navigation/native";
 interface HorizontalSectionProps {
   title?: string;
   data: ItemType[];
-  toggleLike: (itemId: number) => void;
+  toggleLike?: (itemId: number) => void;
   navigation: NavigationProp<RootStackParamList>;
 }
 

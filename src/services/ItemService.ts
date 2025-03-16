@@ -1,13 +1,12 @@
 import axios from "axios";
 import { API_BASE_URL } from "../common/constant";
-import { ItemResponse } from "../common/models/item";
+import { ItemResponse, UploadItemRequest } from "../common/models/item";
 import { ResponseEntityPagination } from "../common/models/pagination";
 
-const createItem = async (item: ItemResponse, accessToken: string): Promise<ItemResponse> => {
-  const response = await axios.post<ItemResponse>(`${API_BASE_URL}/item`, item, {
+const uploadItem = async (request: UploadItemRequest, accessToken: string): Promise<ItemResponse> => {
+  const response = await axios.post<ItemResponse>(`${API_BASE_URL}/item`, request, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
     },
   });
   return response.data;
@@ -23,7 +22,7 @@ const getItemDetail = async (id: number): Promise<ItemResponse> => {
 };
 
 export default {
-  createItem,
+  uploadItem,
   getAllItemAvailable,
   getItemDetail
 };
