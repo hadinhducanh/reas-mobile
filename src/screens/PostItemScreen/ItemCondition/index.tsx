@@ -25,19 +25,51 @@ const ItemConditionScreen = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { uploadItem, setUploadItem } = useUploadItem();
 
-  const selectedItemCondition = uploadItem.conditionItem;
+  const routes = navigation.getState().routes;
 
-  const handleSelectCondition = async (conditionItem: ConditionItem) => {
-    if (selectedItemCondition === conditionItem) {
-      setUploadItem({
-        ...uploadItem,
-        conditionItem: ConditionItem.NO_CONDITION,
-      });
-    } else {
-      setUploadItem({ ...uploadItem, conditionItem });
-    }
-    navigation.goBack();
-  };
+  let selectedItemCondition: ConditionItem = ConditionItem.NO_CONDITION;
+  let handleSelectCondition: (conditionItem: ConditionItem) => void;
+
+  if (
+    routes.length > 1 &&
+    (routes[routes.length - 2].name as string) === "ExchangeDesiredItemScreen"
+  ) {
+    selectedItemCondition =
+      uploadItem.desiredItem?.conditionItem || ConditionItem.NO_CONDITION;
+    handleSelectCondition = (conditionItem: ConditionItem) => {
+      if (selectedItemCondition === conditionItem) {
+        setUploadItem({
+          ...uploadItem,
+          desiredItem: {
+            ...uploadItem.desiredItem!,
+            conditionItem: ConditionItem.NO_CONDITION,
+          },
+        });
+      } else {
+        setUploadItem({
+          ...uploadItem,
+          desiredItem: {
+            ...uploadItem.desiredItem!,
+            conditionItem,
+          },
+        });
+      }
+      navigation.navigate("ExchangeDesiredItemScreen");
+    };
+  } else {
+    selectedItemCondition = uploadItem.conditionItem;
+    handleSelectCondition = async (conditionItem: ConditionItem) => {
+      if (selectedItemCondition === conditionItem) {
+        setUploadItem({
+          ...uploadItem,
+          conditionItem: ConditionItem.NO_CONDITION,
+        });
+      } else {
+        setUploadItem({ ...uploadItem, conditionItem });
+      }
+      navigation.navigate("MainTabs", { screen: "Upload" });
+    };
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">

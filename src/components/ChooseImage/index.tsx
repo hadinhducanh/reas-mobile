@@ -12,6 +12,7 @@ import {
 import Icon from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import { useUploadItem } from "../../context/ItemContext";
 
 interface ImagePickerProps {
   images?: string;
@@ -27,7 +28,8 @@ const MAX_IMAGES = 4;
 const SEPARATOR = "|||";
 
 const ChooseImage: React.FC<ImagePickerProps> = (props) => {
-  // Cung cấp giá trị mặc định cho các prop tùy chọn
+  const { setUploadItem } = useUploadItem();
+
   const {
     images = "",
     setImages = () => {},
@@ -38,7 +40,6 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
     isUploadEvidence,
   } = props;
 
-  // Hàm chuyển chuỗi (hoặc null) thành mảng
   const parseImages = useCallback((imageStr: string | null): string[] => {
     return imageStr
       ? imageStr.split(SEPARATOR).filter((img) => img.trim() !== "")
@@ -137,7 +138,14 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
         setImages((prev) => {
           const current = parseImages(prev);
           const updated = [...current, ...newBase64Images.filter(Boolean)];
-          return updated.join(SEPARATOR);
+
+          const newImagesStr = updated.join(SEPARATOR);
+          setUploadItem((prevUpload) => ({
+            ...prevUpload,
+            imageUrl: newImagesStr,
+          }));
+
+          return newImagesStr;
         });
       }
     },
@@ -235,7 +243,14 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
       setImages((prev) => {
         const current = parseImages(prev);
         current.splice(index, 1);
-        return current.join(SEPARATOR);
+        const newImagesStr = current.join(SEPARATOR);
+
+        setUploadItem((prevUpload) => ({
+          ...prevUpload,
+          imageUrl: newImagesStr,
+        }));
+
+        return newImagesStr;
       });
     },
     [parseImages, setImages]

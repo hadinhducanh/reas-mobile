@@ -20,7 +20,7 @@ export interface UploadItemRequest {
     termsAndConditionsExchange: string;
     categoryId: number;
     brandId: number;
-    desiredItem?: DesiredItemDto;
+    desiredItem?: DesiredItemDto | null;
 }
 
 export interface DesiredItemDto {

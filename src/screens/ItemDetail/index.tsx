@@ -170,7 +170,7 @@ const ItemDetails: React.FC = () => {
           <View className="flex flex-row items-center">
             <Icon name="location-outline" size={25} color="black" />
             <Text className="ml-1 text-gray-500 text-lg">
-              {itemDetail?.userLocation.specificAddress}
+              {/* {itemDetail?.userLocation.specificAddress} */} abc
             </Text>
           </View>
           <View className="flex flex-row items-center mt-2">
