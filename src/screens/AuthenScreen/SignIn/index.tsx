@@ -24,6 +24,7 @@ import { z } from "zod";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Header from "../../../components/Header";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const signInSchema = z.object({
@@ -101,6 +102,14 @@ const SignIn: React.FC = () => {
       ).unwrap();
 
       if (res.accessToken) {
+        if (remember) {
+          await AsyncStorage.setItem(
+            "CREDENTIALS",
+            JSON.stringify({ savedEmail: email, savedPassword: password })
+          );
+        } else {
+          await AsyncStorage.removeItem("CREDENTIALS");
+        }
         dispatch(fetchUserInfoThunk());
         navigation.navigate("MainTabs", { screen: "Account" });
       }
@@ -108,6 +117,24 @@ const SignIn: React.FC = () => {
       Alert.alert("Sign in Failed", err.message || "Sign in failed");
     }
   }, [dispatch, email, password, navigation]);
+
+  useEffect(() => {
+    const loadCredentials = async () => {
+      try {
+        const storedData = await AsyncStorage.getItem("CREDENTIALS");
+        if (storedData) {
+          const { savedEmail, savedPassword } = JSON.parse(storedData);
+          setEmail(savedEmail);
+          setPassword(savedPassword);
+          setRemember(true);
+        }
+      } catch (error) {
+        console.log("Error loading credentials:", error);
+      }
+    };
+
+    loadCredentials();
+  }, []);
 
   const handleTogglePasswordVisibility = useCallback(() => {
     setPasswordVisible((prev) => !prev);

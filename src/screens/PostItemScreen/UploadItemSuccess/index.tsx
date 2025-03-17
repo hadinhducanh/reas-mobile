@@ -1,45 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { ItemType, RootStackParamList } from "../../../navigation/AppNavigator";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
 import Header from "../../../components/Header";
 import HorizontalSection from "../../../components/HorizontalSection";
 import LoadingButton from "../../../components/LoadingButton";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../redux/store";
 
 const UploadItemSuccess: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
-  const otherItems: ItemType[] = [
-    {
-      id: 4,
-      name: "MacBook Pro M3",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "Hà Nội",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-    {
-      id: 5,
-      name: "AirPods Pro 2",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "Hồ Chí Minh",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-    {
-      id: 6,
-      name: "iPad Air 5",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "Đà Nẵng",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-  ];
+  const { itemRecommnand } = useSelector((state: RootState) => state.item);
 
   return (
     <SafeAreaView className="flex-1" edges={["top"]}>
@@ -62,9 +35,9 @@ const UploadItemSuccess: React.FC = () => {
                 <View className="absolute inset-0 bg-[#dfecec]" />
                 <Icon
                   name="checkmark-circle-outline"
-                  size={120}
+                  size={130}
                   color="#ffffff"
-                  className="absolute top-1/2 left-1/2 -translate-x-[60px] -translate-y-[60px]"
+                  className="absolute top-1/4 left-1/4"
                 />
               </View>
               <Text className="text-xl font-bold text-[#0B1D2D] mb-2">
@@ -80,7 +53,7 @@ const UploadItemSuccess: React.FC = () => {
           <View className="mt-8">
             <HorizontalSection
               title="Bài đăng tương tự"
-              data={otherItems}
+              data={itemRecommnand.content}
               navigation={navigation}
             />
           </View>

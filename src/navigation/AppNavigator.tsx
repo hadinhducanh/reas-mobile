@@ -50,6 +50,7 @@ import ExtendPremium from "../screens/AccountScreen/Premium/ExtendPremium";
 import Statistics from "../screens/AccountScreen/Statistics";
 import ItemDetails from "../screens/ItemManagement/ItemDetail";
 import FilterMap from "../screens/SearchResult/FilterMap";
+import { SignupDto } from "../common/models/auth";
 
 export type ItemType = {
   id: number;
@@ -90,7 +91,7 @@ export type RootStackParamList = {
   ExchangeDesiredItemTypeOfItemScreen: undefined;
   BrandSelectionScreen: undefined;
   SignUpSuccess: undefined;
-  OTP: undefined;
+  OTP: { signUpDTO: SignupDto };
   ResetPassword: undefined;
   CreateExchange: { itemId: number };
   BrowseItems: undefined;

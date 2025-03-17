@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import {
 } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-import { ItemType, RootStackParamList } from "../../../navigation/AppNavigator";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { AppDispatch, RootState } from "../../../redux/store";
 import { getItemDetailThunk } from "../../../redux/thunk/itemThunks";
 import HorizontalSection from "../../../components/HorizontalSection";
@@ -43,7 +43,9 @@ const ItemDetails: React.FC = () => {
     { label: "Phương thức trao đổi", value: "Tự đến lấy" },
     { label: "Loại giao dịch", value: "Giao dịch mở" },
   ];
-  const imageArray = itemDetail?.imageUrl ? itemDetail.imageUrl.split(",") : [];
+  const imageArray = itemDetail?.imageUrl
+    ? itemDetail.imageUrl.split(", ")
+    : [];
 
   // const setFavorite = () => {
   //   setIsFavorite(!isFavorite);

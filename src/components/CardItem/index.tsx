@@ -43,6 +43,8 @@ const CardItem: React.FC<CardItemProps> = ({
     return price.toLocaleString("vi-VN");
   };
 
+  const imageArray = item?.imageUrl ? item.imageUrl.split(", ") : [];
+
   return (
     <TouchableOpacity
       className={`bg-white rounded-lg p-3 mb-4 border-2 ${
@@ -52,7 +54,7 @@ const CardItem: React.FC<CardItemProps> = ({
     >
       <View className="bg-gray-100 rounded-t-lg relative">
         <Image
-          source={{ uri: item.imageUrl }}
+          source={{ uri: imageArray[0] }}
           className="w-full h-56 object-cover rounded-t-lg"
         />
 

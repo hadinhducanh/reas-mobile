@@ -40,7 +40,6 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
         <View className="w-20 h-1.5 bg-gray-400 rounded-full" />
       </View>
 
-      {/* Header */}
       <View className="flex-row items-center justify-between mb-4 px-2">
         <Text className="text-lg font-semibold text-black">Lọc theo giá</Text>
         <TouchableOpacity onPress={handleClear}>
@@ -48,9 +47,7 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* Container cho Min price và Max price */}
       <View className="flex-row mt-3">
-        {/* Min price */}
         <View className="flex-1 border border-[#00B0B9] rounded-lg px-2 pt-1">
           <Text className="text-base font-semibold text-[#00B0B9] mb-2">
             Min price
@@ -69,12 +66,10 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
           </View>
         </View>
 
-        {/* Đường kẻ dọc giữa */}
         <View className="items-center flex-col justify-center">
           <View className="w-3 h-1 bg-[#00B0B9] mx-2 rounded-full" />
         </View>
 
-        {/* Max price - thêm padding p-3 để fit content giống Min price */}
         <View className="flex-1 border border-[#00B0B9] rounded-lg px-2 pt-1">
           <Text className="text-base font-semibold text-[#00B0B9] mb-2">
             Max price
@@ -94,7 +89,6 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
         </View>
       </View>
 
-      {/* Nút Apply */}
       <View className="mt-5">
         <LoadingButton
           title="Apply"

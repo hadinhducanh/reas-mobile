@@ -93,7 +93,7 @@ const ItemConditionScreen = () => {
             <TouchableOpacity
               key={index}
               onPress={() => handleSelectCondition(option.value)}
-              className={`p-5 rounded-lg mt-3 flex-row justify-between items-center${
+              className={`p-5 rounded-lg mt-3 flex-row justify-between items-center ${
                 isSelected ? "bg-[#00b0b91A]" : "bg-white"
               }`}
             >
