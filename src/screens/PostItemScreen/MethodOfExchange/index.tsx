@@ -46,7 +46,7 @@ const MethodOfExchangeScreen = () => {
   );
 
   const handleConfirm = useCallback(() => {
-    navigation.navigate("MainTabs", { screen: "Upload" });
+    navigation.navigate("UploadScreen");
   }, [navigation]);
 
   return (
@@ -54,9 +54,7 @@ const MethodOfExchangeScreen = () => {
       <Header
         title="Method of exchange"
         showOption={false}
-        onBackPress={() =>
-          navigation.navigate("MainTabs", { screen: "Upload" })
-        }
+        onBackPress={() => navigation.navigate("UploadScreen")}
       />
 
       <ScrollView className="flex-1 mx-5">

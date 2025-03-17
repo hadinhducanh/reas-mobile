@@ -12,22 +12,21 @@ import ItemConditionScreen from "../screens/PostItemScreen/ItemCondition";
 import MethodOfExchangeScreen from "../screens/PostItemScreen/MethodOfExchange";
 import ExchangeDesiredItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem";
 import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelectionScreen";
+import { useIsFocused } from "@react-navigation/native";
 
 const CreateItemStack = createNativeStackNavigator();
 
 export default function CreateItemFlow() {
-  const dispatch = useDispatch();
+  const isFocused = useIsFocused();
   const { setUploadItem, setIsCheckFreeContext } = useUploadItem();
 
   useEffect(() => {
-    return () => {
-      // Khi người dùng rời khỏi flow (CreateItemFlow bị unmount),
-      // reset lại state tạo item
+    if (!isFocused) {
+      console.log("abc");
       setUploadItem(defaultUploadItem);
       setIsCheckFreeContext(false);
-      dispatch(resetItemUpload());
-    };
-  }, [dispatch, setUploadItem, setIsCheckFreeContext]);
+    }
+  }, [isFocused]);
 
   return (
     <CreateItemStack.Navigator screenOptions={{ headerShown: false }}>

@@ -238,13 +238,6 @@ export default function UploadScreen() {
 
   useEffect(() => {
     if (itemUpload?.itemName.length) {
-      setUploadItem(defaultUploadItem);
-      setIsCheckFreeContext(false);
-      setItemName("");
-      setPrice("");
-      setDescription("");
-      setTermCondition("");
-      setImages("");
       dispatch(resetItemUpload());
       navigation.navigate("UploadItemSuccess");
     }

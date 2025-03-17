@@ -67,7 +67,7 @@ const ItemConditionScreen = () => {
       } else {
         setUploadItem({ ...uploadItem, conditionItem });
       }
-      navigation.navigate("MainTabs", { screen: "Upload" });
+      navigation.navigate("UploadScreen");
     };
   }
 
@@ -81,7 +81,7 @@ const ItemConditionScreen = () => {
           (routes[routes.length - 2].name as string) ===
             "ExchangeDesiredItemScreen"
             ? () => navigation.navigate("ExchangeDesiredItemScreen")
-            : () => navigation.navigate("MainTabs", { screen: "Upload" })
+            : () => navigation.navigate("UploadScreen")
         }
       />
 

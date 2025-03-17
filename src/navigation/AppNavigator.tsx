@@ -51,6 +51,7 @@ import Statistics from "../screens/AccountScreen/Statistics";
 import ItemDetails from "../screens/ItemManagement/ItemDetail";
 import FilterMap from "../screens/SearchResult/FilterMap";
 import { SignupDto } from "../common/models/auth";
+import CreateItemFlow from "./CreateItemFlow";
 
 export type ItemType = {
   id: number;
@@ -85,7 +86,6 @@ export type RootStackParamList = {
   TypeOfItemScreen: undefined;
   TypeOfItemDetailScreen: undefined;
   ItemConditionScreen: undefined;
-  Upload: undefined;
   MethodOfExchangeScreen: undefined;
   ExchangeDesiredItemScreen: undefined;
   ExchangeDesiredItemTypeOfItemScreen: undefined;
@@ -105,12 +105,11 @@ export type RootStackParamList = {
   Favorite: undefined;
   Notifications: undefined;
   FilterMap: undefined;
-  ExchangeDesiredItemBrandSelectionScreen: undefined;
-  ExchangeDesiredItemConditionScreen: undefined;
   Premium: undefined;
   ExtendPremium: undefined;
   About: undefined;
   UploadItemSuccess: undefined;
+  UploadScreen: undefined;
 };
 
 const TabArr = [
@@ -124,7 +123,7 @@ const TabArr = [
   {
     route: "Upload",
     label: "Upload",
-    component: UploadScreen,
+    component: CreateItemFlow,
     type: "add-circle-outline",
   },
   {
@@ -251,34 +250,12 @@ export default function RootNavigator() {
         <Stack.Screen name="ExtendPremium" component={ExtendPremium} />
         <Stack.Screen name="About" component={About} />
         <Stack.Screen name="UploadItemSuccess" component={UploadItemSuccess} />
-        <Stack.Screen
-          name="ExchangeDesiredItemScreen"
-          component={ExchangeDesiredItemScreen}
-        />
-        <Stack.Screen name="TypeOfItemScreen" component={TypeOfItemScreen} />
-        <Stack.Screen
-          name="TypeOfItemDetailScreen"
-          component={TypeOfItemDetailScreen}
-        />
-        <Stack.Screen
-          name="ItemConditionScreen"
-          component={ItemConditionScreen}
-        />
-        <Stack.Screen name="Upload" component={UploadScreen} />
-        <Stack.Screen
-          name="MethodOfExchangeScreen"
-          component={MethodOfExchangeScreen}
-        />
         <Stack.Screen name="BrowseItems" component={BrowseItems} />
         <Stack.Screen name="DifferentItem" component={DifferentItem} />
         <Stack.Screen name="ConfirmExchange" component={ConfirmExchange} />
         <Stack.Screen
           name="AccpectRejectExchange"
           component={AccpectRejectExchange}
-        />
-        <Stack.Screen
-          name="BrandSelectionScreen"
-          component={BrandSelectionScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>
