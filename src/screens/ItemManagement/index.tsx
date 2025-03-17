@@ -3,9 +3,12 @@ import { FlatList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../components/Header";
 import TabHeader from "../../components/TabHeader";
-import { ItemType, RootStackParamList } from "../../navigation/AppNavigator";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 import CardItem from "../../components/CardItem";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { ItemResponse } from "../../common/models/item";
 
 interface ItemManageTabData {
   id: number;
@@ -14,7 +17,7 @@ interface ItemManageTabData {
 const ItemManagement: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [selectedStatus, setSelectedStatus] = useState<string>("Approved");
-
+  const { itemRecommnand } = useSelector((state: RootState) => state.item);
   const data: ItemManageTabData[] = [
     { id: 1, status: "Approved" },
     { id: 2, status: "Expired" },
@@ -52,54 +55,23 @@ const ItemManagement: React.FC = () => {
     },
   ];
 
-  const [itemList, setItemList] = useState<ItemType[]>([
-    {
-      id: 1,
-      name: "iPhone 20",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "Vinhome Grand Park",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-    {
-      id: 2,
-      name: "Samsung Galaxy S25",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "District 1, HCMC",
-      description: "Latest Samsung flagship phone.",
-      isFavorited: false,
-    },
-    {
-      id: 3,
-      name: "Samsung Galaxy S24",
-      price: 30000000,
-      images:
-        "https://goldsun.vn/pic/ProductItem/Noi-com-d_637625508222561223.jpg",
-      location: "District 3, HCMC",
-      description: "Latest Samsung flagship phone1.",
-      isFavorited: false,
-    },
-  ]);
-
-  const chunkArray = (array: ItemType[], size: number) => {
-    const chunked: ItemType[][] = [];
+  const chunkArray = (array: ItemResponse[], size: number) => {
+    const chunked: ItemResponse[][] = [];
     for (let i = 0; i < array.length; i += size) {
       chunked.push(array.slice(i, i + size));
     }
     return chunked;
   };
 
-  const toggleLike = (itemId: number) => {
-    setItemList((prevList) =>
-      prevList.map((item) =>
-        item.id === itemId ? { ...item, isFavorited: !item.isFavorited } : item
-      )
-    );
-  };
+  // const toggleLike = (itemId: number) => {
+  //   setItemList((prevList) =>
+  //     prevList.map((item) =>
+  //       item.id === itemId ? { ...item, isFavorited: !item.isFavorited } : item
+  //     )
+  //   );
+  // };
 
-  const rows = chunkArray(itemList, 2);
+  const rows = chunkArray(itemRecommnand.content, 2);
 
   return (
     <SafeAreaView className="flex-1 bg-[#f6f9f9]">
@@ -121,7 +93,7 @@ const ItemManagement: React.FC = () => {
                   <CardItem
                     item={item}
                     navigation={navigation}
-                    toggleLike={toggleLike}
+                    // toggleLike={toggleLike}
                     mode="management"
                   />
                 </View>

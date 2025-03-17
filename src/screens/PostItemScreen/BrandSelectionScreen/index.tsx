@@ -63,7 +63,7 @@ const BrandSelectionScreen = () => {
       } else {
         setUploadItem({ ...uploadItem, brandId });
       }
-      navigation.navigate("MainTabs", { screen: "Upload" });
+      navigation.navigate("UploadScreen");
     };
   }
 
@@ -81,7 +81,7 @@ const BrandSelectionScreen = () => {
           (routes[routes.length - 2].name as string) ===
             "ExchangeDesiredItemScreen"
             ? () => navigation.navigate("ExchangeDesiredItemScreen")
-            : () => navigation.navigate("MainTabs", { screen: "Upload" })
+            : () => navigation.navigate("UploadScreen")
         }
       />
 

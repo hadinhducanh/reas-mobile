@@ -62,7 +62,7 @@ const TypeOfItemDetailScreen = () => {
         navigation.navigate("TypeOfItemScreen");
       } else {
         setUploadItem({ ...uploadItem, categoryId });
-        navigation.navigate("MainTabs", { screen: "Upload" });
+        navigation.navigate("UploadScreen");
       }
     };
   }

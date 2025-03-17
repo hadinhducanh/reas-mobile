@@ -84,7 +84,7 @@ const TypeOfItemScreen = () => {
           typeItem: TypeItem.NO_TYPE,
           categoryId: 0,
         });
-        navigation.navigate("MainTabs", { screen: "Upload" });
+        navigation.navigate("UploadScreen");
       } else {
         setUploadItem({ ...uploadItem, typeItem });
         dispatch(getAllByTypeItemThunk(typeItem));
@@ -102,7 +102,7 @@ const TypeOfItemScreen = () => {
           (routes[routes.length - 2].name as string) ===
             "ExchangeDesiredItemScreen"
             ? () => navigation.navigate("ExchangeDesiredItemScreen")
-            : () => navigation.navigate("MainTabs", { screen: "Upload" })
+            : () => navigation.navigate("UploadScreen")
         }
       />
       <ScrollView className="flex-1 mx-5">

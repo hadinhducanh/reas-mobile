@@ -67,7 +67,7 @@ const ItemConditionScreen = () => {
       } else {
         setUploadItem({ ...uploadItem, conditionItem });
       }
-      navigation.navigate("MainTabs", { screen: "Upload" });
+      navigation.navigate("UploadScreen");
     };
   }
 
@@ -81,7 +81,7 @@ const ItemConditionScreen = () => {
           (routes[routes.length - 2].name as string) ===
             "ExchangeDesiredItemScreen"
             ? () => navigation.navigate("ExchangeDesiredItemScreen")
-            : () => navigation.navigate("MainTabs", { screen: "Upload" })
+            : () => navigation.navigate("UploadScreen")
         }
       />
 
@@ -93,7 +93,7 @@ const ItemConditionScreen = () => {
             <TouchableOpacity
               key={index}
               onPress={() => handleSelectCondition(option.value)}
-              className={`p-5 rounded-lg mt-3 flex-row justify-between items-center${
+              className={`p-5 rounded-lg mt-3 flex-row justify-between items-center ${
                 isSelected ? "bg-[#00b0b91A]" : "bg-white"
               }`}
             >

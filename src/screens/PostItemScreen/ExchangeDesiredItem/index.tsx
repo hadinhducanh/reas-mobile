@@ -88,18 +88,37 @@ const ExchangeDesiredItemScreen = () => {
           minPrice: min,
         },
       });
-      navigation.navigate("MainTabs", { screen: "Upload" });
+      navigation.navigate("UploadScreen");
     }
   };
+
+  const handleFieldChange = useCallback(
+    (field: "minPrice" | "maxPrice", value: string) => {
+      const priceValue = parseInt(value.replace(/,/g, ""), 10) || 0;
+
+      if (field === "maxPrice") {
+        setMaxPrice(value);
+        setUploadItem((prev) => ({
+          ...prev,
+          desiredItem: { ...prev.desiredItem!, maxPrice: priceValue },
+        }));
+      } else {
+        setMinPrice(value);
+        setUploadItem((prev) => ({
+          ...prev,
+          desiredItem: { ...prev.desiredItem!, minPrice: priceValue },
+        }));
+      }
+    },
+    [setUploadItem]
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
       <Header
         title="Your desired item for exchange"
         showOption={false}
-        onBackPress={() =>
-          navigation.navigate("MainTabs", { screen: "Upload" })
-        }
+        onBackPress={() => navigation.navigate("UploadScreen")}
       />
       <ScrollView className="flex-1 mx-5">
         <TouchableOpacity
@@ -147,7 +166,7 @@ const ExchangeDesiredItemScreen = () => {
                 className="flex-1 text-black text-lg font-normal"
                 placeholder="0"
                 value={formatPrice(minPrice)}
-                onChangeText={(value) => setMinPrice(formatPrice(value))}
+                onChangeText={(text) => handleFieldChange("minPrice", text)}
                 keyboardType="numeric"
                 placeholderTextColor="#d1d5db"
               />
@@ -165,7 +184,7 @@ const ExchangeDesiredItemScreen = () => {
                 className="flex-1 text-black text-lg font-normal"
                 placeholder="0"
                 value={formatPrice(maxPrice)}
-                onChangeText={(value) => setMaxPrice(formatPrice(value))}
+                onChangeText={(text) => handleFieldChange("maxPrice", text)}
                 keyboardType="numeric"
                 placeholderTextColor="#d1d5db"
               />
