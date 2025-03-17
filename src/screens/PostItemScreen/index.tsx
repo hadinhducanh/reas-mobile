@@ -250,21 +250,6 @@ export default function UploadScreen() {
     }
   }, [itemUpload, dispatch, navigation, setUploadItem, setIsCheckFreeContext]);
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("blur", () => {
-      setUploadItem(defaultUploadItem);
-      setIsCheckFreeContext(false);
-      setItemName("");
-      setPrice("");
-      setDescription("");
-      setTermCondition("");
-      setImages("");
-      dispatch(resetItemUpload());
-    });
-
-    return unsubscribe;
-  }, [navigation]);
-
   const toggleCheckboxFree = useCallback(() => {
     setIsCheckedFree((prev) => {
       setIsCheckFreeContext(!prev);
