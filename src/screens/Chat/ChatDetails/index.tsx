@@ -20,10 +20,7 @@ import { Stomp } from "@stomp/stompjs";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
-import {
-  useExpoImagePicker,
-  PickedImageFile,
-} from "../../../hook/useExpoImagePicker";
+import { useExpoImagePicker, PickedImageFile } from "../../../hook/useExpoImagePicker";
 
 const uploadImageToCloudinary = async (
   file: PickedImageFile
@@ -44,7 +41,6 @@ const uploadImageToCloudinary = async (
       body: cloudinaryFormData,
     }
   );
-
   if (!response.ok) throw new Error("Image upload failed");
   const data = await response.json();
   return data.secure_url;
@@ -56,14 +52,15 @@ const ChatDetails: React.FC = () => {
   const { receiverUsername, receiverFullName } = route.params;
   const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState("");
-  const [selectedImage, setSelectedImage] = useState<PickedImageFile | null>(
-    null
-  );
+  const [selectedImage, setSelectedImage] = useState<PickedImageFile | null>(null);
   const [isSending, setIsSending] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
   const senderUsername = user?.userName;
   const stompClientRef = useRef<any>(null);
   const { showPickerOptions } = useExpoImagePicker();
+
+  // Create a ref for the ScrollView
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     console.log("senderUsername", senderUsername);
@@ -87,9 +84,6 @@ const ChatDetails: React.FC = () => {
   // Modified onMessageReceived: if contentType is missing and content starts with "http", set it to "image".
   const onMessageReceived = (payload: any) => {
     const receivedMessage = JSON.parse(payload.body);
-
-    // FIX: Check if contentType is missing and content looks like an image URL,
-    // then set contentType to "image"
     if (
       !receivedMessage.contentType &&
       receivedMessage.content &&
@@ -97,7 +91,6 @@ const ChatDetails: React.FC = () => {
     ) {
       receivedMessage.contentType = "image";
     }
-
     if (
       receivedMessage.senderId === receiverUsername ||
       receivedMessage.senderId === senderUsername
@@ -202,6 +195,15 @@ const ChatDetails: React.FC = () => {
     }
   };
 
+  // NEW: Scroll to bottom whenever content changes
+  const scrollToBottom = () => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   return (
     <SafeAreaView className="flex-1 bg-[#00b0b9]" edges={["top"]}>
       <KeyboardAvoidingView
@@ -222,7 +224,11 @@ const ChatDetails: React.FC = () => {
 
           {/* Chat Messages */}
           <View className="flex-1 bg-white">
-            <ScrollView className="bg-white">
+            <ScrollView
+              ref={scrollViewRef}
+              onContentSizeChange={scrollToBottom} // NEW: auto-scroll on content change
+              className="bg-white"
+            >
               {messages.map((msg, index) => (
                 <ChatMessage
                   key={index}
@@ -230,9 +236,7 @@ const ChatDetails: React.FC = () => {
                   type={msg.contentType === "image" ? "image" : "text"}
                   time={formatTimestamp(msg.timestamp)}
                   text={msg.content}
-                  imageUrl={
-                    msg.contentType === "image" ? msg.content : undefined
-                  }
+                  imageUrl={msg.contentType === "image" ? msg.content : undefined}
                 />
               ))}
             </ScrollView>
