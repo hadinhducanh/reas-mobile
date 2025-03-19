@@ -1,5 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, Pressable, ScrollView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  Platform,
+  Alert,
+  Image,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
@@ -11,6 +20,35 @@ import { Stomp } from "@stomp/stompjs";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
+import {
+  useExpoImagePicker,
+  PickedImageFile,
+} from "../../../hook/useExpoImagePicker";
+
+const uploadImageToCloudinary = async (
+  file: PickedImageFile
+): Promise<string> => {
+  const cloudinaryFormData = new FormData();
+  cloudinaryFormData.append("file", {
+    uri: file.uri,
+    type: file.type,
+    name: file.name,
+  } as any);
+  cloudinaryFormData.append("upload_preset", "reas_user_avatar");
+  cloudinaryFormData.append("cloud_name", "dkpg60ca0");
+
+  const response = await fetch(
+    "https://api.cloudinary.com/v1_1/dkpg60ca0/image/upload",
+    {
+      method: "POST",
+      body: cloudinaryFormData,
+    }
+  );
+
+  if (!response.ok) throw new Error("Image upload failed");
+  const data = await response.json();
+  return data.secure_url;
+};
 
 const ChatDetails: React.FC = () => {
   const navigation = useNavigation();
@@ -18,9 +56,14 @@ const ChatDetails: React.FC = () => {
   const { receiverUsername, receiverFullName } = route.params;
   const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState("");
+  const [selectedImage, setSelectedImage] = useState<PickedImageFile | null>(
+    null
+  );
+  const [isSending, setIsSending] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
   const senderUsername = user?.userName;
   const stompClientRef = useRef<any>(null);
+  const { showPickerOptions } = useExpoImagePicker();
 
   useEffect(() => {
     console.log("senderUsername", senderUsername);
@@ -31,16 +74,30 @@ const ChatDetails: React.FC = () => {
     client.connect(
       {},
       () => {
-        client.subscribe(`/user/${senderUsername}/queue/messages`,onMessageReceived);
+        client.subscribe(
+          `/user/${senderUsername}/queue/messages`,
+          onMessageReceived
+        );
         client.subscribe(`/topic/public`, onMessageReceived);
       },
       onError
     );
   }, []);
 
+  // Modified onMessageReceived: if contentType is missing and content starts with "http", set it to "image".
   const onMessageReceived = (payload: any) => {
     const receivedMessage = JSON.parse(payload.body);
-    // Only update the chat if the message is for this conversation
+
+    // FIX: Check if contentType is missing and content looks like an image URL,
+    // then set contentType to "image"
+    if (
+      !receivedMessage.contentType &&
+      receivedMessage.content &&
+      receivedMessage.content.startsWith("http")
+    ) {
+      receivedMessage.contentType = "image";
+    }
+
     if (
       receivedMessage.senderId === receiverUsername ||
       receivedMessage.senderId === senderUsername
@@ -71,30 +128,64 @@ const ChatDetails: React.FC = () => {
     }
   };
 
-  const sendMessage = () => {
-    if (!message.trim()) return;
+  const handleSelectImage = async () => {
+    const file = await showPickerOptions();
+    if (file) {
+      setSelectedImage(file);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!message.trim() && !selectedImage) return;
     const client = stompClientRef.current;
     if (!client || !client.connected) {
       console.warn("No underlying stomp connection");
       return;
     }
-
-    const chatMessage = {
-      senderId: senderUsername,
-      recipientId: receiverUsername,
-      senderName: user?.fullName,
-      recipientName: receiverFullName,
-      content: message,
-      timestamp: new Date().toISOString(),
+    setIsSending(true);
+    let chatMessage: {
+      senderId: string | undefined;
+      recipientId: string;
+      senderName: string | undefined;
+      recipientName: string;
+      content: string;
+      timestamp: string;
+      contentType: string;
     };
-
-    setMessages((prev) => [...prev, chatMessage]);
-    client.send("/app/chat", {}, JSON.stringify(chatMessage));
-    setMessage("");
+    try {
+      if (selectedImage) {
+        const imageUrl = await uploadImageToCloudinary(selectedImage);
+        chatMessage = {
+          senderId: senderUsername,
+          recipientId: receiverUsername,
+          senderName: user?.fullName,
+          recipientName: receiverFullName,
+          content: imageUrl,
+          timestamp: new Date().toISOString(),
+          contentType: "image",
+        };
+      } else {
+        chatMessage = {
+          senderId: senderUsername,
+          recipientId: receiverUsername,
+          senderName: user?.fullName,
+          recipientName: receiverFullName,
+          content: message,
+          timestamp: new Date().toISOString(),
+          contentType: "text",
+        };
+      }
+      setMessages((prev) => [...prev, chatMessage]);
+      client.send("/app/chat", {}, JSON.stringify(chatMessage));
+      setMessage("");
+      setSelectedImage(null);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+    setIsSending(false);
   };
 
   const formatTimestamp = (timestamp?: string): string => {
-    console.log("timestamp", timestamp);
     if (!timestamp) return "";
     try {
       const normalized = timestamp.replace(/:(?=\d\d$)/, "");
@@ -136,16 +227,51 @@ const ChatDetails: React.FC = () => {
                 <ChatMessage
                   key={index}
                   isSender={msg.senderId === senderUsername}
-                  type="text"
+                  type={msg.contentType === "image" ? "image" : "text"}
                   time={formatTimestamp(msg.timestamp)}
                   text={msg.content}
+                  imageUrl={
+                    msg.contentType === "image" ? msg.content : undefined
+                  }
                 />
               ))}
             </ScrollView>
           </View>
 
+          {/* Selected image preview with remove option */}
+          {selectedImage && (
+            <View style={{ padding: 10 }}>
+              <Text style={{ color: "#000", marginBottom: 4 }}>
+                Selected Image Preview:
+              </Text>
+              <View style={{ width: 100, height: 100, position: "relative" }}>
+                <Image
+                  source={{ uri: selectedImage.uri }}
+                  style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: 8,
+                  }}
+                />
+                <Pressable
+                  onPress={() => setSelectedImage(null)}
+                  style={{
+                    position: "absolute",
+                    top: -8,
+                    right: -8,
+                  }}
+                >
+                  <Icon name="close-circle" size={24} color="red" />
+                </Pressable>
+              </View>
+            </View>
+          )}
+
+          {/* Chat Input & Actions */}
           <View className="flex-row items-center px-5 bg-white py-8">
-            <Icon name="image" size={28} color="#00b0b9" />
+            <Pressable onPress={handleSelectImage}>
+              <Icon name="image" size={28} color="#00b0b9" />
+            </Pressable>
             <Icon className="mx-2" name="location" size={28} color="#00b0b9" />
             <TextInput
               placeholder="Nhập tin nhắn..."
@@ -155,7 +281,11 @@ const ChatDetails: React.FC = () => {
               onSubmitEditing={sendMessage}
             />
             <Pressable onPress={sendMessage}>
-              <Icon name="send" size={28} color="#00b0b9" />
+              {isSending ? (
+                <ActivityIndicator size="small" color="#00b0b9" />
+              ) : (
+                <Icon name="send" size={28} color="#00b0b9" />
+              )}
             </Pressable>
           </View>
         </View>
