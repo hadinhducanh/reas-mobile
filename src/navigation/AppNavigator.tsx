@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Text, View, Platform } from "react-native";
 import {
   NavigationContainer,
   NavigatorScreenParams,
+  useNavigation,
 } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -32,15 +33,7 @@ import OwnerItem from "../screens/Owner/OwnerItem";
 import OwnerFeedback from "../screens/Owner/OwnerFeedback";
 import Favorite from "../screens/AccountScreen/Favortie";
 import Notifications from "../screens/Notification";
-import UploadScreen from "../screens/PostItemScreen";
-import TypeOfItemScreen from "../screens/PostItemScreen/TypeOfItem";
-import TypeOfItemDetailScreen from "../screens/PostItemScreen/TypeOfItemDetail";
-import ItemConditionScreen from "../screens/PostItemScreen/ItemCondition";
-import MethodOfExchangeScreen from "../screens/PostItemScreen/MethodOfExchange";
-import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelectionScreen";
-import ItemManagement from "../screens/ItemManagement";
 import ItemExpire from "../screens/ItemManagement/ItemExpire";
-import ExchangeDesiredItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem";
 import Premium from "../screens/AccountScreen/Premium";
 import About from "../screens/AccountScreen/About";
 import { useSelector } from "react-redux";
@@ -52,6 +45,10 @@ import ItemDetails from "../screens/ItemManagement/ItemDetail";
 import FilterMap from "../screens/SearchResult/FilterMap";
 import { SignupDto } from "../common/models/auth";
 import CreateItemFlow from "./CreateItemFlow";
+import { defaultUploadItem, useUploadItem } from "../context/ItemContext";
+import ConfirmModal from "../components/DeleteConfirmModal";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import ItemManagement from "../screens/ItemManagement";
 
 export type ItemType = {
   id: number;
@@ -143,79 +140,112 @@ const TabArr = [
 const Tab = createBottomTabNavigator();
 
 function BottomTabs() {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { accessToken } = useSelector((state: RootState) => state.auth);
+  const { uploadItem, setUploadItem } = useUploadItem();
+  const hasUnsavedData =
+    JSON.stringify(uploadItem) !== JSON.stringify(defaultUploadItem);
+
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [pendingTabName, setPendingTabName] = useState<
+    keyof MainTabsParamList | null
+  >(null);
+
+  const handleConfirm = async () => {
+    // hasConfirmedUploadRef.current = true;
+    setConfirmVisible(false);
+    setUploadItem(defaultUploadItem);
+
+    if (pendingTabName) {
+      navigation.navigate("MainTabs", { screen: pendingTabName });
+      setPendingTabName(null);
+    }
+  };
+
+  const handleCancel = () => {
+    setConfirmVisible(false);
+    setPendingTabName(null);
+  };
 
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          height: Platform.OS === "ios" ? 85 : 72,
-        },
-        tabBarShowLabel: false,
-      }}
-    >
-      {TabArr.map((item, index) => (
-        <Tab.Screen
-          key={index}
-          name={item.route}
-          component={item.component}
-          listeners={
-            item.route === "Upload" ||
-            item.route === "Items" ||
-            item.route === "Exchanges"
-              ? ({ navigation }) => ({
-                  tabPress: (e) => {
-                    if (!accessToken) {
-                      e.preventDefault();
-                      navigation.navigate("SignIn");
-                    }
-                  },
-                })
-              : undefined
-          }
-          options={{
-            tabBarIcon: ({ focused }) => {
-              if (item.route === "Upload") {
+    <>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: {
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            height: Platform.OS === "ios" ? 85 : 72,
+          },
+          tabBarShowLabel: false,
+        }}
+      >
+        {TabArr.map((item, index) => (
+          <Tab.Screen
+            key={index}
+            name={item.route}
+            component={item.component}
+            listeners={({ navigation }) => ({
+              tabPress: (e) => {
+                if (!accessToken) {
+                  e.preventDefault();
+                  navigation.navigate("SignIn");
+                } else if (hasUnsavedData && item.route !== "Upload") {
+                  e.preventDefault();
+                  setPendingTabName(item.route as keyof MainTabsParamList);
+                  setConfirmVisible(true);
+                }
+              },
+            })}
+            options={{
+              tabBarIcon: ({ focused }) => {
+                if (item.route === "Upload") {
+                  return (
+                    <View className="mt-[20px] h-[80px] w-[80px] items-center justify-center rounded-full bg-[#00B0B9]">
+                      <Icon
+                        name={item.type}
+                        size={30}
+                        color="#fff"
+                        className="mb-[2px]"
+                      />
+                      <Text className="text-xs font-bold text-white">
+                        {item.label}
+                      </Text>
+                    </View>
+                  );
+                }
+                const iconColor = focused ? "#00B0B9" : "#738AA0";
                 return (
-                  <View className="mt-[20px] h-[80px] w-[80px] items-center justify-center rounded-full bg-[#00B0B9]">
+                  <View className="mt-[25px] h-[75px] w-[75px] items-center justify-center rounded-full">
                     <Icon
                       name={item.type}
-                      size={30}
-                      color="#fff"
+                      size={25}
+                      color={iconColor}
                       className="mb-[2px]"
                     />
-                    <Text className="text-xs font-bold text-white">
+                    <Text
+                      className={`text-xs font-bold ${
+                        focused ? "text-[#00B0B9]" : "text-[#738AA0]"
+                      }`}
+                    >
                       {item.label}
                     </Text>
                   </View>
                 );
-              }
-              const iconColor = focused ? "#00B0B9" : "#738AA0";
-              return (
-                <View className="mt-[25px] h-[75px] w-[75px] items-center justify-center rounded-full">
-                  <Icon
-                    name={item.type}
-                    size={25}
-                    color={iconColor}
-                    className="mb-[2px]"
-                  />
-                  <Text
-                    className={`text-xs font-bold ${
-                      focused ? "text-[#00B0B9]" : "text-[#738AA0]"
-                    }`}
-                  >
-                    {item.label}
-                  </Text>
-                </View>
-              );
-            },
-          }}
-        />
-      ))}
-    </Tab.Navigator>
+              },
+            }}
+          />
+        ))}
+      </Tab.Navigator>
+      <ConfirmModal
+        title="Warning"
+        content={`You have unsaved item. ${"\n"} Do you really want to leave?`}
+        visible={confirmVisible}
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+      />
+    </>
   );
 }
 
@@ -224,7 +254,12 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      >
         <Stack.Screen name="MainTabs" component={BottomTabs} />
         <Stack.Screen name="SignIn" component={SignInScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />

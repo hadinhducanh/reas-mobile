@@ -1,5 +1,13 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Alert, Modal, ScrollView, Text, TextInput, View } from "react-native";
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import {
+  Alert,
+  Modal,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,52 +20,28 @@ import Header from "../../components/Header";
 import ChooseImage from "../../components/ChooseImage";
 import LoadingButton from "../../components/LoadingButton";
 import { defaultUploadItem, useUploadItem } from "../../context/ItemContext";
-import { ConditionItem } from "../../common/enums/ConditionItem";
-import { MethodExchange } from "../../common/enums/MethodExchange";
 import { TypeExchange } from "../../common/enums/TypeExchange";
 import { uploadItemThunk } from "../../redux/thunk/itemThunks";
 import { resetItemUpload } from "../../redux/slices/itemSlice";
 import NavigationListItem from "../../components/NavigationListItem";
 import Toggle from "../../components/Toggle";
 import ConfirmModal from "../../components/DeleteConfirmModal";
-
-const itemConditions = [
-  { label: "Brand new", value: ConditionItem.BRAND_NEW },
-  { label: "Like new", value: ConditionItem.LIKE_NEW },
-  { label: "Excellent condition", value: ConditionItem.EXCELLENT },
-  { label: "Good condition", value: ConditionItem.GOOD },
-  { label: "Fair condition", value: ConditionItem.FAIR },
-  { label: "Poor condition", value: ConditionItem.POOR },
-  { label: "For parts / Not working", value: ConditionItem.NOT_WORKING },
-];
-
-const methodExchanges = [
-  { label: "Pick up in person", value: MethodExchange.PICK_UP_IN_PERSON },
-  { label: "Delivery", value: MethodExchange.DELIVERY },
-  {
-    label: "Meet at a given location",
-    value: MethodExchange.MEET_AT_GIVEN_LOCATION,
-  },
-];
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 export default function UploadScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { brands } = useSelector((state: RootState) => state.brand);
   const { user } = useSelector((state: RootState) => state.auth);
-  const { categories } = useSelector((state: RootState) => state.category);
   const { itemUpload, loading } = useSelector((state: RootState) => state.item);
   const dispatch = useDispatch<AppDispatch>();
-  const {
-    uploadItem,
-    setUploadItem,
-    isCheckFreeContext,
-    setIsCheckFreeContext,
-  } = useUploadItem();
+  const { uploadItem, setUploadItem } = useUploadItem();
 
-  const [isCheckedFree, setIsCheckedFree] =
-    useState<boolean>(isCheckFreeContext);
-  const [isMoneyAccepted, setIsMoneyAccepted] = useState(false);
+  const [isCheckedFree, setIsCheckedFree] = useState<boolean>(
+    uploadItem.isCheckedFree
+  );
+  const [isMoneyAccepted, setIsMoneyAccepted] = useState(
+    uploadItem.isMoneyAccepted
+  );
   const [price, setPrice] = useState<string>(uploadItem.price.toString());
   const [itemName, setItemName] = useState<string>(uploadItem.itemName);
   const [description, setDescription] = useState<string>(
@@ -69,24 +53,6 @@ export default function UploadScreen() {
   const [images, setImages] = useState<string>(uploadItem.imageUrl);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
-
-  const selectedBrand = brands.find((brand) => brand.id === uploadItem.brandId);
-
-  const selectedTypeItemDetail = useMemo(
-    () => categories.find((category) => category.id === uploadItem.categoryId),
-    [categories, uploadItem.categoryId]
-  );
-  const selectedItemCondition = useMemo(
-    () =>
-      itemConditions.find((cond) => cond.value === uploadItem.conditionItem),
-    [uploadItem.conditionItem]
-  );
-  const selectedMethodExchanges = useMemo(() => {
-    const methods = methodExchanges.filter((method) =>
-      uploadItem.methodExchanges.includes(method.value)
-    );
-    return methods.map((method) => method.label).join(", ");
-  }, [uploadItem.methodExchanges]);
 
   const handleFieldChange = useCallback(
     (
@@ -158,6 +124,8 @@ export default function UploadScreen() {
   }, [images, uploadToCloudinary, user?.email]);
 
   const handleCreateItem = useCallback(async () => {
+    // hasConfirmedUploadRef.current = true;
+
     setConfirmVisible(false);
 
     const priceItem = isCheckedFree
@@ -168,19 +136,21 @@ export default function UploadScreen() {
 
     if (
       !images ||
-      !selectedTypeItemDetail ||
-      !selectedBrand ||
-      !selectedItemCondition ||
+      !uploadItem.categoryId ||
+      !uploadItem.brandId ||
+      !uploadItem.conditionItem ||
       (!price && priceItem > 0 && isCheckedFree) ||
       !itemName ||
       !description ||
-      !selectedMethodExchanges
+      !uploadItem.methodExchanges
     ) {
-      Alert.alert("Missing Information", "All fields are required.");
+      console.log(uploadItem);
+
+      Alert.alert("Invalid information", "All fields are required.");
       return;
     } else if (description.trim().length < 20) {
       Alert.alert(
-        "Invalid Description",
+        "Invalid information",
         "Description must be at least 20 characters long."
       );
       return;
@@ -218,37 +188,28 @@ export default function UploadScreen() {
             : null,
       };
 
+      // console.log(uploadItemRequest);
+
       await dispatch(uploadItemThunk(uploadItemRequest));
     }
-  }, [
-    description,
-    isCheckedFree,
-    itemName,
-    images,
-    price,
-    processImages,
-    selectedBrand,
-    selectedItemCondition,
-    selectedMethodExchanges,
-    selectedTypeItemDetail,
-    termCondition,
-    uploadItem,
-    dispatch,
-  ]);
+  }, [setUploadItem, uploadItem, dispatch]);
 
   useEffect(() => {
-    if (itemUpload?.itemName.length) {
+    if (itemUpload !== null) {
       dispatch(resetItemUpload());
       navigation.navigate("UploadItemSuccess");
     }
-  }, [itemUpload, dispatch, navigation, setUploadItem, setIsCheckFreeContext]);
+  }, [itemUpload, dispatch]);
 
   const toggleCheckboxFree = useCallback(() => {
     setIsCheckedFree((prev) => {
-      setIsCheckFreeContext(!prev);
+      setUploadItem((prevUpload) => ({
+        ...prevUpload,
+        isCheckedFree: !prev,
+      }));
       return !prev;
     });
-  }, [setIsCheckFreeContext]);
+  }, [setUploadItem]);
 
   const toggleCheckboxDesiredItem = useCallback(() => {
     setIsMoneyAccepted((prev) => {
@@ -289,21 +250,21 @@ export default function UploadScreen() {
 
           <NavigationListItem
             title="Type of item"
-            value={selectedTypeItemDetail?.categoryName}
+            value={uploadItem.categoryName}
             route="TypeOfItemScreen"
             defaultValue="Select type"
           />
 
           <NavigationListItem
             title="Brand"
-            value={selectedBrand?.brandName}
+            value={uploadItem.brandName}
             route="BrandSelectionScreen"
             defaultValue="Select brand"
           />
 
           <NavigationListItem
             title="Condition"
-            value={selectedItemCondition?.label}
+            value={uploadItem.conditionItemName}
             route="ItemConditionScreen"
             defaultValue="Select condition"
           />
@@ -314,7 +275,7 @@ export default function UploadScreen() {
               uploadItem.methodExchanges.length === 3
                 ? "All method exchanges"
                 : uploadItem.methodExchanges.length > 0
-                ? selectedMethodExchanges
+                ? uploadItem.methodExchangeName
                 : ""
             }
             route="MethodOfExchangeScreen"
@@ -348,7 +309,7 @@ export default function UploadScreen() {
             <Text className="text-black text-base">Name</Text>
             <View className="mt-1">
               <TextInput
-                className="flex-1 text-lg font-normal text-[#00B0B9]"
+                className="flex-1 text-lg font-normal text-black"
                 placeholder="Aaaaa"
                 placeholderTextColor="#d1d5db"
                 value={itemName}
@@ -383,14 +344,33 @@ export default function UploadScreen() {
             />
           )}
 
-          <NavigationListItem
-            title="Add your desired item for exchanging"
-            value={uploadItem.desiredItem?.categoryId !== 0 ? "Detail" : ""}
-            route="ExchangeDesiredItemScreen"
-            defaultValue="(Optional)"
-          />
+          <TouchableOpacity
+            onPress={() => navigation.navigate("ExchangeDesiredItemScreen")}
+            className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
+          >
+            <View>
+              <Text className="text-base font-normal text-black">
+                Add your desired item for exchanging
+              </Text>
+              {JSON.stringify(uploadItem.desiredItem) !==
+              JSON.stringify(defaultUploadItem.desiredItem) ? (
+                <Text
+                  className="text-[#00b0b9] text-lg underline font-bold"
+                  onPress={() =>
+                    navigation.navigate("ExchangeDesiredItemScreen")
+                  }
+                >
+                  Detail
+                </Text>
+              ) : (
+                <Text className="text-lg font-bold">(Optional)</Text>
+              )}
+            </View>
 
-          <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3 border-2 border-[#00B0B9]">
+            <Icon name="arrow-forward-ios" size={20} color="black" />
+          </TouchableOpacity>
+
+          <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
             <Text className="text-black text-base">
               Exchange’s terms and conditions
             </Text>

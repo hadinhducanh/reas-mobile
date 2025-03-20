@@ -1,40 +1,21 @@
-import React, { useCallback, useState } from "react";
-import {
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState, useRef } from "react";
+import { ScrollView, Text, TextInput, View, Alert } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import Icon from "react-native-vector-icons/MaterialIcons";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../components/Header";
 import LoadingButton from "../../../components/LoadingButton";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../redux/store";
-import { useUploadItem } from "../../../context/ItemContext";
-import { ConditionItem } from "../../../common/enums/ConditionItem";
-
-const itemConditions = [
-  { label: "Brand new", value: ConditionItem.BRAND_NEW },
-  { label: "Like new", value: ConditionItem.LIKE_NEW },
-  { label: "Excellent condition", value: ConditionItem.EXCELLENT },
-  { label: "Good condition", value: ConditionItem.GOOD },
-  { label: "Fair condition", value: ConditionItem.FAIR },
-  { label: "Poor condition", value: ConditionItem.POOR },
-  { label: "For parts / Not working", value: ConditionItem.NOT_WORKING },
-];
+import { defaultUploadItem, useUploadItem } from "../../../context/ItemContext";
+import NavigationListItem from "../../../components/NavigationListItem";
+import ConfirmModal from "../../../components/DeleteConfirmModal";
 
 const ExchangeDesiredItemScreen = () => {
   const { uploadItem, setUploadItem } = useUploadItem();
-
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [confirmVisible, setConfirmVisible] = useState(false);
+
   const [minPrice, setMinPrice] = useState<string>(
     uploadItem.desiredItem?.minPrice.toString() || ""
   );
@@ -42,19 +23,8 @@ const ExchangeDesiredItemScreen = () => {
     uploadItem.desiredItem?.maxPrice.toString() || ""
   );
 
-  const { brands } = useSelector((state: RootState) => state.brand);
-  const { categories } = useSelector((state: RootState) => state.category);
-
-  const selectedBrand = brands.find(
-    (brand) => brand.id === uploadItem.desiredItem?.brandId
-  );
-  const selectedTypeItemDetail = categories.find(
-    (category) => category.id === uploadItem.desiredItem?.categoryId
-  );
-  const selectedItemCondition = itemConditions.find(
-    (itemCondition) =>
-      itemCondition.value === uploadItem.desiredItem?.conditionItem
-  );
+  const pendingBeforeRemoveEvent = useRef<any>(null);
+  const hasConfirmedRef = useRef(false);
 
   const formatPrice = (value: string): string => {
     const numericValue = value.replace(/\D/g, "");
@@ -70,9 +40,9 @@ const ExchangeDesiredItemScreen = () => {
     if (
       !minPrice ||
       !maxPrice ||
-      !selectedBrand ||
-      !selectedItemCondition ||
-      !selectedTypeItemDetail
+      !uploadItem.brandDesiredItemName ||
+      !uploadItem.conditionDesiredItemName ||
+      !uploadItem.categoryDesiredItemName
     ) {
       Alert.alert("Missing Information", "All fields is required.");
       return;
@@ -80,6 +50,8 @@ const ExchangeDesiredItemScreen = () => {
       Alert.alert("Invalid", "Max price must be greater than min price.");
       return;
     } else {
+      hasConfirmedRef.current = true;
+
       setUploadItem({
         ...uploadItem,
         desiredItem: {
@@ -88,7 +60,7 @@ const ExchangeDesiredItemScreen = () => {
           minPrice: min,
         },
       });
-      navigation.navigate("UploadScreen");
+      navigation.goBack();
     }
   };
 
@@ -113,50 +85,59 @@ const ExchangeDesiredItemScreen = () => {
     [setUploadItem]
   );
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (hasConfirmedRef.current) return;
+
+      if (
+        JSON.stringify(uploadItem.desiredItem) !==
+        JSON.stringify(defaultUploadItem.desiredItem)
+      ) {
+        pendingBeforeRemoveEvent.current = e;
+        e.preventDefault();
+        setConfirmVisible(true);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, uploadItem]);
+
+  const handleConfirm = async () => {
+    hasConfirmedRef.current = true;
+    setConfirmVisible(false);
+    setUploadItem((prev) => ({
+      ...prev,
+      desiredItem: defaultUploadItem.desiredItem,
+    }));
+    if (pendingBeforeRemoveEvent.current) {
+      navigation.dispatch(pendingBeforeRemoveEvent.current.data.action);
+    }
+  };
+
+  const handleCancel = () => {
+    setConfirmVisible(false);
+    pendingBeforeRemoveEvent.current = null;
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header
-        title="Your desired item for exchange"
-        showOption={false}
-        onBackPress={() => navigation.navigate("UploadScreen")}
-      />
+      <Header title="Your desired item for exchange" showOption={false} />
       <ScrollView className="flex-1 mx-5">
-        <TouchableOpacity
-          onPress={() => navigation.navigate("TypeOfItemScreen")}
-          className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
-        >
-          <View>
-            <Text className="text-base text-black">Type of item</Text>
-            <Text
-              className={`text-lg font-semibold ${
-                selectedTypeItemDetail ? "text-[#00b0b9]" : "text-black"
-              }  mt-1`}
-            >
-              {selectedTypeItemDetail?.categoryName || "Select type"}
-            </Text>
-          </View>
-          <Icon name="arrow-forward-ios" size={20} color="black" />
-        </TouchableOpacity>
+        <NavigationListItem
+          title="Type of item"
+          value={uploadItem.categoryDesiredItemName}
+          route="TypeOfItemScreen"
+          defaultValue="Select type"
+        />
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate("BrandSelectionScreen")}
-          className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
-        >
-          <View>
-            <Text className="text-base text-black">Brand</Text>
-            <Text
-              className={`text-lg font-semibold ${
-                selectedBrand ? "text-[#00b0b9]" : "text-black"
-              }  mt-1`}
-            >
-              {selectedBrand?.brandName || "Select brand"}
-            </Text>
-          </View>
-          <Icon name="arrow-forward-ios" size={20} color="black" />
-        </TouchableOpacity>
+        <NavigationListItem
+          title="Brand"
+          value={uploadItem.brandDesiredItemName}
+          route="BrandSelectionScreen"
+          defaultValue="Select brand"
+        />
 
         <View className="flex-row justify-center gap-4 mt-4">
-          {/* Min Price */}
           <View className="flex-1 rounded-lg border-2 border-[#00B0B9] bg-white p-2">
             <Text className="text-[#00b0b9] text-base font-bold">
               Min price
@@ -174,7 +155,6 @@ const ExchangeDesiredItemScreen = () => {
             </View>
           </View>
 
-          {/* Max Price */}
           <View className="flex-1 rounded-lg border-2 border-[#00B0B9] bg-white p-2">
             <Text className="text-[#00b0b9] text-base font-bold">
               Max price
@@ -193,22 +173,12 @@ const ExchangeDesiredItemScreen = () => {
           </View>
         </View>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate("ItemConditionScreen")}
-          className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
-        >
-          <View>
-            <Text className="text-base text-black">Condition</Text>
-            <Text
-              className={`text-lg font-semibold ${
-                selectedItemCondition ? "text-[#00b0b9]" : "text-black"
-              }  mt-1`}
-            >
-              {selectedItemCondition?.label || "Select condition"}
-            </Text>
-          </View>
-          <Icon name="arrow-forward-ios" size={20} color="black" />
-        </TouchableOpacity>
+        <NavigationListItem
+          title="Condition"
+          value={uploadItem.conditionDesiredItemName}
+          route="ItemConditionScreen"
+          defaultValue="Select condition"
+        />
 
         <LoadingButton
           title="Done"
@@ -216,6 +186,13 @@ const ExchangeDesiredItemScreen = () => {
           buttonClassName="p-4 mt-4"
         />
       </ScrollView>
+      <ConfirmModal
+        title="Warning"
+        content={`You have unsaved item. ${"\n"} Do you really want to leave?`}
+        visible={confirmVisible}
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+      />
     </SafeAreaView>
   );
 };

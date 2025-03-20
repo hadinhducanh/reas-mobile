@@ -1,5 +1,8 @@
-import React, { useEffect } from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React, { useEffect, useState } from "react";
+import {
+  createNativeStackNavigator,
+  NativeStackNavigationProp,
+} from "@react-navigation/native-stack";
 import { useDispatch } from "react-redux";
 import { resetItemUpload } from "../redux/slices/itemSlice";
 import { defaultUploadItem, useUploadItem } from "../context/ItemContext";
@@ -18,43 +21,60 @@ const CreateItemStack = createNativeStackNavigator();
 
 export default function CreateItemFlow() {
   const isFocused = useIsFocused();
-  const { setUploadItem, setIsCheckFreeContext } = useUploadItem();
+  const { setUploadItem } = useUploadItem();
 
   useEffect(() => {
     if (!isFocused) {
-      console.log("abc");
       setUploadItem(defaultUploadItem);
-      setIsCheckFreeContext(false);
     }
   }, [isFocused]);
-
   return (
-    <CreateItemStack.Navigator screenOptions={{ headerShown: false }}>
-      <CreateItemStack.Screen name="UploadScreen" component={UploadScreen} />
-      <CreateItemStack.Screen
-        name="TypeOfItemScreen"
-        component={TypeOfItemScreen}
-      />
-      <CreateItemStack.Screen
-        name="TypeOfItemDetailScreen"
-        component={TypeOfItemDetailScreen}
-      />
-      <CreateItemStack.Screen
-        name="ItemConditionScreen"
-        component={ItemConditionScreen}
-      />
-      <CreateItemStack.Screen
-        name="MethodOfExchangeScreen"
-        component={MethodOfExchangeScreen}
-      />
-      <CreateItemStack.Screen
-        name="ExchangeDesiredItemScreen"
-        component={ExchangeDesiredItemScreen}
-      />
-      <CreateItemStack.Screen
-        name="BrandSelectionScreen"
-        component={BrandSelectionScreen}
-      />
-    </CreateItemStack.Navigator>
+    <>
+      <CreateItemStack.Navigator
+        screenOptions={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      >
+        <CreateItemStack.Screen
+          name="UploadScreen"
+          component={UploadScreen}
+          options={{
+            gestureEnabled: false,
+          }}
+        />
+        <CreateItemStack.Screen
+          name="TypeOfItemScreen"
+          component={TypeOfItemScreen}
+        />
+        <CreateItemStack.Screen
+          name="TypeOfItemDetailScreen"
+          component={TypeOfItemDetailScreen}
+        />
+        <CreateItemStack.Screen
+          name="ItemConditionScreen"
+          component={ItemConditionScreen}
+        />
+        <CreateItemStack.Screen
+          name="MethodOfExchangeScreen"
+          component={MethodOfExchangeScreen}
+        />
+        <CreateItemStack.Screen
+          name="ExchangeDesiredItemScreen"
+          component={ExchangeDesiredItemScreen}
+        />
+        <CreateItemStack.Screen
+          name="BrandSelectionScreen"
+          component={BrandSelectionScreen}
+        />
+      </CreateItemStack.Navigator>
+      {/* <ConfirmModal
+        title="Confirm upload"
+        content="Are you sure you to upload this item?"
+        visible={confirmVisible}
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+      /> */}
+    </>
   );
 }
