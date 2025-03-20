@@ -31,7 +31,7 @@ const ConfirmModal: React.FC<DeleteConfirmModalProps> = ({
               {title}
             </Text>
             <View className="justify-center items-center">
-              <Text className="text-center text-lg text-gray-500 my-5 w-3/4">
+              <Text className="text-center text-xl text-gray-500 my-5 w-full">
                 {content}
               </Text>
             </View>
@@ -47,7 +47,7 @@ const ConfirmModal: React.FC<DeleteConfirmModalProps> = ({
               </View>
               <View className="flex-1">
                 <LoadingButton
-                  title="Confirm"
+                  title="Sure"
                   onPress={onConfirm}
                   buttonClassName="p-4 border-2 border-transparent"
                 />

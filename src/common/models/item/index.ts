@@ -60,3 +60,14 @@ export interface DesiredItemResponse {
     maxPrice: number;
 }
 
+export interface ExtendedUploadItem extends UploadItemRequest {
+    isCheckedFree: boolean
+    conditionItemName: string
+    methodExchangeName: string
+    categoryName: string
+    brandName: string
+
+    conditionDesiredItemName: string
+    categoryDesiredItemName: string
+    brandDesiredItemName: string
+}
