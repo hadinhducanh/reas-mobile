@@ -12,7 +12,7 @@ const authenticateUser = async (
   credentials: LoginDto
 ): Promise<JWTAuthResponse> => {
   const response = await axios.post<JWTAuthResponse>(
-    `${API_BASE_URL}/auth/login/resident`,
+    `${API_BASE_URL}/auth/login`,
     credentials
   );
   
