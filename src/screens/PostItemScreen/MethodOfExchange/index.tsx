@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { ScrollView, Text, TouchableOpacity, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -8,9 +8,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../../components/Header";
 import { MethodExchange } from "../../../common/enums/MethodExchange";
 import LoadingButton from "../../../components/LoadingButton";
-import { useUploadItem } from "../../../context/ItemContext";
+import { defaultUploadItem, useUploadItem } from "../../../context/ItemContext";
+import ConfirmModal from "../../../components/DeleteConfirmModal";
 
-// Danh sách phương thức giao dịch
 const exchangeMethods = [
   { label: "Pick up in person", value: MethodExchange.PICK_UP_IN_PERSON },
   { label: "Delivery", value: MethodExchange.DELIVERY },
@@ -25,39 +25,84 @@ const MethodOfExchangeScreen = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { uploadItem, setUploadItem } = useUploadItem();
 
-  const selectedMethodExchanges = new Set(uploadItem.methodExchanges || []);
+  const [selectedMethodExchanges, setSetSelectedMethodExchanges] = useState<
+    Set<MethodExchange>
+  >(new Set(uploadItem.methodExchanges || []));
 
-  const toggleMethod = useCallback(
-    (methodValue: MethodExchange) => {
-      const updatedMethods = new Set(selectedMethodExchanges);
+  const pendingBeforeRemoveEvent = useRef<any>(null);
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const hasConfirmedRef = useRef(false);
 
+  const toggleMethod = useCallback((methodValue: MethodExchange) => {
+    setSetSelectedMethodExchanges((prev) => {
+      const updatedMethods = new Set(prev);
       if (updatedMethods.has(methodValue)) {
         updatedMethods.delete(methodValue);
       } else {
         updatedMethods.add(methodValue);
       }
-
-      setUploadItem((prev) => ({
-        ...prev,
-        methodExchanges: Array.from(updatedMethods),
-      }));
-    },
-    [selectedMethodExchanges, setUploadItem]
-  );
+      return updatedMethods;
+    });
+  }, []);
 
   const handleConfirm = useCallback(() => {
-    navigation.navigate("MainTabs", { screen: "Upload" });
-  }, [navigation]);
+    if (selectedMethodExchanges.size === 0) {
+      Alert.alert("Invalid information", "Please choose method of exchange.");
+      return;
+    } else {
+      hasConfirmedRef.current = true;
+
+      const methods = exchangeMethods.filter((method) =>
+        selectedMethodExchanges.has(method.value)
+      );
+      setUploadItem((prev) => ({
+        ...prev,
+        methodExchangeName: methods.map((method) => method.label).join(", "),
+        methodExchanges: Array.from(selectedMethodExchanges),
+      }));
+      navigation.goBack();
+    }
+  }, [navigation, selectedMethodExchanges, setUploadItem]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (hasConfirmedRef.current) return;
+
+      if (selectedMethodExchanges.size === 0) {
+        return;
+      }
+
+      if (
+        JSON.stringify(uploadItem.methodExchanges || []) !==
+        JSON.stringify(Array.from(selectedMethodExchanges))
+      ) {
+        pendingBeforeRemoveEvent.current = e;
+        e.preventDefault();
+        setConfirmVisible(true);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, uploadItem, selectedMethodExchanges]);
+
+  const handleSure = async () => {
+    hasConfirmedRef.current = true;
+    setConfirmVisible(false);
+    setUploadItem(defaultUploadItem);
+
+    if (pendingBeforeRemoveEvent.current) {
+      navigation.dispatch(pendingBeforeRemoveEvent.current.data.action);
+    }
+  };
+
+  const handleCancel = () => {
+    setConfirmVisible(false);
+    pendingBeforeRemoveEvent.current = null;
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header
-        title="Method of exchange"
-        showOption={false}
-        onBackPress={() =>
-          navigation.navigate("MainTabs", { screen: "Upload" })
-        }
-      />
+      <Header title="Method of exchange" showOption={false} />
 
       <ScrollView className="flex-1 mx-5">
         {exchangeMethods.map((method) => {
@@ -94,6 +139,13 @@ const MethodOfExchangeScreen = () => {
           buttonClassName="p-4 mt-3"
         />
       </ScrollView>
+      <ConfirmModal
+        title="Warning"
+        content={`You have unsaved item. ${"\n"} Do you really want to leave?`}
+        visible={confirmVisible}
+        onCancel={handleCancel}
+        onConfirm={handleSure}
+      />
     </SafeAreaView>
   );
 };

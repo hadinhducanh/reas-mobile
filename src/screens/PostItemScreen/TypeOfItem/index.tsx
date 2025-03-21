@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
+import React from "react";
+import { ScrollView, Text, TouchableOpacity } from "react-native";
+import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
@@ -39,17 +38,18 @@ const options = [
 const TypeOfItemScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const state = useNavigationState((state) => state);
   const dispatch = useDispatch<AppDispatch>();
   const { uploadItem, setUploadItem } = useUploadItem();
-
-  const routes = navigation.getState().routes;
 
   let selectedTypeItem: TypeItem = TypeItem.NO_TYPE;
   let handleSelectTypeItem: (typeItem: TypeItem) => void;
 
+  const targetIndex = state.index - 1;
+
   if (
-    routes.length > 1 &&
-    (routes[routes.length - 2].name as string) === "ExchangeDesiredItemScreen"
+    targetIndex > 0 &&
+    state.routes[targetIndex].name === "ExchangeDesiredItemScreen"
   ) {
     selectedTypeItem = uploadItem.desiredItem?.typeItem || TypeItem.NO_TYPE;
     handleSelectTypeItem = (typeItem: TypeItem) => {
@@ -62,12 +62,14 @@ const TypeOfItemScreen = () => {
             categoryId: 0,
           },
         });
-        navigation.navigate("ExchangeDesiredItemScreen");
+        navigation.goBack();
       } else {
         setUploadItem({
           ...uploadItem,
+          categoryDesiredItemName: "",
           desiredItem: {
             ...uploadItem.desiredItem!,
+            categoryId: 0,
             typeItem,
           },
         });
@@ -84,26 +86,51 @@ const TypeOfItemScreen = () => {
           typeItem: TypeItem.NO_TYPE,
           categoryId: 0,
         });
-        navigation.navigate("MainTabs", { screen: "Upload" });
+        navigation.goBack();
       } else {
-        setUploadItem({ ...uploadItem, typeItem });
+        setUploadItem({
+          ...uploadItem,
+          typeItem,
+          categoryId: 0,
+          categoryName: "",
+        });
         dispatch(getAllByTypeItemThunk(typeItem));
         navigation.navigate("TypeOfItemDetailScreen");
       }
     };
   }
+
+  const handleBackButton = () => {
+    if (
+      targetIndex > 0 &&
+      state.routes[targetIndex].name === "ExchangeDesiredItemScreen"
+    ) {
+      if (uploadItem.desiredItem?.categoryId === 0) {
+        setUploadItem({
+          ...uploadItem,
+          desiredItem: {
+            ...uploadItem.desiredItem!,
+            typeItem: TypeItem.NO_TYPE,
+          },
+        });
+      }
+    } else {
+      if (uploadItem.categoryId === 0) {
+        setUploadItem({
+          ...uploadItem,
+          typeItem: TypeItem.NO_TYPE,
+        });
+      }
+    }
+    navigation.goBack();
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
       <Header
         title="Type of item"
         showOption={false}
-        onBackPress={
-          routes.length > 1 &&
-          (routes[routes.length - 2].name as string) ===
-            "ExchangeDesiredItemScreen"
-            ? () => navigation.navigate("ExchangeDesiredItemScreen")
-            : () => navigation.navigate("MainTabs", { screen: "Upload" })
-        }
+        onBackPress={handleBackButton}
       />
       <ScrollView className="flex-1 mx-5">
         {options.map((option, index) => {

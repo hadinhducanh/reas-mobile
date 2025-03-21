@@ -1,24 +1,14 @@
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  Modal,
-  Platform,
-} from "react-native";
+import { View, Text, ScrollView, Pressable, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import Header from "../../../components/Header";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
-import { TextInput } from "react-native-gesture-handler";
 import LoadingButton from "../../../components/LoadingButton";
 import NegotiateModal from "../../../components/NegotiateModal";
 
 const AccpectRejectExchange: React.FC = () => {
-  const [feedback, setFeedback] = useState("");
-
   const handleSend = async () => {
     await new Promise((resolve) => setTimeout(resolve, 3000));
   };

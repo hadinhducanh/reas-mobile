@@ -19,7 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ItemType, RootStackParamList } from "../../../navigation/AppNavigator";
 import Header from "../../../components/Header";
 import LoadingButton from "../../../components/LoadingButton";
-import DeleteConfirmModal from "../../../components/DeleteConfirmModal";
+import ConfirmModal from "../../../components/DeleteConfirmModal";
 
 const { width } = Dimensions.get("window");
 
@@ -285,7 +285,9 @@ const ItemExpire: React.FC = () => {
         </View>
       </View>
 
-      <DeleteConfirmModal
+      <ConfirmModal
+        title="Confirm delete"
+        content="Are you sure you to delete this item?"
         visible={deletedVisible}
         onCancel={handleCancel}
         onConfirm={handleConfirm}

@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { z } from "zod";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
@@ -22,6 +22,7 @@ import {
 } from "../../../redux/thunk/authThunks";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Header from "../../../components/Header";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
 
 const emailRegex =
   /^[^\.][a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
@@ -52,7 +53,7 @@ const SignUp: React.FC = () => {
   const { accessToken, loading, otp } = useSelector(
     (state: RootState) => state.auth
   );
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -159,19 +160,10 @@ const SignUp: React.FC = () => {
   }, [accessToken, dispatch, navigation]);
 
   useEffect(() => {
-    // Độ dài từ 8 đến 20 ký tự
     setIsLengthValid(password.length >= 8 && password.length <= 20);
-
-    // Có ít nhất 1 chữ viết hoa
     setHasUpperCase(/[A-Z]/.test(password));
-
-    // Có ít nhất 1 chữ thường
     setHasLowerCase(/[a-z]/.test(password));
-
-    // Có ít nhất 1 chữ số
     setHasDigit(/[0-9]/.test(password));
-
-    // Có ít nhất 1 ký tự đặc biệt
     setHasSpecialChar(specialCharsRegex.test(password));
   }, [password]);
 
@@ -184,7 +176,11 @@ const SignUp: React.FC = () => {
           enableOnAndroid={true}
           keyboardShouldPersistTaps="handled"
         >
-          <Header title="" showOption={false} />
+          <Header
+            title=""
+            showOption={false}
+            onBackPress={() => navigation.navigate("SignIn")}
+          />
 
           {/* Content Container */}
           <View className="flex-1 justify-between">

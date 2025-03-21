@@ -3,12 +3,16 @@ import { View, Text, Modal, Pressable, TextInput } from "react-native";
 import LoadingButton from "../LoadingButton";
 
 interface DeleteConfirmModalProps {
+  title: string;
+  content: string;
   visible: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
+const ConfirmModal: React.FC<DeleteConfirmModalProps> = ({
+  title,
+  content,
   onCancel,
   onConfirm,
   visible,
@@ -24,11 +28,11 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
         <View className="absolute inset-0 flex justify-center items-center">
           <View className="w-[75%] bg-white rounded-lg p-5">
             <Text className="text-center text-2xl font-semibold text-[#00B0B9]">
-              Confirm delete
+              {title}
             </Text>
             <View className="justify-center items-center">
-              <Text className="text-center text-lg text-gray-500 my-5 w-3/4">
-                Are you sure you want to delete this item?
+              <Text className="text-center text-xl text-gray-500 my-5 w-full">
+                {content}
               </Text>
             </View>
 
@@ -43,7 +47,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
               </View>
               <View className="flex-1">
                 <LoadingButton
-                  title="Confirm"
+                  title="Sure"
                   onPress={onConfirm}
                   buttonClassName="p-4 border-2 border-transparent"
                 />
@@ -56,4 +60,4 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   );
 };
 
-export default DeleteConfirmModal;
+export default ConfirmModal;

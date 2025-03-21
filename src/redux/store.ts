@@ -3,6 +3,7 @@ import authReducer from "./slices/authSlice";
 import itemReducer from "./slices/itemSlice";
 import brandReducer from "./slices/brandSlice";
 import categoryReducer from "./slices/categorySlice";
+import exchangeReducer from "./slices/categorySlice";
 import chatReducer from "./slices/chatSlice";
 
 const store = configureStore({
@@ -11,9 +12,12 @@ const store = configureStore({
     item: itemReducer,
     brand: brandReducer,
     category: categoryReducer,
+    exchange: exchangeReducer,
     chat: chatReducer,
   },
 });
+
+
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

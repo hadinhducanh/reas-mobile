@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ScrollView, Text, View, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
@@ -23,23 +22,31 @@ const options = [
 const ItemConditionScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const state = useNavigationState((state) => state);
   const { uploadItem, setUploadItem } = useUploadItem();
 
-  const routes = navigation.getState().routes;
-
   let selectedItemCondition: ConditionItem = ConditionItem.NO_CONDITION;
-  let handleSelectCondition: (conditionItem: ConditionItem) => void;
+  let handleSelectCondition: (
+    conditionItem: ConditionItem,
+    conditionItemName: string
+  ) => void;
+
+  const targetIndex = state.index - 1;
 
   if (
-    routes.length > 1 &&
-    (routes[routes.length - 2].name as string) === "ExchangeDesiredItemScreen"
+    targetIndex > 0 &&
+    state.routes[targetIndex].name === "ExchangeDesiredItemScreen"
   ) {
     selectedItemCondition =
       uploadItem.desiredItem?.conditionItem || ConditionItem.NO_CONDITION;
-    handleSelectCondition = (conditionItem: ConditionItem) => {
+    handleSelectCondition = (
+      conditionItem: ConditionItem,
+      conditionItemName: string
+    ) => {
       if (selectedItemCondition === conditionItem) {
         setUploadItem({
           ...uploadItem,
+          conditionDesiredItemName: "",
           desiredItem: {
             ...uploadItem.desiredItem!,
             conditionItem: ConditionItem.NO_CONDITION,
@@ -48,52 +55,46 @@ const ItemConditionScreen = () => {
       } else {
         setUploadItem({
           ...uploadItem,
+          conditionDesiredItemName: conditionItemName,
           desiredItem: {
             ...uploadItem.desiredItem!,
             conditionItem,
           },
         });
       }
-      navigation.navigate("ExchangeDesiredItemScreen");
+      navigation.goBack();
     };
   } else {
     selectedItemCondition = uploadItem.conditionItem;
-    handleSelectCondition = async (conditionItem: ConditionItem) => {
+    handleSelectCondition = async (
+      conditionItem: ConditionItem,
+      conditionItemName: string
+    ) => {
       if (selectedItemCondition === conditionItem) {
         setUploadItem({
           ...uploadItem,
           conditionItem: ConditionItem.NO_CONDITION,
+          conditionItemName: "",
         });
       } else {
-        setUploadItem({ ...uploadItem, conditionItem });
+        setUploadItem({ ...uploadItem, conditionItem, conditionItemName });
       }
-      navigation.navigate("MainTabs", { screen: "Upload" });
+      navigation.goBack();
     };
   }
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header
-        title="Item condition"
-        showOption={false}
-        onBackPress={
-          routes.length > 1 &&
-          (routes[routes.length - 2].name as string) ===
-            "ExchangeDesiredItemScreen"
-            ? () => navigation.navigate("ExchangeDesiredItemScreen")
-            : () => navigation.navigate("MainTabs", { screen: "Upload" })
-        }
-      />
+      <Header title="Item condition" showOption={false} />
 
       <ScrollView className="flex-1 mx-5">
-        {/* Danh sách lựa chọn */}
         {options.map((option, index) => {
           const isSelected = selectedItemCondition === option.value;
           return (
             <TouchableOpacity
               key={index}
-              onPress={() => handleSelectCondition(option.value)}
-              className={`p-5 rounded-lg mt-3 flex-row justify-between items-center${
+              onPress={() => handleSelectCondition(option.value, option.label)}
+              className={`p-5 rounded-lg mt-3 flex-row justify-between items-center ${
                 isSelected ? "bg-[#00b0b91A]" : "bg-white"
               }`}
             >

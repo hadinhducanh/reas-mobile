@@ -25,7 +25,7 @@ interface ImagePickerProps {
 }
 
 const MAX_IMAGES = 4;
-const SEPARATOR = "|||";
+const SEPARATOR = ", ";
 
 const ChooseImage: React.FC<ImagePickerProps> = (props) => {
   const { setUploadItem } = useUploadItem();

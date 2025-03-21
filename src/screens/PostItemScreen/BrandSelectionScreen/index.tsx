@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,26 +19,28 @@ import { useUploadItem } from "../../../context/ItemContext";
 const BrandSelectionScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const state = useNavigationState((state) => state);
   const dispatch = useDispatch<AppDispatch>();
   const { brands, loading, error } = useSelector(
     (state: RootState) => state.brand
   );
   const { uploadItem, setUploadItem } = useUploadItem();
 
-  const routes = navigation.getState().routes;
-
   let selectedBrandId: number = 0;
-  let handleSelectBrand: (brandId: number) => void;
+  let handleSelectBrand: (brandId: number, brandName: string) => void;
+
+  const targetIndex = state.index - 1;
 
   if (
-    routes.length > 1 &&
-    (routes[routes.length - 2].name as string) === "ExchangeDesiredItemScreen"
+    targetIndex > 0 &&
+    state.routes[targetIndex].name === "ExchangeDesiredItemScreen"
   ) {
     selectedBrandId = uploadItem.desiredItem?.brandId || 0;
-    handleSelectBrand = (brandId: number) => {
+    handleSelectBrand = (brandId: number, brandName: string) => {
       if (selectedBrandId === brandId) {
         setUploadItem({
           ...uploadItem,
+          brandDesiredItemName: "",
           desiredItem: {
             ...uploadItem.desiredItem!,
             brandId: 0,
@@ -47,23 +49,24 @@ const BrandSelectionScreen = () => {
       } else {
         setUploadItem({
           ...uploadItem,
+          brandDesiredItemName: brandName,
           desiredItem: {
             ...uploadItem.desiredItem!,
             brandId,
           },
         });
       }
-      navigation.navigate("ExchangeDesiredItemScreen");
+      navigation.goBack();
     };
   } else {
     selectedBrandId = uploadItem.brandId;
-    handleSelectBrand = (brandId: number) => {
+    handleSelectBrand = (brandId: number, brandName: string) => {
       if (selectedBrandId === brandId) {
-        setUploadItem({ ...uploadItem, brandId: 0 });
+        setUploadItem({ ...uploadItem, brandId: 0, brandName: "" });
       } else {
-        setUploadItem({ ...uploadItem, brandId });
+        setUploadItem({ ...uploadItem, brandId, brandName });
       }
-      navigation.navigate("MainTabs", { screen: "Upload" });
+      navigation.goBack();
     };
   }
 
@@ -73,17 +76,7 @@ const BrandSelectionScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
-      <Header
-        title="Brand"
-        showOption={false}
-        onBackPress={
-          routes.length > 1 &&
-          (routes[routes.length - 2].name as string) ===
-            "ExchangeDesiredItemScreen"
-            ? () => navigation.navigate("ExchangeDesiredItemScreen")
-            : () => navigation.navigate("MainTabs", { screen: "Upload" })
-        }
-      />
+      <Header title="Brand" showOption={false} />
 
       <ScrollView className="flex-1 mx-5">
         {loading && <ActivityIndicator size="large" color="#00b0b9" />}
@@ -96,7 +89,7 @@ const BrandSelectionScreen = () => {
           return (
             <TouchableOpacity
               key={brand.id}
-              onPress={() => handleSelectBrand(brand.id)}
+              onPress={() => handleSelectBrand(brand.id, brand.brandName)}
               className={`p-5 rounded-lg mt-3 flex-row justify-between items-center ${
                 isSelected ? "bg-[#00b0b91A]" : "bg-white"
               }`}

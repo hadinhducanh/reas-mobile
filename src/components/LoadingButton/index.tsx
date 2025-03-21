@@ -6,6 +6,7 @@ type ButtonProps = {
   title: string;
   onPress: () => Promise<void> | void;
   loading?: boolean;
+  loadingUploadImage?: boolean;
   loadingColor?: string;
   buttonClassName?: string;
   textColor?: string;
@@ -18,6 +19,7 @@ type ButtonProps = {
 const LoadingButton: React.FC<ButtonProps> = ({
   title,
   onPress,
+  loadingUploadImage = false,
   loading = false,
   loadingColor,
   buttonClassName = "",
@@ -38,7 +40,7 @@ const LoadingButton: React.FC<ButtonProps> = ({
       className={`w-full rounded-full justify-center items-center bg-[${baseBackgroundColor}] ${buttonClassName} active:bg-[rgb(0,176,185,0.5)]
       `}
     >
-      {loading ? (
+      {loading || loadingUploadImage ? (
         <ActivityIndicator size="small" color={indicatorColor} />
       ) : (
         <View className="flex-row items-center">

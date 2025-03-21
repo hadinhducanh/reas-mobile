@@ -39,8 +39,8 @@ const itemSlice = createSlice({
   name: "item",
   initialState,
   reducers: {
-    resetItemDetail: (state) => {
-      state.itemDetail = null;
+    resetItemUpload: (state) => {
+      state.itemUpload = null;
     },
   },
   extraReducers: (builder) => {
@@ -96,5 +96,5 @@ const itemSlice = createSlice({
   },
 });
 
-export const { resetItemDetail } = itemSlice.actions;
+export const { resetItemUpload } = itemSlice.actions;
 export default itemSlice.reducer;
