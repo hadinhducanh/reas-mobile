@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import ChatRow from "../../../components/ChatRow";
-import { useNavigation } from "@react-navigation/native";
 import Header from "../../../components/Header";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../redux/store";
+import { fetchChatConversationsThunk } from "../../../redux/thunk/chatThunk";
+import { ChatMessage } from "../../../common/models/chat";
 
 const ChatHistory: React.FC = () => {
-  const navigation = useNavigation();
+  const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const senderUsername = user?.userName;
   const [conversations, setConversations] = useState<any[]>([]);
@@ -22,11 +23,12 @@ const ChatHistory: React.FC = () => {
 
   const fetchChatHistory = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/v1/conversations/${senderUsername}`
-      );
-      const chatData = await response.json(); 
-      setConversations(chatData);
+      const response = await dispatch(
+        fetchChatConversationsThunk({ senderId: senderUsername as string })
+      )
+      if (response.payload) {
+        setConversations(response.payload as ChatMessage[]);
+      }
     } catch (error) {
       console.error("Error fetching chat history:", error);
     }

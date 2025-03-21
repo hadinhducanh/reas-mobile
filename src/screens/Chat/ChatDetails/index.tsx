@@ -12,61 +12,46 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import ChatMessage from "../../../components/ChatMessage";
 import { TextInput } from "react-native-gesture-handler";
 import { KeyboardAvoidingView } from "react-native";
 import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../redux/store";
-import { useExpoImagePicker, PickedImageFile } from "../../../hook/useExpoImagePicker";
-
-const uploadImageToCloudinary = async (
-  file: PickedImageFile
-): Promise<string> => {
-  const cloudinaryFormData = new FormData();
-  cloudinaryFormData.append("file", {
-    uri: file.uri,
-    type: file.type,
-    name: file.name,
-  } as any);
-  cloudinaryFormData.append("upload_preset", "reas_user_avatar");
-  cloudinaryFormData.append("cloud_name", "dkpg60ca0");
-
-  const response = await fetch(
-    "https://api.cloudinary.com/v1_1/dkpg60ca0/image/upload",
-    {
-      method: "POST",
-      body: cloudinaryFormData,
-    }
-  );
-  if (!response.ok) throw new Error("Image upload failed");
-  const data = await response.json();
-  return data.secure_url;
-};
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../redux/store";
+import {
+  useExpoImagePicker,
+  PickedImageFile,
+} from "../../../hook/useExpoImagePicker";
+import { fetchChatMessagesThunk } from "../../../redux/thunk/chatThunk";
+import { uploadImageToCloudinary } from "../../../utils/CloudinaryImageUploader";
+import { WEB_SOCKET_ENDPOINT } from "../../../common/constant";
+import { ChatMessage } from "../../../common/models/chat";
+import Message from "../../../components/ChatMessage";
 
 const ChatDetails: React.FC = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch<AppDispatch>();
   const route = useRoute<RouteProp<RootStackParamList, "ChatDetails">>();
   const { receiverUsername, receiverFullName } = route.params;
+  const { chatMessages } = useSelector((state: RootState) => state.chat);
   const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState("");
-  const [selectedImage, setSelectedImage] = useState<PickedImageFile | null>(null);
+  const [selectedImage, setSelectedImage] = useState<PickedImageFile | null>(
+    null
+  );
   const [isSending, setIsSending] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
   const senderUsername = user?.userName;
   const stompClientRef = useRef<any>(null);
   const { showPickerOptions } = useExpoImagePicker();
-
-  // Create a ref for the ScrollView
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     console.log("senderUsername", senderUsername);
     console.log("receiverUsername", receiverUsername);
 
-    const client = Stomp.over(() => new SockJS("http://localhost:8080/ws"));
+    const client = Stomp.over(() => new SockJS(WEB_SOCKET_ENDPOINT));
     stompClientRef.current = client;
     client.connect(
       {},
@@ -81,9 +66,10 @@ const ChatDetails: React.FC = () => {
     );
   }, []);
 
-  // Modified onMessageReceived: if contentType is missing and content starts with "http", set it to "image".
   const onMessageReceived = (payload: any) => {
     const receivedMessage = JSON.parse(payload.body);
+    
+    // if contentType is missing and content starts with "http", set it to "image".
     if (
       !receivedMessage.contentType &&
       receivedMessage.content &&
@@ -104,22 +90,20 @@ const ChatDetails: React.FC = () => {
   };
 
   useEffect(() => {
-    if (receiverUsername) {
-      fetchChatHistory(receiverUsername);
-    }
-  }, [receiverUsername]);
-
-  const fetchChatHistory = async (receiverUsername: string) => {
-    try {
-      const response = await fetch(
-        `http://localhost:8080/api/v1/messages/${senderUsername}/${receiverUsername}`
+    const fetchChat = async () => {
+      const response = await dispatch(
+        fetchChatMessagesThunk({
+          senderId: senderUsername || "",
+          recipientId: receiverUsername,
+        })
       );
-      const chatData = await response.json();
-      setMessages(Array.isArray(chatData) ? chatData : chatData.messages || []);
-    } catch (error) {
-      console.error("Error fetching chat history:", error);
-    }
-  };
+
+      if (response.payload) {
+        setMessages(response.payload as ChatMessage[]);
+      }
+    };
+    fetchChat();
+  }, []);
 
   const handleSelectImage = async () => {
     const file = await showPickerOptions();
@@ -195,7 +179,6 @@ const ChatDetails: React.FC = () => {
     }
   };
 
-  // NEW: Scroll to bottom whenever content changes
   const scrollToBottom = () => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   };
@@ -230,13 +213,15 @@ const ChatDetails: React.FC = () => {
               className="bg-white"
             >
               {messages.map((msg, index) => (
-                <ChatMessage
+                <Message
                   key={index}
                   isSender={msg.senderId === senderUsername}
                   type={msg.contentType === "image" ? "image" : "text"}
                   time={formatTimestamp(msg.timestamp)}
                   text={msg.content}
-                  imageUrl={msg.contentType === "image" ? msg.content : undefined}
+                  imageUrl={
+                    msg.contentType === "image" ? msg.content : undefined
+                  }
                 />
               ))}
             </ScrollView>

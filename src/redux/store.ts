@@ -3,6 +3,7 @@ import authReducer from "./slices/authSlice";
 import itemReducer from "./slices/itemSlice";
 import brandReducer from "./slices/brandSlice";
 import categoryReducer from "./slices/categorySlice";
+import chatReducer from "./slices/chatSlice";
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     item: itemReducer,
     brand: brandReducer,
     category: categoryReducer,
+    chat: chatReducer,
   },
 });
 

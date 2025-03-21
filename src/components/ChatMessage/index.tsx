@@ -33,7 +33,7 @@ interface ChatMessageProps {
   time?: string;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({
+const Message: React.FC<ChatMessageProps> = ({
   isSender,
   type,
   text,
@@ -196,4 +196,4 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   );
 };
 
-export default ChatMessage;
+export default Message;
