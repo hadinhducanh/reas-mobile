@@ -17,6 +17,7 @@
       "infoPlist": {
         "NSCameraUsageDescription": "We need access to your camera to take photos.",
         "NSPhotoLibraryUsageDescription": "We need access to your photo library to upload images.",
+        "NSPhotoLibraryAddUsageDescription": "We need permission to add images to your library.",
         "NSMicrophoneUsageDescription": "We need access to your microphone to record videos."
       }
     },
@@ -33,6 +34,8 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
-  }
+    },
+    "sdkVersion": "52.0.0"
+  },
+  "name": "reas"
 }

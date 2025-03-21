@@ -7,16 +7,18 @@ interface ChatRowProps {
   name: string;
   time: string;
   message: string;
+  receiverUsername: string;
+  receiverFullName: string;
 }
 
-const ChatRow: React.FC<ChatRowProps> = ({ name, time, message }) => {
+const ChatRow: React.FC<ChatRowProps> = ({ name, time, message, receiverUsername, receiverFullName}) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
     <Pressable
       className="flex-row items-center p-4 bg-white border-b border-gray-100 active:bg-gray-100"
       onPress={() => {
-        navigation.navigate("ChatDetails");
+        navigation.navigate("ChatDetails", { receiverUsername, receiverFullName });
       }}
     >
       {/* Avatar (có thể thay thế bằng Image nếu có URL) */}

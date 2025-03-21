@@ -63,10 +63,6 @@ const ItemDetails: React.FC = () => {
     return price !== undefined ? price.toLocaleString("vi-VN") : "0";
   };
 
-  const handleSend = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-  };
-
   useEffect(() => {
     dispatch(getItemDetailThunk(itemId));
   }, [dispatch]);
@@ -265,7 +261,7 @@ const ItemDetails: React.FC = () => {
         <View className="flex-1">
           <LoadingButton
             title="Call"
-            onPress={handleSend}
+            onPress={() => {}}
             buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
             iconName="call-outline"
             iconSize={25}
@@ -277,7 +273,12 @@ const ItemDetails: React.FC = () => {
         <View className="flex-1 mx-2">
           <LoadingButton
             title="Chat"
-            onPress={handleSend}
+            onPress={() =>
+              navigation.navigate("ChatDetails", {
+                receiverUsername: itemDetail!.owner.userName,
+                receiverFullName: itemDetail!.owner.fullName,
+              })
+            }
             buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
             iconName="chatbubble-outline"
             iconSize={25}
