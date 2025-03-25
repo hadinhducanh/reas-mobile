@@ -8,6 +8,7 @@ import "./global.css";
 import { Provider } from "react-redux";
 import store from "./src/redux/store";
 import { UploadItemProvider } from "./src/context/ItemContext";
+import { ExchangeItemProvider } from "./src/context/ExchangeContext";
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -28,7 +29,9 @@ const App: React.FC = () => {
     <SafeAreaProvider style={styles.container}>
       <Provider store={store}>
         <UploadItemProvider>
-          <AppNavigator />
+          <ExchangeItemProvider>
+            <AppNavigator />
+          </ExchangeItemProvider>
         </UploadItemProvider>
       </Provider>
     </SafeAreaProvider>

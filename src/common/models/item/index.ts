@@ -1,3 +1,4 @@
+import { number, string } from "zod";
 import { ConditionItem } from "../../enums/ConditionItem";
 import { MethodExchange } from "../../enums/MethodExchange";
 import { StatusItem } from "../../enums/StatusItem";
@@ -6,6 +7,7 @@ import { TypeItem } from "../../enums/TypeItem";
 import { UserLocationDto, UserResponse } from "../auth";
 import { BrandDto } from "../brand";
 import { CategoryDto } from "../category";
+import { StatusEntity } from "../../enums/StatusEntity";
 
 export interface UploadItemRequest {
     itemName: string;
@@ -42,6 +44,7 @@ export interface ItemResponse{
     moneyAccepted: boolean;
     termsAndConditionsExchange: string;
     expiredTime: Date;
+    approvedTime: Date;
     methodExchanges: MethodExchange[];
     category: CategoryDto;
     brand: BrandDto;
@@ -70,4 +73,18 @@ export interface ExtendedUploadItem extends UploadItemRequest {
     conditionDesiredItemName: string
     categoryDesiredItemName: string
     brandDesiredItemName: string
+}
+
+export interface SearchItemRequest {
+    itemName?: string;
+    description?: string;
+    price?: number;
+    fromPrice?: number;
+    toPrice?: number;
+    categoryIds?: [number];
+    brandIds?: [number];
+    ownerIds?: [number];
+    locationIds?: [number];
+    statusItems?: StatusItem[];
+    statusEntities?: StatusEntity[];
 }

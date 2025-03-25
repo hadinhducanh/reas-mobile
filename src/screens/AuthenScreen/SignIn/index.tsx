@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Pressable,
   Alert,
-  Platform,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
@@ -164,11 +163,23 @@ const SignIn: React.FC = () => {
           enableOnAndroid={true}
           keyboardShouldPersistTaps="handled"
         >
-          <Header title="" showOption={false} />
+          <Header
+            title=""
+            showOption={false}
+            onBackPress={() =>
+              navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: "MainTabs",
+                    state: { routes: [{ name: "Account" }] },
+                  },
+                ],
+              })
+            }
+          />
 
-          {/* Content Container */}
           <View className="flex-1 justify-between">
-            {/* Form Container */}
             <View className="flex-1 flex-col justify-center bg-white rounded-tl-[10px] rounded-tr-[10px] mx-[20px] px-[20px] mb-[10px]">
               <Text className="text-[28px] font-bold leading-[36px] text-[#0b1d2d] mb-[10px]">
                 Welcome Back!

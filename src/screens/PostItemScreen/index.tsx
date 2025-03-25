@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   ScrollView,
@@ -8,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -28,9 +29,13 @@ import Toggle from "../../components/Toggle";
 import ConfirmModal from "../../components/DeleteConfirmModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
-export default function UploadScreen() {
+export default function UploadItem() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const state = useNavigationState((state) => state);
+
+  const targetIndex = state.index - 1;
+
   const { user } = useSelector((state: RootState) => state.auth);
   const { itemUpload, loading } = useSelector((state: RootState) => state.item);
   const dispatch = useDispatch<AppDispatch>();
@@ -124,8 +129,6 @@ export default function UploadScreen() {
   }, [images, uploadToCloudinary, user?.email]);
 
   const handleCreateItem = useCallback(async () => {
-    // hasConfirmedUploadRef.current = true;
-
     setConfirmVisible(false);
 
     const priceItem = isCheckedFree
@@ -144,8 +147,6 @@ export default function UploadScreen() {
       !description ||
       !uploadItem.methodExchanges
     ) {
-      console.log(uploadItem);
-
       Alert.alert("Invalid information", "All fields are required.");
       return;
     } else if (description.trim().length < 20) {
@@ -233,7 +234,11 @@ export default function UploadScreen() {
     <SafeAreaView className="flex-1 bg-[#F6F9F9]" edges={["top"]}>
       <Header
         title="Upload your item"
-        showBackButton={false}
+        showBackButton={
+          targetIndex > 0 && state.routes[targetIndex].name === "BrowseItems"
+            ? true
+            : false
+        }
         showOption={false}
       />
       <ScrollView className="mx-5" showsVerticalScrollIndicator={false}>
@@ -417,7 +422,9 @@ export default function UploadScreen() {
             alignItems: "center",
             backgroundColor: "rgba(0,0,0,0.5)",
           }}
-        ></View>
+        >
+          <ActivityIndicator size="small" color="black" />
+        </View>
       </Modal>
     </SafeAreaView>
   );

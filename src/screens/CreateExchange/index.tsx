@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../components/Header";
 import {
@@ -9,6 +9,7 @@ import {
 } from "@react-navigation/native";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import {
+  Alert,
   Image,
   Modal,
   Platform,
@@ -21,68 +22,200 @@ import {
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../components/LoadingButton";
 import MatchedList from "../../components/MatchedList";
-
-type ItemType = {
-  id: number;
-  name: string;
-  price: string;
-  image: string;
-  location: string;
-  description: string;
-  isFavorited: boolean;
-};
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../redux/store";
+import { ItemResponse } from "../../common/models/item";
+import {
+  defaultExchangeItem,
+  useExchangeItem,
+} from "../../context/ExchangeContext";
+import ChooseMethodExchangeModal from "../../components/ChooseMethodExchangeModal";
+import { MethodExchange } from "../../common/enums/MethodExchange";
+import CalendarModal from "../../components/SchedulePicker";
+import SetLocation from "../../components/SetLocation";
+import ErrorModal from "../../components/ErrorModal";
+import ChooseLocationModal from "../../components/ChooseLocationModal";
+import ConfirmModal from "../../components/DeleteConfirmModal";
+import { getPlaceDetailsThunk } from "../../redux/thunk/locationThunks";
+import { resetPlaceDetail } from "../../redux/slices/locationSlice";
 
 const CreateExchange: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "CreateExchange">>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const dispatch = useDispatch<AppDispatch>();
   const { itemId } = route.params;
+  const { itemDetail, itemRecommnand } = useSelector(
+    (state: RootState) => state.item
+  );
+  const { selectedPlaceDetail } = useSelector(
+    (state: RootState) => state.location
+  );
+  const { user } = useSelector((state: RootState) => state.auth);
+  const hasConfirmedRef = useRef(false);
+  const pendingBeforeRemoveEvent = useRef<any>(null);
 
-  const [itemList] = useState<ItemType[]>([
-    {
-      id: 1,
-      name: "iPhone 20",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
-      location: "Vinhome Grand Park",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-    {
-      id: 2,
-      name: "iPhone 22",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
-      location: "Vinhome Grand Park",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-  ]);
-  const item = itemList.find((item) => item.id === itemId);
+  const { exchangeItem, setExchangeItem } = useExchangeItem();
+  const [warningVisible, setWarningVisible] = useState(false);
 
-  const [selectedItem, setSelectedItem] = useState<ItemType | null>(null);
+  const [items, setItems] = useState<ItemResponse[]>(itemRecommnand.content);
+  const item = items.find((item) => item.id === itemId);
 
-  const handleSelectItem = (item: ItemType) => {
-    setSelectedItem(item);
+  const [selectedItem, setSelectedItem] = useState<ItemResponse | null>(null);
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
+    null
+  );
+  const [methodVisible, setMethodVisible] = useState(false);
+  const [calendarVisible, setCalendarVisible] = useState<boolean>(false);
+  const [locationVisible, setLocationVisible] = useState<boolean>(false);
+  const [deliveryVisible, setDeliveryVisible] = useState<boolean>(false);
+  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
+  const [errorTitleInput, setErrorTitleInput] = useState<string>("");
+  const [errorContentInput, setErrorContentInput] = useState<string>("");
+  const [errorVisible, setErrorVisible] = useState<boolean>(false);
+  const [additionalNotes, setAdditionalNotes] = useState<string>(
+    exchangeItem.additionalNotes
+  );
+
+  const handleSelectItem = (item: ItemResponse) => {
+    const index = items.findIndex((i) => i.id === item.id);
+    if (index !== -1) {
+      setExchangeItem({
+        ...exchangeItem,
+        buyerItemId: item.id,
+      });
+      setSelectedItem(item);
+      setSelectedItemIndex(index);
+      setItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
+    }
   };
 
   const handleRemoveItem = () => {
-    setSelectedItem(null);
+    if (selectedItem !== null && selectedItemIndex !== null) {
+      setItems((prevItems) => {
+        const newItems = [...prevItems];
+        if (selectedItemIndex > newItems.length) {
+          newItems.push(selectedItem);
+        } else {
+          newItems.splice(selectedItemIndex, 0, selectedItem);
+        }
+        return newItems;
+      });
+      setExchangeItem({
+        ...exchangeItem,
+        buyerItemId: 0,
+      });
+      setSelectedItem(null);
+      setSelectedItemIndex(null);
+    }
   };
 
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleProposeExchange = () => {
-    setModalVisible(true);
-  };
+    const isRecommended = itemRecommnand.content.some(
+      (recItem) => recItem.id === selectedItem?.id
+    );
 
-  const handleCancel = () => {
-    setModalVisible(false);
+    if (
+      !selectedItem ||
+      !exchangeItem.methodExchangeName ||
+      !selectedPlaceDetail?.place_id! ||
+      !selectedDateTime
+    ) {
+      Alert.alert("Invalid information", "All fields are required.");
+      return;
+    } else if (isRecommended) {
+      setExchangeItem({
+        ...exchangeItem,
+        exchangeDateExtend: selectedDateTime!,
+        paidByUserId:
+          itemDetail?.price! > selectedItem.price
+            ? itemDetail?.owner.id!
+            : user?.id!,
+        estimatePrice:
+          itemDetail?.price! - selectedItem.price < 0
+            ? -(itemDetail?.price! - selectedItem.price)
+            : itemDetail?.price! - selectedItem.price,
+        sellerItemId: itemDetail?.id!,
+        exchangeLocation: selectedPlaceDetail?.place_id!,
+        selectedItem: selectedItem,
+      });
+
+      navigation.navigate("ConfirmExchange");
+    } else {
+      setModalVisible(true);
+    }
   };
 
   const handleContinue = () => {
     setModalVisible(false);
     navigation.navigate("ConfirmExchange");
   };
+
+  const formatPrice = (price: number | undefined): string => {
+    return price !== undefined ? price.toLocaleString("vi-VN") : "0";
+  };
+
+  const handleSetLocation = () => {
+    if (exchangeItem.methodExchangeName.length === 0) {
+      setErrorVisible(true);
+      setErrorTitleInput("Invalid");
+      setErrorContentInput("Please choose your method exchange first.");
+    } else if (
+      exchangeItem.methodExchange === MethodExchange.PICK_UP_IN_PERSON &&
+      itemDetail?.userLocation.specificAddress
+    ) {
+      dispatch(getPlaceDetailsThunk(itemDetail.userLocation.specificAddress));
+    } else if (
+      exchangeItem.methodExchange === MethodExchange.DELIVERY &&
+      user?.userLocations
+    ) {
+      setDeliveryVisible(true);
+    } else {
+      setLocationVisible(true);
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (hasConfirmedRef.current) return;
+
+      if (
+        JSON.stringify(exchangeItem) !== JSON.stringify(defaultExchangeItem)
+      ) {
+        pendingBeforeRemoveEvent.current = e;
+        e.preventDefault();
+        setWarningVisible(true);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, exchangeItem]);
+
+  const handleConfirm = async () => {
+    hasConfirmedRef.current = true;
+    dispatch(resetPlaceDetail());
+    setWarningVisible(false);
+    setExchangeItem(defaultExchangeItem);
+    if (pendingBeforeRemoveEvent.current) {
+      navigation.dispatch(pendingBeforeRemoveEvent.current.data.action);
+    }
+  };
+
+  const handleCancel = () => {
+    setWarningVisible(false);
+  };
+
+  const handleAdditionalNotes = useCallback(
+    (value: string) => {
+      setAdditionalNotes(value);
+      setExchangeItem((prev) => ({
+        ...prev,
+        additionalNotes: value.replace(/\n/g, "\\n"),
+      }));
+    },
+    [setExchangeItem]
+  );
 
   return (
     <>
@@ -94,28 +227,26 @@ const CreateExchange: React.FC = () => {
               You want to exchange for:
             </Text>
             <View className="rounded-md p-3 flex-row items-center bg-white">
-              {/* Khung ảnh cố định size */}
-
               <View className="w-40 h-28 rounded-md ">
                 <Image
                   source={{
-                    uri: "https://goldsun.vn/pic/ProductItem/Noi-com-d_637625508222561223.jpg",
+                    uri: itemDetail?.imageUrl.split(", ")[0],
                   }}
-                  className="w-full h-full object-cover"
-                  resizeMode="cover"
+                  className="w-full h-full object-contain"
+                  resizeMode="contain"
                 />
               </View>
 
               {/* Thông tin sản phẩm */}
               <View className="ml-3 flex-1">
                 <Text className="text-lg font-bold text-gray-900">
-                  {item?.name}
+                  {itemDetail?.itemName}
                 </Text>
                 <Text className="text-gray-500 text-base my-1">
-                  Listed by Đức Sơn
+                  Listed by {itemDetail?.owner.fullName}
                 </Text>
                 <Text className="text-[#00B0B9] text-xl font-semibold">
-                  {item?.price}VND
+                  {formatPrice(itemDetail?.price)}VND
                 </Text>
               </View>
             </View>
@@ -123,28 +254,20 @@ const CreateExchange: React.FC = () => {
 
           <View>
             {/* Suggested item */}
-            <MatchedList
-              items={itemList.filter((item) => item.id !== selectedItem?.id)}
-              onSelectItem={handleSelectItem}
-            />
+            {itemDetail?.desiredItem === null ? (
+              ""
+            ) : (
+              <MatchedList items={items} onSelectItem={handleSelectItem} />
+            )}
 
             <Pressable
-              className="flex-row justify-center items-center mx-5 bg-gray-100 border-[1px] border-gray-300 px-5 py-4 rounded-lg active:bg-gray-200 my-5"
+              className="flex-row justify-center items-center bg-gray-100 border-[1px] border-gray-300 px-5 py-4 rounded-lg active:bg-gray-200 mt-5"
               onPress={() => navigation.navigate("BrowseItems")}
             >
               <Icon name="folder-open" size={20} />
-              <Text className="text-center text-lg text-gray-500 font-medium ml-1">
+              <Text className="text-center text-lg text-gray-500 font-medium mx-1">
                 Browse my items
               </Text>
-            </Pressable>
-            <Pressable
-              className="flex-row justify-center items-center mx-5 bg-gray-100 border-[1px] border-gray-300 px-5 py-4 rounded-lg active:bg-gray-200"
-              onPress={() => navigation.navigate("DifferentItem")}
-            >
-              <Text className="text-center text-lg text-gray-500 font-medium mr-1">
-                Add a different item
-              </Text>
-              <Icon name="add" size={20} />
             </Pressable>
 
             <View className="bg-gray-100 p-4 rounded-lg border border-gray-300 mt-10">
@@ -154,37 +277,27 @@ const CreateExchange: React.FC = () => {
               {selectedItem ? (
                 <View
                   key={item?.id}
-                  className="mb-3 flex-row justify-between w-full items-center bg-white px-5 rounded-lg py-2"
+                  className="mb-3 flex-row justify-between w-full items-center bg-white rounded-lg p-3"
                 >
-                  <View className="flex-row items-center mr-2">
-                    <View className="w-20 h-20 rounded-md overflow-hidden">
-                      <Image
-                        source={{
-                          uri: "https://goldsun.vn/pic/ProductItem/Noi-com-d_637625508222561223.jpg",
-                        }}
-                        className="w-full h-full object-cover"
-                        resizeMode="cover"
-                      />
-                    </View>
-                    <Text
-                      className="text-gray-700 text-lg ml-2 w-40 font-medium"
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                      style={{ flexShrink: 1 }}
-                    >
-                      {selectedItem.name}
-                    </Text>
+                  <View className="w-20 h-20 rounded-md overflow-hidden">
+                    <Image
+                      source={{
+                        uri: selectedItem.imageUrl.split(", ")[0],
+                      }}
+                      className="w-full h-full object-contain"
+                      resizeMode="contain"
+                    />
                   </View>
-
-                  <View>
-                    {/* <Pressable
-                    className="bg-white border-[1px] border-[#00B0B9] py-3 px-8 rounded-xl active:bg-[rgb(0,176,185,0.1)]"
-                    onPress={handleRemoveItem}
+                  <Text
+                    className="text-gray-700 text-lg mx-3 font-medium flex-1"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={{ flexShrink: 1 }}
                   >
-                    <Text className="text-base text-[#00B0B9] font-medium">
-                      Remove
-                    </Text>
-                  </Pressable> */}
+                    {selectedItem.itemName}
+                  </Text>
+
+                  <View className="flex-1">
                     <LoadingButton
                       title="Remove"
                       onPress={handleRemoveItem}
@@ -211,53 +324,85 @@ const CreateExchange: React.FC = () => {
               Exchange Details
             </Text>
 
-            <View className="bg-white mt-2 rounded-lg p-4 flex-row justify-between">
-              <View className="w-1/2 justify-between">
+            <View className="bg-white mt-2 rounded-lg p-4">
+              <View className="items-center flex-row justify-between mb-3">
                 <Text className="text-base text-gray-500">Method</Text>
-                <Text className="text-base text-gray-500 my-4">Type</Text>
-                <Text className="text-base text-gray-500 mb-4">
-                  Meeting Location
-                </Text>
-                <Text className="text-base text-gray-500">Date & Time</Text>
-              </View>
-              <View className="w-1/2 justify-between">
-                <Text className="text-right text-base text-[#00b0b9]">
-                  Pick-up in person
-                </Text>
-                <Text className="text-right text-base text-[#00b0b9]">
-                  Open with desired item
-                </Text>
-                <View className="flex-row items-center justify-end">
-                  <Icon name="location-outline" size={20} color="#00B0B9" />
-                  <Text className="ml-[2px] text-base underline text-[#00b0b9]">
-                    Set location
+                <Pressable onPress={() => setMethodVisible(true)}>
+                  <Text
+                    className={`text-right text-base text-[#00b0b9] underline font-normal`}
+                  >
+                    {exchangeItem.methodExchangeName.length !== 0
+                      ? exchangeItem.methodExchangeName
+                      : "Choose your method"}
                   </Text>
-                </View>
+                </Pressable>
+              </View>
+              <View className="items-center flex-row justify-between mb-3">
+                <Text className="text-base text-gray-500">Type</Text>
+                <Text className="text-right text-base text-[#00b0b9] font-normal">
+                  {itemDetail?.desiredItem === null
+                    ? "Open"
+                    : "Open with desired item"}
+                </Text>
+              </View>
 
-                <View className="flex-row items-center justify-end">
+              <View className="items-center flex-row justify-between mb-3">
+                <Text className="text-base text-gray-500 w-1/2">
+                  Meeting location
+                </Text>
+                <Pressable
+                  className="flex-row items-center w-1/2 justify-end"
+                  onPress={handleSetLocation}
+                >
+                  <Icon name="location-outline" size={20} color="#00B0B9" />
+                  <Text
+                    className="text-base underline text-[#00b0b9] font-normal "
+                    numberOfLines={1}
+                  >
+                    {exchangeItem.methodExchangeName.length !== 0 &&
+                    selectedPlaceDetail
+                      ? selectedPlaceDetail.formatted_address
+                      : "Set location"}
+                  </Text>
+                </Pressable>
+              </View>
+
+              <View className="items-center flex-row justify-between">
+                <Text className="text-base text-gray-500">Date & Time</Text>
+                <Pressable
+                  className="flex-row items-center justify-end"
+                  onPress={() => setCalendarVisible(true)}
+                >
                   <Icon
                     name="calendar-clear-outline"
                     size={20}
                     color="#00B0B9"
                   />
-                  <Text className="ml-[2px] text-right text-base underline text-[#00b0b9]">
-                    Schedule
+                  <Text className="ml-2 underline text-[#00B0B9] font-normal text-base">
+                    {selectedDateTime
+                      ? selectedDateTime.toLocaleString()
+                      : "Choose Schedule"}
                   </Text>
-                </View>
+                </Pressable>
               </View>
             </View>
           </View>
 
           <View className="my-5">
-            <Text className="font-bold text-lg text-gray-500">Note</Text>
+            <Text className="font-bold text-lg text-gray-500">
+              Note (Optional)
+            </Text>
 
-            <View className="px-3 py-3 rounded-lg my-2 bg-white">
-              <View className="pb-36">
-                <TextInput
-                  className="text-gray-500 text-base"
-                  placeholder="Write your message here..."
-                ></TextInput>
-              </View>
+            <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
+              <TextInput
+                className="flex-1 text-base font-normal text-gray-500"
+                placeholder="Aaaaa"
+                placeholderTextColor="#d1d5db"
+                multiline={true}
+                textAlignVertical="top"
+                value={additionalNotes}
+                onChangeText={(text) => handleAdditionalNotes(text)}
+              />
             </View>
           </View>
         </ScrollView>
@@ -316,6 +461,44 @@ const CreateExchange: React.FC = () => {
           </View>
         </Pressable>
       </Modal>
+
+      <ChooseMethodExchangeModal
+        methods={itemDetail?.methodExchanges!}
+        visible={methodVisible}
+        onCancel={() => setMethodVisible(false)}
+      />
+
+      <ErrorModal
+        title={errorTitleInput}
+        content={errorContentInput}
+        visible={errorVisible}
+        onCancel={() => setErrorVisible(false)}
+      />
+
+      <ChooseLocationModal
+        locations={user?.userLocations || []}
+        visible={deliveryVisible}
+        onCancel={() => setDeliveryVisible(false)}
+      />
+
+      <SetLocation
+        visible={locationVisible}
+        onCancel={() => setLocationVisible(false)}
+      />
+
+      <CalendarModal
+        visible={calendarVisible}
+        onClose={() => setCalendarVisible(false)}
+        onSelectDateTime={(date) => setSelectedDateTime(date)}
+      />
+
+      <ConfirmModal
+        title="Warning"
+        content={`You have unsaved item. ${"\n"} Do you really want to leave?`}
+        visible={warningVisible}
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+      />
     </>
   );
 };

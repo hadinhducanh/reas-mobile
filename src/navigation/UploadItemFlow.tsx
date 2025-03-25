@@ -16,10 +16,11 @@ import MethodOfExchangeScreen from "../screens/PostItemScreen/MethodOfExchange";
 import ExchangeDesiredItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem";
 import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelectionScreen";
 import { useIsFocused } from "@react-navigation/native";
+import UploadItem from "../screens/PostItemScreen";
 
-const CreateItemStack = createNativeStackNavigator();
+const UploadItemStack = createNativeStackNavigator();
 
-export default function CreateItemFlow() {
+export default function UploadItemFlow() {
   const isFocused = useIsFocused();
   const { setUploadItem } = useUploadItem();
 
@@ -30,44 +31,44 @@ export default function CreateItemFlow() {
   }, [isFocused]);
   return (
     <>
-      <CreateItemStack.Navigator
+      <UploadItemStack.Navigator
         screenOptions={{
           headerShown: false,
           gestureEnabled: false,
         }}
       >
-        <CreateItemStack.Screen
+        <UploadItemStack.Screen
           name="UploadScreen"
-          component={UploadScreen}
+          component={UploadItem}
           options={{
             gestureEnabled: false,
           }}
         />
-        <CreateItemStack.Screen
+        <UploadItemStack.Screen
           name="TypeOfItemScreen"
           component={TypeOfItemScreen}
         />
-        <CreateItemStack.Screen
+        <UploadItemStack.Screen
           name="TypeOfItemDetailScreen"
           component={TypeOfItemDetailScreen}
         />
-        <CreateItemStack.Screen
+        <UploadItemStack.Screen
           name="ItemConditionScreen"
           component={ItemConditionScreen}
         />
-        <CreateItemStack.Screen
+        <UploadItemStack.Screen
           name="MethodOfExchangeScreen"
           component={MethodOfExchangeScreen}
         />
-        <CreateItemStack.Screen
+        <UploadItemStack.Screen
           name="ExchangeDesiredItemScreen"
           component={ExchangeDesiredItemScreen}
         />
-        <CreateItemStack.Screen
+        <UploadItemStack.Screen
           name="BrandSelectionScreen"
           component={BrandSelectionScreen}
         />
-      </CreateItemStack.Navigator>
+      </UploadItemStack.Navigator>
       {/* <ConfirmModal
         title="Confirm upload"
         content="Are you sure you to upload this item?"
