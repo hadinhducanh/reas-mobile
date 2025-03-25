@@ -77,7 +77,7 @@ export type RootStackParamList = {
   ExchangeHistory: undefined;
   ExchangeDetail: { statusDetail: string };
   ChatHistory: undefined;
-  ChatDetails: undefined;
+  ChatDetails: { receiverUsername: string, receiverFullName: string };
   Statistics: undefined;
   ItemDetails: { itemId: number };
   ItemPreview: { itemId: number };

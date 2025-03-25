@@ -1,11 +1,9 @@
 import React from "react";
 import Icon from "react-native-vector-icons/Ionicons";
-
 import {
   View,
   Text,
   Image,
-  TouchableOpacity,
   ImageBackground,
 } from "react-native";
 
@@ -29,49 +27,62 @@ interface ChatMessageProps {
   type: MessageType;
   text?: string;
   images?: string[];
+  imageUrl?: string; // For a single image message
   location?: LocationInfo;
   exchange?: ExchangeInfo;
   time?: string;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({
+const Message: React.FC<ChatMessageProps> = ({
   isSender,
   type,
   text,
   images,
+  imageUrl,
   location,
   exchange,
   time,
 }) => {
-  // Xác định căn lề và màu nền dựa vào phía gửi hay nhận
+  // Determine alignment and background based on sender
   const alignmentClass = isSender ? "self-end" : "self-start";
   const backgroundClass = isSender
-    ? "bg-[rgb(0,176,185,0.4)]"
-    : "bg-[rgb(217,217,217,0.6)]";
+    ? "bg-[rgba(0,176,185,0.4)]"
+    : "bg-[rgba(217,217,217,0.6)]";
 
   const renderContent = () => {
     switch (type) {
       case "text":
-        return <Text className={`text-sm text-black`}>{text}</Text>;
+        return <Text className="text-sm text-black">{text}</Text>;
       case "image":
-        return (
-          <View className="flex-row space-x-2">
-            {images?.map((uri, index) => (
-              <ImageBackground
-                key={index}
-                source={{ uri }}
-                className="w-20 h-20 rounded-lg"
-              />
-            ))}
-          </View>
-        );
+        if (imageUrl) {
+          return (
+            <Image
+              source={{ uri: imageUrl }}
+              className="w-40 h-40 rounded-lg"
+              resizeMode="cover"
+            />
+          );
+        } else if (images && images.length > 0) {
+          return (
+            <View className="flex-row space-x-2">
+              {images.map((uri, index) => (
+                <ImageBackground
+                  key={index}
+                  source={{ uri }}
+                  className="w-20 h-20 rounded-lg"
+                />
+              ))}
+            </View>
+          );
+        }
+        return null;
       case "location":
         return (
           <View className="flex-col">
-            <Text className={`text-sm text-black`}>
+            <Text className="text-sm text-black">
               {location?.label || "Location"}
             </Text>
-            <Text className={`text-xs text-black`}>
+            <Text className="text-xs text-black">
               Lat: {location?.latitude}, Lon: {location?.longitude}
             </Text>
           </View>
@@ -80,12 +91,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         return (
           <View className="w-full items-start">
             <View className="flex-row w-full justify-between mb-1 items-center">
-              {/* Khung chứa item thứ nhất */}
+              {/* First item container */}
               <View className="w-[42%] h-[130px] items-center bg-white rounded-lg p-2 flex-col justify-center">
-                <View className="items-start w-full h-3/4s">
-                  <View className="w-full h-[80px] items-center bg-[#D9D9D999] rounded-lg py-[7px] mb-1">
+                <View className="w-full h-3/4">
+                  <View className="w-full h-[80px] items-center bg-[rgba(217,217,217,0.6)] rounded-lg py-2 mb-1">
                     <Image
-                      //   source={{ uri: "https://i.imgur.com/1tMFzp8.png" }}
+                      // source can be added here if needed
                       resizeMode="stretch"
                       className="w-[55px] h-[41px]"
                     />
@@ -101,13 +112,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 </View>
               </View>
               <Icon name="swap-horizontal-outline" size={24} color="#00b0b9" />
-
-              {/* Khung chứa item thứ nhất */}
+              {/* Second item container */}
               <View className="w-[42%] h-[130px] items-center bg-white rounded-lg p-2 flex-col justify-center">
-                <View className="items-start w-full h-3/4s">
-                  <View className="w-full h-[80px] items-center bg-[#D9D9D999] rounded-lg py-[7px] mb-1">
+                <View className="w-full h-3/4">
+                  <View className="w-full h-[80px] items-center bg-[rgba(217,217,217,0.6)] rounded-lg py-2 mb-1">
                     <Image
-                      //   source={{ uri: "https://i.imgur.com/1tMFzp8.png" }}
+                      // source can be added here if needed
                       resizeMode="stretch"
                       className="w-[55px] h-[41px]"
                     />
@@ -124,24 +134,26 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               </View>
             </View>
 
-            {/* Thông tin trao đổi */}
-            <View className="py-[5px]">
+            {/* Exchange info */}
+            <View className="py-1">
               <View className="flex-row">
                 <Text className="text-[#738AA0] text-sm">Date & Time: </Text>
                 <Text className="text-black text-sm font-bold underline">
-                  14:30 20-02-2025
+                  {exchange?.dateTime || "N/A"}
                 </Text>
               </View>
               <View className="flex-row my-1">
                 <Text className="text-[#738AA0] text-sm">Exchange ID: </Text>
-                <Text className="text-black text-sm font-bold">#EX12356</Text>
+                <Text className="text-black text-sm font-bold">
+                  {exchange?.exchangeId || "N/A"}
+                </Text>
               </View>
               <View className="flex-row">
                 <Text className="text-[#738AA0] text-sm">
                   Additional payment:{" "}
                 </Text>
                 <Text className="text-[#00b0b9] text-sm font-bold">
-                  350.000 VND
+                  {exchange?.additionalPayment || "0 VND"}
                 </Text>
               </View>
             </View>
@@ -160,7 +172,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         >
           {renderContent()}
           {time && (
-            <Text className={`text-[10px] text-black mt-1 text-right`}>
+            <Text className="text-[10px] text-black mt-1 text-right">
               {time}
             </Text>
           )}
@@ -168,13 +180,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       ) : (
         <View className="flex-row ">
           <View className="w-10 h-10 mr-3 rounded-full bg-[#738aa0]" />
-
           <View
             className={`${alignmentClass} ${backgroundClass} max-w-[70%] rounded-lg p-3 my-2`}
           >
             {renderContent()}
             {time && (
-              <Text className={`text-[10px] text-black mt-1 text-right`}>
+              <Text className="text-[10px] text-black mt-1 text-right">
                 {time}
               </Text>
             )}
@@ -185,4 +196,4 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   );
 };
 
-export default ChatMessage;
+export default Message;
