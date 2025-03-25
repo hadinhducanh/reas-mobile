@@ -1,14 +1,22 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getAllItemAvailableThunk, getItemDetailThunk, uploadItemThunk } from "../thunk/itemThunks";
+import {
+  getAllItemAvailableThunk,
+  getItemDetailThunk,
+  uploadItemThunk,
+} from "../thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
+import { ExchangeResponse } from "../../common/models/exchange";
+import { makeAnExchangeThunk } from "../thunk/exchangeThunk";
 
 interface ExchangeState {
+  exchangeRequest: ExchangeResponse | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: ExchangeState = {
+  exchangeRequest: null,
   loading: false,
   error: null,
 };
@@ -17,24 +25,30 @@ const exchangeSlice = createSlice({
   name: "exchange",
   initialState,
   reducers: {
-    // resetItemDetail: (state) => {
-    //   state.itemDetail = null;
-    // },
+    resetExchange: (state) => {
+      state.exchangeRequest = null;
+    },
   },
   extraReducers: (builder) => {
-    // builder
-    //   .addCase(uploadItemThunk.pending, (state) => {
-    //     state.loading = true;
-    //     state.error = null;
-    //   })
-    //   .addCase(uploadItemThunk.fulfilled, (state, action: PayloadAction<ItemResponse>) => {
-    //     state.loading = false;
-    //     state.itemUpload = action.payload;
-    //   })
-    //   .addCase(uploadItemThunk.rejected, (state, action: PayloadAction<any>) => {
-    //     state.loading = false;
-    //     state.error = action.payload || "Upload item failed";
-    //   });
+    builder
+      .addCase(makeAnExchangeThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        makeAnExchangeThunk.fulfilled,
+        (state, action: PayloadAction<ExchangeResponse>) => {
+          state.loading = false;
+          state.exchangeRequest = action.payload;
+        }
+      )
+      .addCase(
+        makeAnExchangeThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Make an exchange failed";
+        }
+      );
   },
 });
 

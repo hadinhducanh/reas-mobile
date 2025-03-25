@@ -4,6 +4,7 @@ import itemReducer from "./slices/itemSlice";
 import brandReducer from "./slices/brandSlice";
 import categoryReducer from "./slices/categorySlice";
 import exchangeReducer from "./slices/categorySlice";
+import locationReducer from "./slices/locationSlice";
 
 const store = configureStore({
   reducer: {
@@ -12,10 +13,9 @@ const store = configureStore({
     brand: brandReducer,
     category: categoryReducer,
     exchange: exchangeReducer,
+    location: locationReducer,
   },
 });
-
-
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

@@ -1,46 +1,20 @@
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { ItemType, RootStackParamList } from "../../../navigation/AppNavigator";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
 import Header from "../../../components/Header";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import ItemCard from "../../../components/CardItem";
+import { ItemResponse } from "../../../common/models/item";
+import Icon from "react-native-vector-icons/Ionicons";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../redux/store";
 
 const BrowseItems: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
-  const [itemList] = useState<ItemType[]>([
-    {
-      id: 1,
-      name: "iPhone 20",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "Vinhome Grand Park",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-    {
-      id: 2,
-      name: "Samsung Galaxy S25",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "District 1, HCMC",
-      description: "Latest Samsung flagship phone.",
-      isFavorited: false,
-    },
-    {
-      id: 3,
-      name: "Samsung Galaxy S24",
-      price: 30000000,
-      images: "https://via.placeholder.com/150",
-      location: "District 3, HCMC",
-      description: "Latest Samsung flagship phone1.",
-      isFavorited: false,
-    },
-  ]);
-
-  const chunkArray = (array: ItemType[], size: number) => {
-    const chunked: ItemType[][] = [];
+  const { itemRecommnand } = useSelector((state: RootState) => state.item);
+  const chunkArray = (array: ItemResponse[], size: number) => {
+    const chunked: ItemResponse[][] = [];
     for (let i = 0; i < array.length; i += size) {
       chunked.push(array.slice(i, i + size));
     }
@@ -53,11 +27,20 @@ const BrowseItems: React.FC = () => {
     setSelectedId((prev) => (prev === itemId ? null : itemId));
   };
 
-  const rows = chunkArray(itemList, 2);
+  const rows = chunkArray(itemRecommnand.content, 2);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
       <Header title="Browse my items" showOption={false} />
+      <Pressable
+        className="flex-row justify-center items-center mx-5 bg-gray-100 border-[1px] border-gray-300 px-5 py-4 rounded-lg active:bg-gray-200"
+        onPress={() => navigation.navigate("UploadScreen")}
+      >
+        <Text className="text-center text-lg text-gray-500 font-medium mr-1">
+          Add a different item
+        </Text>
+        <Icon name="add" size={20} />
+      </Pressable>
       <ScrollView>
         <View className="px-5 mt-3">
           {rows.map((row, rowIndex) => (

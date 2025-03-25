@@ -20,6 +20,7 @@ const OTP: React.FC = () => {
   const route = useRoute<any>();
   const dispatch = useDispatch<AppDispatch>();
   const { loading, otp } = useSelector((state: RootState) => state.auth);
+
   const [otpInput, setOtp] = useState(Array(6).fill(""));
 
   // Tạo mảng ref cho 6 ô nhập OTP

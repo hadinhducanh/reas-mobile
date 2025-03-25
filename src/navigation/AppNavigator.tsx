@@ -24,7 +24,6 @@ import SignUpSuccessScreen from "../screens/AuthenScreen/SignUpSuccess";
 import ResetPassword from "../screens/AccountScreen/ResetPassword";
 import CreateExchange from "../screens/CreateExchange";
 import BrowseItems from "../screens/CreateExchange/BrowseItems";
-import DifferentItem from "../screens/CreateExchange/DifferentItem";
 import ConfirmExchange from "../screens/CreateExchange/ConfirmExchange";
 import AccpectRejectExchange from "../screens/CreateExchange/AccpectRejectExchange";
 import FeedbackItem from "../screens/AccountScreen/FeedbackItem";
@@ -44,11 +43,13 @@ import Statistics from "../screens/AccountScreen/Statistics";
 import ItemDetails from "../screens/ItemManagement/ItemDetail";
 import FilterMap from "../screens/SearchResult/FilterMap";
 import { SignupDto } from "../common/models/auth";
-import CreateItemFlow from "./CreateItemFlow";
+import CreateItemFlow from "./UploadItemFlow";
 import { defaultUploadItem, useUploadItem } from "../context/ItemContext";
 import ConfirmModal from "../components/DeleteConfirmModal";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ItemManagement from "../screens/ItemManagement";
+import UploadItemFlow from "./UploadItemFlow";
+import UploadItem from "../screens/PostItemScreen";
 
 export type ItemType = {
   id: number;
@@ -107,6 +108,7 @@ export type RootStackParamList = {
   About: undefined;
   UploadItemSuccess: undefined;
   UploadScreen: undefined;
+  Account: undefined;
 };
 
 const TabArr = [
@@ -120,7 +122,7 @@ const TabArr = [
   {
     route: "Upload",
     label: "Upload",
-    component: CreateItemFlow,
+    component: UploadItemFlow,
     type: "add-circle-outline",
   },
   {
@@ -153,7 +155,6 @@ function BottomTabs() {
   >(null);
 
   const handleConfirm = async () => {
-    // hasConfirmedUploadRef.current = true;
     setConfirmVisible(false);
     setUploadItem(defaultUploadItem);
 
@@ -188,7 +189,11 @@ function BottomTabs() {
             component={item.component}
             listeners={({ navigation }) => ({
               tabPress: (e) => {
-                if (!accessToken) {
+                if (
+                  !accessToken &&
+                  item.route !== "Account" &&
+                  item.route !== "Home"
+                ) {
                   e.preventDefault();
                   navigation.navigate("SignIn");
                 } else if (hasUnsavedData && item.route !== "Upload") {
@@ -286,8 +291,9 @@ export default function RootNavigator() {
         <Stack.Screen name="About" component={About} />
         <Stack.Screen name="UploadItemSuccess" component={UploadItemSuccess} />
         <Stack.Screen name="BrowseItems" component={BrowseItems} />
-        <Stack.Screen name="DifferentItem" component={DifferentItem} />
+        {/* <Stack.Screen name="DifferentItem" component={DifferentItem} /> */}
         <Stack.Screen name="ConfirmExchange" component={ConfirmExchange} />
+        <Stack.Screen name="UploadScreen" component={UploadItem} />
         <Stack.Screen
           name="AccpectRejectExchange"
           component={AccpectRejectExchange}

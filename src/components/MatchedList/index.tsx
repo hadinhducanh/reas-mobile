@@ -1,28 +1,19 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, Image } from "react-native";
+import { View, Text, Pressable, Image, ScrollView } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../LoadingButton";
-
-type ItemType = {
-  id: number;
-  name: string;
-  price: string;
-  image: string;
-  location: string;
-  description: string;
-  isFavorited: boolean;
-};
+import { ItemResponse } from "../../common/models/item";
 
 interface MatchedListProps {
-  items?: ItemType[];
-  onSelectItem?: (item: ItemType) => void;
+  items?: ItemResponse[];
+  onSelectItem?: (item: ItemResponse) => void;
 }
 
 const MatchedList: React.FC<MatchedListProps> = ({
   items = [],
   onSelectItem,
 }) => {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <View>
@@ -40,38 +31,42 @@ const MatchedList: React.FC<MatchedListProps> = ({
         {expanded && (
           <View className="mt-2 rounded-md">
             {items.length > 0 ? (
-              items.map((item) => (
-                <View
-                  key={item.id}
-                  className="mb-3 flex-row justify-between w-full items-center bg-white px-5 rounded-lg py-2"
-                >
-                  <View className="flex-row items-center mr-2">
+              <ScrollView
+                style={{ maxHeight: 240 }}
+                showsVerticalScrollIndicator={false}
+                nestedScrollEnabled={true}
+              >
+                {items.map((item) => (
+                  <View
+                    key={item.id}
+                    className="mb-3 flex-row justify-between w-full items-center bg-white rounded-lg p-3"
+                  >
                     <View className="w-20 h-20 rounded-md overflow-hidden">
                       <Image
                         source={{
-                          uri: "https://goldsun.vn/pic/ProductItem/Noi-com-d_637625508222561223.jpg",
+                          uri: item.imageUrl.split(", ")[0],
                         }}
-                        className="w-full h-full object-cover"
-                        resizeMode="cover"
+                        className="w-full h-full object-contain"
+                        resizeMode="contain"
                       />
                     </View>
                     <Text
-                      className="text-gray-700 text-lg ml-2 w-40 font-medium"
+                      className="text-gray-700 text-lg mx-3 font-medium flex-1"
                       numberOfLines={1}
                     >
-                      {item.name}
+                      {item.itemName}
                     </Text>
-                  </View>
 
-                  <View>
-                    <LoadingButton
-                      title="Select"
-                      onPress={() => onSelectItem?.(item)}
-                      buttonClassName="py-3 px-8"
-                    />
+                    <View className="flex-1">
+                      <LoadingButton
+                        title="Select"
+                        onPress={() => onSelectItem?.(item)}
+                        buttonClassName="py-3 px-8"
+                      />
+                    </View>
                   </View>
-                </View>
-              ))
+                ))}
+              </ScrollView>
             ) : (
               <Text className="text-gray-500 text-center p-5 bg-gray-100 text-base font-light">
                 No item matched

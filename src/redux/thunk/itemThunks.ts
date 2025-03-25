@@ -1,7 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import ItemService from "../../services/ItemService";
 import { RootState } from "../store";
-import { ItemResponse, UploadItemRequest } from "../../common/models/item";
+import {
+  ItemResponse,
+  SearchItemRequest,
+  UploadItemRequest,
+} from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
 
 export const uploadItemThunk = createAsyncThunk<
@@ -14,35 +18,41 @@ export const uploadItemThunk = createAsyncThunk<
   if (!accessToken) {
     return thunkAPI.rejectWithValue("No access token available");
   }
-  try {    
-    const data = await ItemService.uploadItem(item, accessToken);    
+  try {
+    const data = await ItemService.uploadItem(item, accessToken);
     return data;
   } catch (error: any) {
     console.log(error);
-    return thunkAPI.rejectWithValue(error.response?.data || "Upload item failed");
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Upload item failed"
+    );
   }
 });
 
-export const getAllItemAvailableThunk = createAsyncThunk<ResponseEntityPagination<ItemResponse>, number>(
-  "item/getAllItemAvailable",
-  async (pageNo, thunkAPI) => {
-    try {
-      const data = await ItemService.getAllItemAvailable(pageNo);            
-      return data;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response.data || "Get all item available failed");
-    }
+export const getAllItemAvailableThunk = createAsyncThunk<
+  ResponseEntityPagination<ItemResponse>,
+  { pageNo: number; request: SearchItemRequest }
+>("item/getAllItemAvailable", async ({ pageNo, request }, thunkAPI) => {
+  try {
+    const data = await ItemService.getAllItemAvailable(pageNo, request);
+    return data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Get all item available failed"
+    );
   }
-);
+});
 
 export const getItemDetailThunk = createAsyncThunk<ItemResponse, number>(
   "item/getItemDetail",
   async (id, thunkAPI) => {
     try {
-      const data = await ItemService.getItemDetail(id);            
+      const data = await ItemService.getItemDetail(id);
       return data;
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response.data || "Get item detail failed");
+      return thunkAPI.rejectWithValue(
+        error.response.data || "Get item detail failed"
+      );
     }
   }
 );

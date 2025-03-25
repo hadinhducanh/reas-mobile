@@ -1,11 +1,17 @@
 import React from "react";
-import { View, Text, Pressable, ScrollView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  Platform,
+  TextInput,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
-import ChatMessage from "../../../components/ChatMessage";
-import { TextInput } from "react-native-gesture-handler";
 import { KeyboardAvoidingView } from "react-native";
+import ChatMessage from "../../../components/ChatMessage";
 
 const ChatDetails: React.FC = () => {
   const navigation = useNavigation();

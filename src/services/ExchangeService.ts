@@ -1,28 +1,26 @@
 import axios from "axios";
 import { API_BASE_URL } from "../common/constant";
-import { ItemResponse, UploadItemRequest } from "../common/models/item";
-import { ResponseEntityPagination } from "../common/models/pagination";
+import {
+  ExchangeRequestRequest,
+  ExchangeResponse,
+} from "../common/models/exchange";
 
-const uploadItem = async (request: UploadItemRequest, accessToken: string): Promise<ItemResponse> => {
-  const response = await axios.post<ItemResponse>(`${API_BASE_URL}/item`, request, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  return response.data;
-};
-
-const getAllItemAvailable = async (pageNo: number): Promise<ResponseEntityPagination<ItemResponse>> => {
-  const response = await axios.get<ResponseEntityPagination<ItemResponse>>(`${API_BASE_URL}/item/search?pageNo=${pageNo}&pageSize=5&sortBy=id&sortDir=asc`);
-  return response.data;
-};
-const getItemDetail = async (id: number): Promise<ItemResponse> => {
-  const response = await axios.get<ItemResponse>(`${API_BASE_URL}/item/${id}`);
+const makeAnExchange = async (
+  request: ExchangeRequestRequest,
+  accessToken: string
+): Promise<ExchangeResponse> => {
+  const response = await axios.post<ExchangeResponse>(
+    `${API_BASE_URL}/exchange`,
+    request,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
   return response.data;
 };
 
 export default {
-  uploadItem,
-  getAllItemAvailable,
-  getItemDetail
+  makeAnExchange,
 };
