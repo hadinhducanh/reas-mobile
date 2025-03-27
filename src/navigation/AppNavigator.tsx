@@ -50,6 +50,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ItemManagement from "../screens/ItemManagement";
 import UploadItemFlow from "./UploadItemFlow";
 import UploadItem from "../screens/PostItemScreen";
+import { StatusExchange } from "../common/enums/StatusExchange";
 
 export type ItemType = {
   id: number;
@@ -75,9 +76,9 @@ export type RootStackParamList = {
   SignUp: undefined;
   Profile: undefined;
   ExchangeHistory: undefined;
-  ExchangeDetail: { statusDetail: string };
+  ExchangeDetail: { statusDetail: StatusExchange; exchangeId: number };
   ChatHistory: undefined;
-  ChatDetails: { receiverUsername: string, receiverFullName: string };
+  ChatDetails: { receiverUsername: string; receiverFullName: string };
   Statistics: undefined;
   ItemDetails: { itemId: number };
   ItemPreview: { itemId: number };
@@ -95,7 +96,7 @@ export type RootStackParamList = {
   BrowseItems: undefined;
   DifferentItem: undefined;
   ConfirmExchange: undefined;
-  AccpectRejectExchange: undefined;
+  AccpectRejectExchange: { exchangeId: number };
   FeedbackItem: undefined;
   SearchResult: undefined;
   OwnerItem: undefined;

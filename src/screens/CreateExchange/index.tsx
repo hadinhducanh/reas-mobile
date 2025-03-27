@@ -38,6 +38,7 @@ import ChooseLocationModal from "../../components/ChooseLocationModal";
 import ConfirmModal from "../../components/DeleteConfirmModal";
 import { getPlaceDetailsThunk } from "../../redux/thunk/locationThunks";
 import { resetPlaceDetail } from "../../redux/slices/locationSlice";
+import LocationModal from "../../components/LocationModal";
 
 const CreateExchange: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "CreateExchange">>();
@@ -46,9 +47,6 @@ const CreateExchange: React.FC = () => {
   const { itemId } = route.params;
   const { itemDetail, itemRecommnand } = useSelector(
     (state: RootState) => state.item
-  );
-  const { selectedPlaceDetail } = useSelector(
-    (state: RootState) => state.location
   );
   const { user } = useSelector((state: RootState) => state.auth);
   const hasConfirmedRef = useRef(false);
@@ -67,6 +65,9 @@ const CreateExchange: React.FC = () => {
   const [methodVisible, setMethodVisible] = useState(false);
   const [calendarVisible, setCalendarVisible] = useState<boolean>(false);
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
+  const [locationShowVisible, setLocationShowVisible] =
+    useState<boolean>(false);
+
   const [deliveryVisible, setDeliveryVisible] = useState<boolean>(false);
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
   const [errorTitleInput, setErrorTitleInput] = useState<string>("");
@@ -119,7 +120,7 @@ const CreateExchange: React.FC = () => {
     if (
       !selectedItem ||
       !exchangeItem.methodExchangeName ||
-      !selectedPlaceDetail?.place_id! ||
+      // !exchangeItem.exchangeLocation ||
       !selectedDateTime
     ) {
       Alert.alert("Invalid information", "All fields are required.");
@@ -130,14 +131,13 @@ const CreateExchange: React.FC = () => {
         exchangeDateExtend: selectedDateTime!,
         paidByUserId:
           itemDetail?.price! > selectedItem.price
-            ? itemDetail?.owner.id!
-            : user?.id!,
+            ? user?.id!
+            : itemDetail?.owner.id!,
         estimatePrice:
           itemDetail?.price! - selectedItem.price < 0
             ? -(itemDetail?.price! - selectedItem.price)
             : itemDetail?.price! - selectedItem.price,
         sellerItemId: itemDetail?.id!,
-        exchangeLocation: selectedPlaceDetail?.place_id!,
         selectedItem: selectedItem,
       });
 
@@ -162,15 +162,14 @@ const CreateExchange: React.FC = () => {
       setErrorTitleInput("Invalid");
       setErrorContentInput("Please choose your method exchange first.");
     } else if (
-      exchangeItem.methodExchange === MethodExchange.PICK_UP_IN_PERSON &&
-      itemDetail?.userLocation.specificAddress
-    ) {
-      dispatch(getPlaceDetailsThunk(itemDetail.userLocation.specificAddress));
-    } else if (
       exchangeItem.methodExchange === MethodExchange.DELIVERY &&
       user?.userLocations
     ) {
       setDeliveryVisible(true);
+    } else if (
+      exchangeItem.methodExchange === MethodExchange.PICK_UP_IN_PERSON
+    ) {
+      setLocationShowVisible(true);
     } else {
       setLocationVisible(true);
     }
@@ -216,6 +215,44 @@ const CreateExchange: React.FC = () => {
     },
     [setExchangeItem]
   );
+
+  const formatExchangeDate = (exchangeDate: string): string => {
+    const dt = new Date(exchangeDate);
+
+    const formattedTime = dt.toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const day = dt.getDate().toString().padStart(2, "0");
+    const month = (dt.getMonth() + 1).toString().padStart(2, "0");
+    const year = dt.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+
+    return `${formattedTime} ${formattedDate}`;
+  };
+
+  const getLocationDisplay = (): string => {
+    if (exchangeItem.methodExchangeName.length === 0) {
+      return "Set location";
+    }
+
+    switch (exchangeItem.methodExchange) {
+      case MethodExchange.PICK_UP_IN_PERSON:
+        return (
+          itemDetail?.userLocation.specificAddress.split("//")[1] ||
+          "Set location"
+        );
+      case MethodExchange.DELIVERY:
+      case MethodExchange.MEET_AT_GIVEN_LOCATION:
+        return exchangeItem.exchangeLocation.length !== 0
+          ? exchangeItem.exchangeLocation.split("//")[1]
+          : "Set location";
+      default:
+        return "Set location";
+    }
+  };
 
   return (
     <>
@@ -359,10 +396,7 @@ const CreateExchange: React.FC = () => {
                     className="text-base underline text-[#00b0b9] font-normal "
                     numberOfLines={1}
                   >
-                    {exchangeItem.methodExchangeName.length !== 0 &&
-                    selectedPlaceDetail
-                      ? selectedPlaceDetail.formatted_address
-                      : "Set location"}
+                    {getLocationDisplay()}
                   </Text>
                 </Pressable>
               </View>
@@ -380,7 +414,7 @@ const CreateExchange: React.FC = () => {
                   />
                   <Text className="ml-2 underline text-[#00B0B9] font-normal text-base">
                     {selectedDateTime
-                      ? selectedDateTime.toLocaleString()
+                      ? formatExchangeDate(selectedDateTime.toISOString())
                       : "Choose Schedule"}
                   </Text>
                 </Pressable>
@@ -439,7 +473,6 @@ const CreateExchange: React.FC = () => {
                 likely to be accepted.
               </Text>
 
-              {/* Nút Cancel & Continue */}
               <View className="flex-row justify-between mt-2 mx-3">
                 <View className="flex-1 mr-2">
                   <LoadingButton
@@ -480,6 +513,16 @@ const CreateExchange: React.FC = () => {
         visible={deliveryVisible}
         onCancel={() => setDeliveryVisible(false)}
       />
+
+      {itemDetail?.userLocation.specificAddress && (
+        <LocationModal
+          visible={locationShowVisible}
+          onClose={() => setLocationShowVisible(false)}
+          place_id={itemDetail.userLocation.specificAddress
+            .split("//")[0]
+            .trim()}
+        />
+      )}
 
       <SetLocation
         visible={locationVisible}

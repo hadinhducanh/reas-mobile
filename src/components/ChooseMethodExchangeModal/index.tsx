@@ -37,8 +37,6 @@ const ChooseMethodExchangeModal: React.FC<ChooseMethodExchangeModalProps> = ({
       exchangeItem.methodExchange || MethodExchange.NO_METHOD
     );
   const { itemDetail } = useSelector((state: RootState) => state.item);
-  const { loading } = useSelector((state: RootState) => state.location);
-  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     setSelectedMethodLocal(
@@ -55,30 +53,22 @@ const ChooseMethodExchangeModal: React.FC<ChooseMethodExchangeModalProps> = ({
         exchangeLocation: defaultExchangeItem.exchangeLocation,
         locationGoong: defaultExchangeItem.locationGoong,
       });
-      dispatch(resetPlaceDetail());
     } else {
-      dispatch(resetPlaceDetail());
-      if (
-        method === MethodExchange.PICK_UP_IN_PERSON &&
-        itemDetail?.userLocation.specificAddress
-      ) {
-        dispatch(getPlaceDetailsThunk(itemDetail.userLocation.specificAddress));
-        if (loading) {
-          setExchangeItem({
-            ...exchangeItem,
-            exchangeLocation: itemDetail.userLocation.specificAddress,
-          });
-        }
-      }
       const methodMatch = exchangeMethods.find(
         (methodItem) => methodItem.value === method
       );
-      setExchangeItem({
-        ...exchangeItem,
 
+      setExchangeItem((prev) => ({
+        ...prev,
         methodExchange: method,
         methodExchangeName: methodMatch?.label!,
-      });
+        exchangeLocation:
+          method === MethodExchange.PICK_UP_IN_PERSON &&
+          itemDetail?.userLocation.specificAddress
+            ? itemDetail.userLocation.specificAddress
+            : "",
+      }));
+
       onCancel();
     }
   };

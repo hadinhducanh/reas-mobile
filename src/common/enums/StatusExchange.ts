@@ -1,4 +1,7 @@
-export enum StatusExchangeHistory {
+export enum StatusExchange {
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
   NOT_YET_EXCHANGE = "NOT_YET_EXCHANGE",
   PENDING_EVIDENCE = "PENDING_EVIDENCE",
   SUCCESSFUL = "SUCCESSFUL",

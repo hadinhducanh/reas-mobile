@@ -20,6 +20,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux/store";
 import { getPlaceDetailsThunk } from "../../redux/thunk/locationThunks";
 import { MethodExchange } from "../../common/enums/MethodExchange";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get("window");
 const ASPECT_RATIO = width / height;
@@ -47,8 +48,6 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [selectedSuggestion, setSelectedSuggestion] =
-    useState<Suggestion | null>(null);
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const mapRef = useRef<MapView>(null);
@@ -110,24 +109,17 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
   }, [searchText, fetchSuggestions]);
 
   const onSelectSuggestion = (item: Suggestion) => {
-    setSelectedSuggestion(item);
     dispatch(getPlaceDetailsThunk(item.place_id));
     setIsSearching(false);
   };
 
-  useEffect(() => {
-    if (exchangeItem.locationGoong) {
-      setSelectedSuggestion(exchangeItem.locationGoong);
-      dispatch(getPlaceDetailsThunk(exchangeItem.locationGoong.place_id));
-      setIsSearching(false);
-    }
-  }, [exchangeItem.locationGoong, dispatch]);
-
   const handleConfirm = () => {
     setExchangeItem({
       ...exchangeItem,
-      exchangeLocation: selectedPlaceDetail?.place_id!,
-      locationGoong: selectedSuggestion!,
+      exchangeLocation:
+        selectedPlaceDetail?.place_id +
+        "//" +
+        selectedPlaceDetail?.formatted_address,
     });
     onCancel();
   };
@@ -161,84 +153,71 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
       animationType="fade"
       onRequestClose={handleCancel}
     >
-      <View className="flex-1 bg-white">
-        <View className="bg-white flex-row justify-between items-center p-3 shadow-md">
-          <View className="flex-row items-center">
-            <TouchableOpacity onPress={handleCancel} className="mr-2">
-              <Icon name="chevron-back-outline" size={25} color="#00B0B9" />
-            </TouchableOpacity>
-            <Text className="text-xl font-semibold">Modify location</Text>
-          </View>
-          {isSearching && (
-            <TouchableOpacity onPress={() => setIsSearching(false)}>
-              <Text className="text-[#00B0B9] text-base font-semibold">
-                Back to map
+      <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
+        <View className="flex-1 bg-white">
+          <View className="bg-[#00B0B9] flex-row justify-between items-center p-3">
+            <View className="flex-row items-center">
+              <TouchableOpacity onPress={handleCancel} className="mr-2">
+                <Icon name="chevron-back-outline" size={25} color="white" />
+              </TouchableOpacity>
+              <Text className="text-xl font-semibold text-white">
+                Modify location
               </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+            </View>
+            {isSearching && (
+              <TouchableOpacity onPress={() => setIsSearching(false)}>
+                <Text className="text-[#00B0B9] text-base font-semibold">
+                  Back to map
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
-        {isSearching ? (
-          <>
-            <View className="mt-4 flex-row items-center border-b-2 border-[#00B0B9] mx-3 py-2 px-3 shadow-sm">
-              <Icon name="search" size={20} color="black" />
-              <TextInput
-                placeholder="Search location..."
-                value={searchText}
-                onChangeText={setSearchText}
-                className="text-xl bg-white ml-2 flex-1"
-              />
-            </View>
-            <View className="mt-5 w-full">
-              {suggestions.length > 0 && (
-                <FlatList
-                  data={suggestions}
-                  keyExtractor={(item) => item.place_id}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      onPress={() => onSelectSuggestion(item)}
-                      className="p-3 border-b border-gray-200 bg-white px-5"
-                    >
-                      <View className="flex-row items-center">
-                        <Icon
-                          name="location-outline"
-                          size={22}
-                          color="#00B0B9"
-                        />
-                        <View className="ml-2">
-                          <Text className="text-lg font-semibold">
-                            {item.structured_formatting.main_text}
-                          </Text>
-                          <Text className="text-base">
-                            {item.structured_formatting.secondary_text}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  )}
-                  className="mt-2"
+          {isSearching ? (
+            <>
+              <View className="mt-4 flex-row items-center border-b-2 border-[#00B0B9] mx-3 py-2 px-3 shadow-sm">
+                <Icon name="search" size={20} color="black" />
+                <TextInput
+                  placeholder="Search location..."
+                  value={searchText}
+                  onChangeText={setSearchText}
+                  className="text-xl bg-white ml-2 flex-1"
                 />
-              )}
-            </View>
-          </>
-        ) : (
-          <>
-            {exchangeItem.methodExchange ===
-            MethodExchange.PICK_UP_IN_PERSON ? (
-              <View className="p-3 border-b-2 border-t-2 border-gray-200 bg-white px-5">
-                <View className="flex-row items-center">
-                  <Icon name="location-outline" size={22} color="#00B0B9" />
-                  <View className="ml-2">
-                    <Text className="text-lg font-semibold">
-                      {selectedPlaceDetail?.name}
-                    </Text>
-                    <Text className="text-base">
-                      {selectedPlaceDetail?.formatted_address}
-                    </Text>
-                  </View>
-                </View>
               </View>
-            ) : (
+              <View className="mt-5 w-full">
+                {suggestions.length > 0 && (
+                  <FlatList
+                    data={suggestions}
+                    keyExtractor={(item) => item.place_id}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        onPress={() => onSelectSuggestion(item)}
+                        className="p-3 border-b border-gray-200 bg-white px-5"
+                      >
+                        <View className="flex-row items-center">
+                          <Icon
+                            name="location-outline"
+                            size={22}
+                            color="#00B0B9"
+                          />
+                          <View className="ml-2">
+                            <Text className="text-lg font-semibold">
+                              {item.structured_formatting.main_text}
+                            </Text>
+                            <Text className="text-base">
+                              {item.structured_formatting.secondary_text}
+                            </Text>
+                          </View>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                    className="mt-2"
+                  />
+                )}
+              </View>
+            </>
+          ) : (
+            <>
               <TouchableOpacity
                 onPress={() => {
                   setIsSearching(true);
@@ -248,59 +227,44 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
                 className="absolute left-4 right-4 top-16 p-4 border border-gray-300 rounded-lg bg-white shadow-sm z-10 flex-row items-center"
               >
                 <Icon name="search-outline" size={22} color="#00B0B9" />
-                <TextInput
-                  className="text-xl ml-2"
-                  numberOfLines={1}
-                  editable={true}
-                  selectTextOnFocus={true}
-                  onChangeText={() => {}}
-                >
-                  {selectedPlaceDetail?.formatted_address.length !== 0
-                    ? selectedPlaceDetail?.formatted_address
+                <Text className="text-xl ml-2" numberOfLines={1}>
+                  {selectedPlaceDetail !== null
+                    ? selectedPlaceDetail.formatted_address
                     : "Search location..."}
-                </TextInput>
+                </Text>
               </TouchableOpacity>
-            )}
 
-            {exchangeItem.methodExchange !== MethodExchange.PICK_UP_IN_PERSON &&
-              exchangeItem.methodExchange !== MethodExchange.DELIVERY && (
-                <>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setIsSearching(true);
-                      setSearchText("");
-                      setSuggestions([]);
-                    }}
-                    className="absolute left-4 right-4 bottom-5 rounded-lg z-10 mx-4"
-                  >
-                    <LoadingButton
-                      title="Confirm"
-                      buttonClassName="p-4"
-                      onPress={handleConfirm}
-                    />
-                  </TouchableOpacity>
-                </>
-              )}
-          </>
-        )}
+              <TouchableOpacity
+                onPress={() => {
+                  setIsSearching(true);
+                  setSearchText("");
+                  setSuggestions([]);
+                }}
+                className="absolute left-4 right-4 bottom-5 rounded-lg z-10 mx-4"
+              >
+                <LoadingButton
+                  title="Confirm"
+                  buttonClassName="p-4"
+                  onPress={handleConfirm}
+                />
+              </TouchableOpacity>
+            </>
+          )}
 
-        {!isSearching && location && region && (
-          <View className="flex-1">
-            <MapView
-              ref={mapRef}
-              style={StyleSheet.absoluteFillObject}
-              initialRegion={region}
-            >
-              <UrlTile
-                urlTemplate={tileUrlTemplate}
-                maximumZ={19}
-                flipY={false}
-              />
-              {coordinate && <Marker coordinate={coordinate} />}
-            </MapView>
-          </View>
-        )}
-      </View>
+          {!isSearching && location && region && (
+            <View style={{ flex: 1, position: "relative" }}>
+              <MapView ref={mapRef} style={{ flex: 1 }} initialRegion={region}>
+                <UrlTile
+                  urlTemplate={tileUrlTemplate}
+                  maximumZ={19}
+                  flipY={false}
+                />
+                {coordinate && <Marker coordinate={coordinate} />}
+              </MapView>
+            </View>
+          )}
+        </View>
+      </SafeAreaView>
     </Modal>
   );
 };

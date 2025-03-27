@@ -28,11 +28,12 @@ const getAllItemAvailable = async (
   request: SearchItemRequest
 ): Promise<ResponseEntityPagination<ItemResponse>> => {
   const response = await axios.post<ResponseEntityPagination<ItemResponse>>(
-    `${API_BASE_URL}/item/search?pageNo=${pageNo}&pageSize=100&sortBy=id&sortDir=asc`,
+    `${API_BASE_URL}/item/search?pageNo=${pageNo}&pageSize=5&sortBy=id&sortDir=asc`,
     request
   );
   return response.data;
 };
+
 const getItemDetail = async (id: number): Promise<ItemResponse> => {
   const response = await axios.get<ItemResponse>(`${API_BASE_URL}/item/${id}`);
   return response.data;

@@ -3,7 +3,7 @@ import authReducer from "./slices/authSlice";
 import itemReducer from "./slices/itemSlice";
 import brandReducer from "./slices/brandSlice";
 import categoryReducer from "./slices/categorySlice";
-import exchangeReducer from "./slices/categorySlice";
+import exchangeReducer from "./slices/exchangeSlice";
 import chatReducer from "./slices/chatSlice";
 import locationReducer from "./slices/locationSlice";
 

@@ -1,54 +1,75 @@
-import React, { useState } from "react";
-import { View, FlatList } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, FlatList, ActivityIndicator, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TabHeader from "../../../components/TabHeader";
 import ExchangeCard from "../../../components/ExchangeCard";
 import Header from "../../../components/Header";
-
-interface ExchangeData {
-  id: number;
-  status: string;
-}
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../redux/store";
+import { StatusExchange } from "../../../common/enums/StatusExchange";
+import { ExchangeResponse } from "../../../common/models/exchange";
+import {
+  getAllExchangesByStatusOfCurrentUserThunk,
+  getExchangeCountsThunk,
+} from "../../../redux/thunk/exchangeThunk";
 
 const ExchangeHistory: React.FC = () => {
-  const [selectedStatus, setSelectedStatus] = useState<string>("Pending");
+  const { loading, exchangeByStatus, counts } = useSelector(
+    (state: RootState) => state.exchange
+  );
+  const dispatch = useDispatch<AppDispatch>();
 
-  const data: ExchangeData[] = [
-    { id: 1, status: "Pending" },
-    { id: 2, status: "Approved" },
-    { id: 3, status: "Completed" },
-    { id: 4, status: "Rejected" },
-    { id: 5, status: "Rejected" },
-    { id: 6, status: "Canceled" },
-  ];
+  const [selectedStatus, setSelectedStatus] = useState<StatusExchange>(
+    StatusExchange.PENDING
+  );
 
   const tabs = [
     {
-      label: "Pending",
-      count: data.filter((item) => item.status === "Pending").length,
+      label: StatusExchange.PENDING,
+      count: counts.PENDING!,
     },
     {
-      label: "Approved",
-      count: data.filter((item) => item.status === "Approved").length,
+      label: StatusExchange.APPROVED,
+      count: counts.APPROVED!,
     },
     {
-      label: "Rejected",
-      count: data.filter((item) => item.status === "Rejected").length,
+      label: StatusExchange.REJECTED,
+      count: counts.REJECTED!,
     },
     {
-      label: "Completed",
-      count: data.filter((item) => item.status === "Completed").length,
+      label: StatusExchange.SUCCESSFUL,
+      count: counts.SUCCESSFUL!,
     },
     {
-      label: "Canceled",
-      count: data.filter((item) => item.status === "Canceled").length,
+      label: StatusExchange.FAILED,
+      count: counts.FAILED!,
     },
   ];
 
-  const filteredData = data.filter((item) => item.status === selectedStatus);
+  useEffect(() => {
+    dispatch(
+      getAllExchangesByStatusOfCurrentUserThunk({
+        pageNo: 0,
+        statusExchangeRequest: selectedStatus,
+      })
+    );
+    dispatch(getExchangeCountsThunk());
+  }, [dispatch, selectedStatus]);
 
-  const renderItem = ({ item }: { item: ExchangeData }) => (
-    <ExchangeCard status={item.status} />
+  useEffect(() => {
+    dispatch(getExchangeCountsThunk());
+  }, []);
+
+  const renderExchangeCard = ({ item }: { item: ExchangeResponse }) => (
+    <ExchangeCard
+      status={
+        item.statusExchangeRequest === StatusExchange.APPROVED &&
+        item.exchangeHistory.statusExchangeHistory === StatusExchange.SUCCESSFUL
+          ? StatusExchange.SUCCESSFUL
+          : item.statusExchangeRequest
+      }
+      exchange={item}
+    />
   );
 
   return (
@@ -63,12 +84,24 @@ const ExchangeHistory: React.FC = () => {
         />
       </View>
 
-      <FlatList
-        showsVerticalScrollIndicator={false}
-        data={filteredData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-      />
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#00b0b9" />
+        </View>
+      ) : exchangeByStatus.content.length === 0 ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-gray-500">No exchange was request</Text>
+        </View>
+      ) : (
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          data={exchangeByStatus.content}
+          renderItem={renderExchangeCard}
+          keyExtractor={(item) => item.id.toString()}
+        />
+      )}
+
+      {}
     </SafeAreaView>
   );
 };

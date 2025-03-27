@@ -3,8 +3,7 @@ import { MethodExchange } from "../../enums/MethodExchange";
 import { ItemResponse } from "../item";
 import { Suggestion } from "../location";
 import { UserResponse } from "../auth";
-import { StatusExchangeRequest } from "../../enums/StatusExchangeRequest";
-import { StatusExchangeHistory } from "../../enums/StatusExchangeHistory";
+import { StatusExchange } from "../../enums/StatusExchange";
 
 export interface ExchangeRequestRequest {
   sellerItemId: number;
@@ -32,7 +31,7 @@ export interface ExchangeHistoryResponse {
   sellerImageUrl: string;
   buyerAdditionalNotes: string;
   sellerAdditionalNotes: string;
-  statusExchangeHistory: StatusExchangeHistory;
+  statusExchangeHistory: StatusExchange;
 }
 
 export interface ExchangeResponse {
@@ -40,15 +39,22 @@ export interface ExchangeResponse {
   sellerItem: ItemResponse;
   buyerItem: ItemResponse;
   paidBy: UserResponse;
-  exchangeDate: Date;
+  exchangeDate: string;
   exchangeLocation: string;
   estimatePrice: number;
   finalPrice: number;
   numberOfOffer: number;
   methodExchange: MethodExchange;
-  statusExchangeRequest: StatusExchangeRequest;
+  statusExchangeRequest: StatusExchange;
   buyerConfirmation: boolean;
   sellerConfirmation: boolean;
   additionalNotes: string;
+  creationDate: string;
   exchangeHistory: ExchangeHistoryResponse;
+}
+
+export interface EvidenceExchangeRequest {
+  exchangeHistoryId: number;
+  imageUrl: string;
+  additionalNotes: string;
 }

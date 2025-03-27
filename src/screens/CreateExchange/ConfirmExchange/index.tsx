@@ -1,10 +1,9 @@
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
-  Pressable,
   Platform,
   Modal,
   ActivityIndicator,
@@ -20,17 +19,17 @@ import { AppDispatch, RootState } from "../../../redux/store";
 import { Image } from "react-native";
 import { makeAnExchangeThunk } from "../../../redux/thunk/exchangeThunk";
 import ConfirmModal from "../../../components/DeleteConfirmModal";
+import { resetExchange } from "../../../redux/slices/exchangeSlice";
 
 const ConfirmExchange: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { itemDetail } = useSelector((state: RootState) => state.item);
-  const { exchangeItem, setExchangeItem } = useExchangeItem();
-  const { selectedPlaceDetail } = useSelector(
-    (state: RootState) => state.location
+  const { exchangeItem } = useExchangeItem();
+  const { loading, exchangeRequest } = useSelector(
+    (state: RootState) => state.exchange
   );
-  const { loading } = useSelector((state: RootState) => state.exchange);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const handleConfirmExchange = async () => {
@@ -49,12 +48,16 @@ const ConfirmExchange: React.FC = () => {
       additionalNotes: formattedAdditionalNotes.trim(),
     };
 
-    // console.log(exchangeRequestRequest);
-
     await dispatch(makeAnExchangeThunk(exchangeRequestRequest));
-
-    navigation.navigate("MainTabs", { screen: "Exchanges" });
   };
+
+  useEffect(() => {
+    if (exchangeRequest !== null) {
+      dispatch(resetExchange());
+      setConfirmVisible(false);
+      navigation.navigate("MainTabs", { screen: "Exchanges" });
+    }
+  }, [exchangeRequest, dispatch]);
 
   const formatPrice = (price: number | undefined): string => {
     return price !== undefined ? price.toLocaleString("vi-VN") : "0";
@@ -66,6 +69,23 @@ const ConfirmExchange: React.FC = () => {
 
   const handleCancel = () => {
     setConfirmVisible(false);
+  };
+
+  const formatExchangeDate = (exchangeDate: string): string => {
+    const dt = new Date(exchangeDate);
+
+    const formattedTime = dt.toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const day = dt.getDate().toString().padStart(2, "0");
+    const month = (dt.getMonth() + 1).toString().padStart(2, "0");
+    const year = dt.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+
+    return `${formattedTime} ${formattedDate}`;
   };
 
   return (
@@ -186,7 +206,7 @@ const ConfirmExchange: React.FC = () => {
                     className="ml-[2px] text-base underline text-[#00b0b9] flex-1"
                     numberOfLines={1}
                   >
-                    {selectedPlaceDetail?.formatted_address}
+                    {exchangeItem.exchangeLocation.split("//")[1]}
                   </Text>
                 </View>
 
@@ -197,11 +217,7 @@ const ConfirmExchange: React.FC = () => {
                     color="#00B0B9"
                   />
                   <Text className="ml-[2px] text-right text-base underline text-[#00b0b9]">
-                    {exchangeItem.exchangeDateExtend.getDate()}/
-                    {exchangeItem.exchangeDateExtend.getMonth()}/
-                    {exchangeItem.exchangeDateExtend.getFullYear()}{" "}
-                    {exchangeItem.exchangeDateExtend.getHours()}:
-                    {exchangeItem.exchangeDateExtend.getMinutes()}
+                    {formatExchangeDate(exchangeItem.exchangeDate)}
                   </Text>
                 </View>
               </View>
@@ -215,7 +231,7 @@ const ConfirmExchange: React.FC = () => {
               </Text>
               <View className="bg-white mt-2 rounded-lg p-4 flex-col justify-center h-fit">
                 <Text className="text-base text-gray-500">
-                  Không đổi trả lại
+                  {itemDetail.termsAndConditionsExchange}
                 </Text>
               </View>
             </View>
@@ -271,7 +287,12 @@ const ConfirmExchange: React.FC = () => {
                 </Text>
               </View>
               <View className="flex-row items-center justify-end">
-                <Text className="text-sm text-gray-500">Paid by: Đức Sơn</Text>
+                <Text className="text-sm text-gray-500">
+                  Paid by:{" "}
+                  {itemDetail?.price! > exchangeItem.selectedItem?.price!
+                    ? user?.fullName!
+                    : itemDetail?.owner.fullName!}
+                </Text>
               </View>
             </View>
           </View>

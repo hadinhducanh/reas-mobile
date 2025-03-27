@@ -7,6 +7,7 @@ export const getPlaceDetailsThunk = createAsyncThunk<PlaceDetail, string>(
   async (place_id, thunkAPI) => {
     try {
       const placeDetail = await LocationService.getPlaceDetails(place_id);
+
       return placeDetail;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(

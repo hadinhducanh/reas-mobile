@@ -28,6 +28,7 @@ import NavigationListItem from "../../components/NavigationListItem";
 import Toggle from "../../components/Toggle";
 import ConfirmModal from "../../components/DeleteConfirmModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { uploadToCloudinary } from "../../utils/CloudinaryImageUploader";
 
 export default function UploadItem() {
   const navigation =
@@ -89,35 +90,6 @@ export default function UploadItem() {
       ? parseInt(numericValue, 10).toLocaleString("en-US")
       : "";
   }, []);
-
-  const uploadToCloudinary = useCallback(
-    async (
-      uri: string,
-      creatorName: string | undefined
-    ): Promise<string | null> => {
-      try {
-        const data = new FormData();
-        const timestamp = new Date().getTime();
-        data.append("file", {
-          uri,
-          type: "image/jpeg",
-          name: `${creatorName}-${timestamp}.jpg`,
-        } as any);
-        data.append("upload_preset", "reas_image_upload");
-        data.append("cloud_name", "dpysbryyk");
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/dpysbryyk/image/upload`,
-          { method: "POST", body: data }
-        );
-        const json = await response.json();
-        return json.secure_url;
-      } catch (error) {
-        console.error("Error uploading to Cloudinary:", error);
-        return null;
-      }
-    },
-    []
-  );
 
   const processImages = useCallback(async (): Promise<string> => {
     const imageArray = images.split(", ").filter((img) => img.trim() !== "");
@@ -241,168 +213,175 @@ export default function UploadItem() {
         }
         showOption={false}
       />
-      <ScrollView className="mx-5" showsVerticalScrollIndicator={false}>
-        <KeyboardAwareScrollView
-          extraScrollHeight={10}
-          enableOnAndroid={true}
-          keyboardShouldPersistTaps="handled"
-        >
-          <ChooseImage
-            images={images}
-            setImages={setImages}
-            isUploadEvidence={false}
-          />
+      {loading || isUploadingImages ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#00b0b9" />
+        </View>
+      ) : (
+        <ScrollView className="mx-5" showsVerticalScrollIndicator={false}>
+          <KeyboardAwareScrollView
+            extraScrollHeight={10}
+            enableOnAndroid={true}
+            keyboardShouldPersistTaps="handled"
+          >
+            <ChooseImage
+              images={images}
+              setImages={setImages}
+              isUploadEvidence={false}
+            />
 
-          <NavigationListItem
-            title="Type of item"
-            value={uploadItem.categoryName}
-            route="TypeOfItemScreen"
-            defaultValue="Select type"
-          />
+            <NavigationListItem
+              title="Type of item"
+              value={uploadItem.categoryName}
+              route="TypeOfItemScreen"
+              defaultValue="Select type"
+            />
 
-          <NavigationListItem
-            title="Brand"
-            value={uploadItem.brandName}
-            route="BrandSelectionScreen"
-            defaultValue="Select brand"
-          />
+            <NavigationListItem
+              title="Brand"
+              value={uploadItem.brandName}
+              route="BrandSelectionScreen"
+              defaultValue="Select brand"
+            />
 
-          <NavigationListItem
-            title="Condition"
-            value={uploadItem.conditionItemName}
-            route="ItemConditionScreen"
-            defaultValue="Select condition"
-          />
+            <NavigationListItem
+              title="Condition"
+              value={uploadItem.conditionItemName}
+              route="ItemConditionScreen"
+              defaultValue="Select condition"
+            />
 
-          <NavigationListItem
-            title="Method of exchange"
-            value={
-              uploadItem.methodExchanges.length === 3
-                ? "All method exchanges"
-                : uploadItem.methodExchanges.length > 0
-                ? uploadItem.methodExchangeName
-                : ""
-            }
-            route="MethodOfExchangeScreen"
-            defaultValue="Select methods"
-          />
+            <NavigationListItem
+              title="Method of exchange"
+              value={
+                uploadItem.methodExchanges.length === 3
+                  ? "All method exchanges"
+                  : uploadItem.methodExchanges.length > 0
+                  ? uploadItem.methodExchangeName
+                  : ""
+              }
+              route="MethodOfExchangeScreen"
+              defaultValue="Select methods"
+            />
 
-          <Toggle
-            label="I want to give it for free"
-            value={isCheckedFree}
-            onToggle={toggleCheckboxFree}
-          />
+            <Toggle
+              label="I want to give it for free"
+              value={isCheckedFree}
+              onToggle={toggleCheckboxFree}
+            />
 
-          {!isCheckedFree && (
+            {!isCheckedFree && (
+              <View className="w-full bg-white rounded-lg mt-4 px-5 py-3">
+                <Text className="text-black text-base">Price</Text>
+                <View className="flex-row justify-between items-center mt-1">
+                  <TextInput
+                    className="flex-1 text-lg font-normal text-black"
+                    placeholder="0"
+                    placeholderTextColor="#d1d5db"
+                    value={formatPrice(price)}
+                    onChangeText={(text) => handleFieldChange("price", text)}
+                    keyboardType="numeric"
+                  />
+                  <Text className="font-bold text-[#00B0B9] text-lg">VND</Text>
+                </View>
+              </View>
+            )}
+
             <View className="w-full bg-white rounded-lg mt-4 px-5 py-3">
-              <Text className="text-black text-base">Price</Text>
-              <View className="flex-row justify-between items-center mt-1">
+              <Text className="text-black text-base">Name</Text>
+              <View className="mt-1">
                 <TextInput
                   className="flex-1 text-lg font-normal text-black"
-                  placeholder="0"
+                  placeholder="Aaaaa"
                   placeholderTextColor="#d1d5db"
-                  value={formatPrice(price)}
-                  onChangeText={(text) => handleFieldChange("price", text)}
-                  keyboardType="numeric"
+                  value={itemName}
+                  onChangeText={(text) => handleFieldChange("itemName", text)}
                 />
-                <Text className="font-bold text-[#00B0B9] text-lg">VND</Text>
               </View>
             </View>
-          )}
 
-          <View className="w-full bg-white rounded-lg mt-4 px-5 py-3">
-            <Text className="text-black text-base">Name</Text>
-            <View className="mt-1">
+            <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
+              <Text className="text-black text-base">
+                Description{" "}
+                <Text className="text-[#00b0b9] font-semibold">
+                  (at least 20 characters)
+                </Text>
+              </Text>
               <TextInput
                 className="flex-1 text-lg font-normal text-black"
                 placeholder="Aaaaa"
                 placeholderTextColor="#d1d5db"
-                value={itemName}
-                onChangeText={(text) => handleFieldChange("itemName", text)}
+                value={description}
+                onChangeText={(text) => handleFieldChange("description", text)}
+                multiline={true}
+                textAlignVertical="top"
               />
             </View>
-          </View>
 
-          <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
-            <Text className="text-black text-base">
-              Description{" "}
-              <Text className="text-[#00b0b9] font-semibold">
-                (at least 20 characters)
-              </Text>
-            </Text>
-            <TextInput
-              className="flex-1 text-lg font-normal text-black"
-              placeholder="Aaaaa"
-              placeholderTextColor="#d1d5db"
-              value={description}
-              onChangeText={(text) => handleFieldChange("description", text)}
-              multiline={true}
-              textAlignVertical="top"
-            />
-          </View>
+            {!isCheckedFree && (
+              <Toggle
+                label="Accept exchanging with money"
+                value={isMoneyAccepted}
+                onToggle={toggleCheckboxDesiredItem}
+              />
+            )}
 
-          {!isCheckedFree && (
-            <Toggle
-              label="Accept exchanging with money"
-              value={isMoneyAccepted}
-              onToggle={toggleCheckboxDesiredItem}
-            />
-          )}
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate("ExchangeDesiredItemScreen")}
-            className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
-          >
-            <View>
-              <Text className="text-base font-normal text-black">
-                Add your desired item for exchanging
-              </Text>
-              {JSON.stringify(uploadItem.desiredItem) !==
-              JSON.stringify(defaultUploadItem.desiredItem) ? (
-                <Text
-                  className="text-[#00b0b9] text-lg underline font-bold"
-                  onPress={() =>
-                    navigation.navigate("ExchangeDesiredItemScreen")
-                  }
-                >
-                  Detail
+            <TouchableOpacity
+              onPress={() => navigation.navigate("ExchangeDesiredItemScreen")}
+              className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
+            >
+              <View>
+                <Text className="text-base font-normal text-black">
+                  Add your desired item for exchanging
                 </Text>
-              ) : (
-                <Text className="text-lg font-bold">(Optional)</Text>
-              )}
+                {JSON.stringify(uploadItem.desiredItem) !==
+                JSON.stringify(defaultUploadItem.desiredItem) ? (
+                  <Text
+                    className="text-[#00b0b9] text-lg underline font-bold"
+                    onPress={() =>
+                      navigation.navigate("ExchangeDesiredItemScreen")
+                    }
+                  >
+                    Detail
+                  </Text>
+                ) : (
+                  <Text className="text-lg font-bold">(Optional)</Text>
+                )}
+              </View>
+
+              <Icon name="arrow-forward-ios" size={20} color="black" />
+            </TouchableOpacity>
+
+            <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
+              <Text className="text-black text-base">
+                Exchange’s terms and conditions
+              </Text>
+              <TextInput
+                className="flex-1 text-lg font-normal text-black"
+                placeholder="Aaaaa"
+                placeholderTextColor="#d1d5db"
+                value={termCondition}
+                onChangeText={(text) =>
+                  handleFieldChange("termsAndConditionsExchange", text)
+                }
+                multiline={true}
+                textAlignVertical="top"
+              />
             </View>
 
-            <Icon name="arrow-forward-ios" size={20} color="black" />
-          </TouchableOpacity>
+            <View className="py-5">
+              <LoadingButton
+                title="Upload"
+                buttonClassName="p-4"
+                onPress={handleConfirm}
+                loading={loading}
+                loadingUploadImage={isUploadingImages}
+              />
+            </View>
+          </KeyboardAwareScrollView>
+        </ScrollView>
+      )}
 
-          <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
-            <Text className="text-black text-base">
-              Exchange’s terms and conditions
-            </Text>
-            <TextInput
-              className="flex-1 text-lg font-normal text-black"
-              placeholder="Aaaaa"
-              placeholderTextColor="#d1d5db"
-              value={termCondition}
-              onChangeText={(text) =>
-                handleFieldChange("termsAndConditionsExchange", text)
-              }
-              multiline={true}
-              textAlignVertical="top"
-            />
-          </View>
-
-          <View className="py-5">
-            <LoadingButton
-              title="Upload"
-              buttonClassName="p-4"
-              onPress={handleConfirm}
-              loading={loading}
-              loadingUploadImage={isUploadingImages}
-            />
-          </View>
-        </KeyboardAwareScrollView>
-      </ScrollView>
       <ConfirmModal
         title="Confirm upload"
         content="Are you sure you to upload this item?"
@@ -410,22 +389,6 @@ export default function UploadItem() {
         onCancel={handleCancel}
         onConfirm={handleCreateItem}
       />
-      <Modal
-        transparent
-        visible={loading || isUploadingImages}
-        animationType="fade"
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "rgba(0,0,0,0.5)",
-          }}
-        >
-          <ActivityIndicator size="small" color="black" />
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }

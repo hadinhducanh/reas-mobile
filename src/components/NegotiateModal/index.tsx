@@ -1,19 +1,50 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { Modal, Pressable, View, Text, TextInput } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../LoadingButton";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../redux/store";
+import { updateExchangeRequestPriceThunk } from "../../redux/thunk/exchangeThunk";
+import { ExchangeResponse } from "../../common/models/exchange";
 
 interface NegotiateModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSet: () => void;
 }
 
 const NegotiateModal: React.FC<NegotiateModalProps> = ({
   visible,
   onCancel,
-  onSet,
 }) => {
+  const { exchangeDetail } = useSelector((state: RootState) => state.exchange);
+  const [price, setPrice] = useState<string>("");
+
+  const formatPrice = (price: number | undefined): string => {
+    if (price === undefined) return "0";
+    return price.toLocaleString("vi-VN");
+  };
+
+  const formatPriceString = useCallback((value: string): string => {
+    const numericValue = value.replace(/\D/g, "");
+    return numericValue
+      ? parseInt(numericValue, 10).toLocaleString("en-US")
+      : "";
+  }, []);
+
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleConfirmPrice = async () => {
+    const priceValue = parseInt(price.replace(/,/g, ""), 10) || 0;
+
+    onCancel();
+    await dispatch(
+      updateExchangeRequestPriceThunk({
+        exchangeId: exchangeDetail?.id!,
+        negotiatedPrice: priceValue,
+      })
+    );
+  };
+
   return (
     <Modal
       transparent
@@ -37,7 +68,7 @@ const NegotiateModal: React.FC<NegotiateModalProps> = ({
                   Estimated difference
                 </Text>
                 <Text className="text-lg font-bold text-[#00B0B9]">
-                  350.000 VND
+                  {formatPrice(exchangeDetail?.estimatePrice)} VND
                 </Text>
               </View>
               <Icon name="cash-outline" size={40} color="#00B0B9" />
@@ -50,7 +81,9 @@ const NegotiateModal: React.FC<NegotiateModalProps> = ({
                   placeholder="0"
                   placeholderTextColor="#999"
                   keyboardType="numeric"
-                  className="flex-1 text-base text-gray-700 font-semibold"
+                  className="flex-1 text-base text-gray-700 font-semibold py-3"
+                  value={formatPriceString(price)}
+                  onChangeText={(value) => setPrice(value)}
                 />
                 <Text className="text-gray-500 ml-1 font-semibold">đ</Text>
               </View>
@@ -68,7 +101,7 @@ const NegotiateModal: React.FC<NegotiateModalProps> = ({
               <View className="flex-1">
                 <LoadingButton
                   title="Set"
-                  onPress={onSet}
+                  onPress={handleConfirmPrice}
                   buttonClassName="p-4 border-2 border-transparent"
                 />
               </View>

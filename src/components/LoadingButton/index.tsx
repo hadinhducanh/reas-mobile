@@ -14,6 +14,7 @@ type ButtonProps = {
   iconSize?: number;
   iconColor?: string;
   showIcon?: boolean;
+  disable?: boolean;
 };
 
 const LoadingButton: React.FC<ButtonProps> = ({
@@ -28,6 +29,7 @@ const LoadingButton: React.FC<ButtonProps> = ({
   iconSize = 0,
   iconColor = "",
   showIcon = false,
+  disable = false,
 }) => {
   const baseBackgroundColor = "#00b0b9";
   const baseTextColor = textColor || "text-white";
@@ -36,7 +38,7 @@ const LoadingButton: React.FC<ButtonProps> = ({
   return (
     <Pressable
       onPress={onPress}
-      disabled={loading}
+      disabled={loading || disable}
       className={`w-full rounded-full justify-center items-center bg-[${baseBackgroundColor}] ${buttonClassName} active:bg-[rgb(0,176,185,0.5)]
       `}
     >

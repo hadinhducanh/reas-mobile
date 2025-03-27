@@ -1,16 +1,17 @@
 import React, { FC } from "react";
 import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import { StatusExchange } from "../../common/enums/StatusExchange";
 
 interface Tab {
-  label: string;
+  label: StatusExchange;
   count: number;
 }
 
 interface TabHeaderProps {
   tabs: Tab[];
   selectedTab: string;
-  onSelectTab: (label: string) => void;
+  onSelectTab: (label: StatusExchange) => void;
   owner?: boolean;
   ownerFeedback?: boolean;
 }
@@ -22,9 +23,8 @@ const TabHeader: FC<TabHeaderProps> = ({
   owner = false,
   ownerFeedback = false,
 }) => {
-  const isSelected = (label: string) => selectedTab === label;
+  const isSelected = (label: StatusExchange) => selectedTab === label;
 
-  // Nếu ownerFeedback = true thì sử dụng branch này:
   if (ownerFeedback) {
     return (
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
