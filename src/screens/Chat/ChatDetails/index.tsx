@@ -29,6 +29,8 @@ import { WEB_SOCKET_ENDPOINT } from "../../../common/constant";
 import { ChatMessage } from "../../../common/models/chat";
 import Message from "../../../components/ChatMessage";
 import { formatTimestamp } from "../../../utils/TimestampFormatter";
+import moment from "moment-timezone";
+import PushNotification from "react-native-push-notification";
 
 const ChatDetails: React.FC = () => {
   const navigation = useNavigation();
@@ -66,6 +68,13 @@ const ChatDetails: React.FC = () => {
 
   const onMessageReceived = (payload: any) => {
     const receivedMessage = JSON.parse(payload.body);
+
+    PushNotification.localNotification({
+      title: "New Message", // Notification title
+      message: receivedMessage.content, // Message content
+      // Optionally add other properties like soundName, playSound, etc.
+    });
+
     if (
       receivedMessage.senderId === receiverUsername ||
       receivedMessage.senderId === senderUsername
@@ -119,6 +128,8 @@ const ChatDetails: React.FC = () => {
       contentType: string;
     };
     try {
+      const vietnamTime = moment().tz("Asia/Ho_Chi_Minh").format();
+      console.log("Vietnam time:", vietnamTime);
       if (selectedImage) {
         const imageUrl = await uploadImageToCloudinary(selectedImage);
         chatMessage = {
@@ -127,7 +138,7 @@ const ChatDetails: React.FC = () => {
           senderName: user?.fullName,
           recipientName: receiverFullName,
           content: imageUrl,
-          timestamp: new Date().toISOString(),
+          timestamp: vietnamTime,
           contentType: "image",
         };
       } else {
@@ -137,7 +148,7 @@ const ChatDetails: React.FC = () => {
           senderName: user?.fullName,
           recipientName: receiverFullName,
           content: message,
-          timestamp: new Date().toISOString(),
+          timestamp: vietnamTime,
           contentType: "text",
         };
       }
@@ -181,7 +192,7 @@ const ChatDetails: React.FC = () => {
           <View className="flex-1 bg-white">
             <ScrollView
               ref={scrollViewRef}
-              onContentSizeChange={scrollToBottom} // NEW: auto-scroll on content change
+              onContentSizeChange={scrollToBottom} // auto-scroll on content change
               className="bg-white"
             >
               {messages.map((msg, index) => (
