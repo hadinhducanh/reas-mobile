@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { Platform } from "react-native";
+import { Platform, TextStyle } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 interface CalendarModalProps {
@@ -14,7 +14,6 @@ const CalendarModal: FC<CalendarModalProps> = ({
   onSelectDateTime,
 }) => {
   const [date, setDate] = useState<Date>(new Date());
-
   return (
     <DateTimePickerModal
       isVisible={visible}
@@ -30,10 +29,14 @@ const CalendarModal: FC<CalendarModalProps> = ({
         justifyContent: "center",
         alignItems: "center",
       }}
+      pickerStyleIOS={{
+        backgroundColor: "#00B0B9",
+      }}
       onCancel={onClose}
       buttonTextColorIOS="#00B0B9"
-      accentColor="#00B0B9"
-      textColor="#00B0B9"
+      accentColor="white"
+      textColor="black"
+      style={{}}
       customCancelButtonIOS={() => <></>}
     />
   );

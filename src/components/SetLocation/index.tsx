@@ -175,13 +175,13 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
 
           {isSearching ? (
             <>
-              <View className="mt-4 flex-row items-center border-b-2 border-[#00B0B9] mx-3 py-2 px-3 shadow-sm">
-                <Icon name="search" size={20} color="black" />
+              <View className="mt-4 flex-row items-center border-b-2 border-[#00B0B9] mx-3 px-3">
+                <Icon name="search" size={20} color="#00B0B9" />
                 <TextInput
                   placeholder="Search location..."
                   value={searchText}
                   onChangeText={setSearchText}
-                  className="text-xl bg-white ml-2 flex-1"
+                  className="text-xl bg-white h-16 ml-2 flex-1"
                 />
               </View>
               <View className="mt-5 w-full">
@@ -224,7 +224,7 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
                   setSearchText("");
                   setSuggestions([]);
                 }}
-                className="absolute left-4 right-4 top-16 p-4 border border-gray-300 rounded-lg bg-white shadow-sm z-10 flex-row items-center"
+                className="absolute left-4 right-4 top-16 p-4 border border-gray-300 rounded-lg bg-white z-10 flex-row items-center"
               >
                 <Icon name="search-outline" size={22} color="#00B0B9" />
                 <Text className="text-xl ml-2" numberOfLines={1}>

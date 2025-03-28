@@ -45,11 +45,14 @@ export const getAllExchangesByStatusOfCurrentUserThunk = createAsyncThunk<
     if (!accessToken) {
       return thunkAPI.rejectWithValue("No access token available");
     }
+
     try {
       let data: ResponseEntityPagination<ExchangeResponse>;
       if (
         statusExchangeRequest === StatusExchange.SUCCESSFUL ||
-        statusExchangeRequest === StatusExchange.FAILED
+        statusExchangeRequest === StatusExchange.FAILED ||
+        statusExchangeRequest === StatusExchange.NOT_YET_EXCHANGE ||
+        statusExchangeRequest === StatusExchange.PENDING_EVIDENCE
       ) {
         data = await ExchangeService.getAllExchangesByStatusOfCurrentUser(
           pageNo,
@@ -64,6 +67,7 @@ export const getAllExchangesByStatusOfCurrentUserThunk = createAsyncThunk<
           statusExchangeRequest
         );
       }
+
       return data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -91,6 +95,7 @@ export const getExchangeCountsThunk = createAsyncThunk<
       StatusExchange.REJECTED,
       StatusExchange.SUCCESSFUL,
       StatusExchange.FAILED,
+      StatusExchange.CANCELLED,
     ];
 
     const requests = statuses.map((status) => {
@@ -99,14 +104,14 @@ export const getExchangeCountsThunk = createAsyncThunk<
         status === StatusExchange.FAILED
       ) {
         return ExchangeService.getAllExchangesByStatusOfCurrentUser(
-          1,
+          0,
           accessToken,
           StatusExchange.APPROVED,
           status
         );
       } else {
         return ExchangeService.getAllExchangesByStatusOfCurrentUser(
-          1,
+          0,
           accessToken,
           status
         );

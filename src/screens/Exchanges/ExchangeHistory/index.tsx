@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, FlatList, ActivityIndicator, Text } from "react-native";
+import {
+  View,
+  FlatList,
+  ActivityIndicator,
+  Text,
+  ScrollView,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TabHeader from "../../../components/TabHeader";
 import ExchangeCard from "../../../components/ExchangeCard";
@@ -12,6 +18,7 @@ import {
   getAllExchangesByStatusOfCurrentUserThunk,
   getExchangeCountsThunk,
 } from "../../../redux/thunk/exchangeThunk";
+import Icon from "react-native-vector-icons/Ionicons";
 
 const ExchangeHistory: React.FC = () => {
   const { loading, exchangeByStatus, counts } = useSelector(
@@ -22,6 +29,8 @@ const ExchangeHistory: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<StatusExchange>(
     StatusExchange.PENDING
   );
+
+  const { content, pageNo, last } = exchangeByStatus;
 
   const tabs = [
     {
@@ -35,6 +44,10 @@ const ExchangeHistory: React.FC = () => {
     {
       label: StatusExchange.REJECTED,
       count: counts.REJECTED!,
+    },
+    {
+      label: StatusExchange.CANCELLED,
+      count: counts.CANCELLED!,
     },
     {
       label: StatusExchange.SUCCESSFUL,
@@ -56,9 +69,16 @@ const ExchangeHistory: React.FC = () => {
     dispatch(getExchangeCountsThunk());
   }, [dispatch, selectedStatus]);
 
-  useEffect(() => {
-    dispatch(getExchangeCountsThunk());
-  }, []);
+  const handleLoadMore = () => {
+    if (!loading && !last) {
+      dispatch(
+        getAllExchangesByStatusOfCurrentUserThunk({
+          pageNo: pageNo + 1,
+          statusExchangeRequest: selectedStatus,
+        })
+      );
+    }
+  };
 
   const renderExchangeCard = ({ item }: { item: ExchangeResponse }) => (
     <ExchangeCard
@@ -72,6 +92,18 @@ const ExchangeHistory: React.FC = () => {
     />
   );
 
+  const isCloseToBottom = ({
+    layoutMeasurement,
+    contentOffset,
+    contentSize,
+  }: any) => {
+    const paddingToBottom = 80;
+    return (
+      layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom
+    );
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#f6f9f9]">
       <View>
@@ -84,21 +116,45 @@ const ExchangeHistory: React.FC = () => {
         />
       </View>
 
-      {loading ? (
+      {loading && pageNo === 0 ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#00b0b9" />
         </View>
       ) : exchangeByStatus.content.length === 0 ? (
         <View className="flex-1 justify-center items-center">
-          <Text className="text-gray-500">No exchange was request</Text>
+          <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
+          <Text className="text-gray-500">No exchange</Text>
         </View>
       ) : (
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          data={exchangeByStatus.content}
-          renderItem={renderExchangeCard}
-          keyExtractor={(item) => item.id.toString()}
-        />
+        <>
+          <ScrollView
+            className="bg-gray-100"
+            showsVerticalScrollIndicator={false}
+            onScroll={({ nativeEvent }) => {
+              if (isCloseToBottom(nativeEvent)) {
+                handleLoadMore();
+              }
+            }}
+            scrollEventThrottle={100}
+          >
+            {exchangeByStatus.content.map((exchange) => (
+              <ExchangeCard
+                key={exchange.id}
+                status={
+                  exchange.statusExchangeRequest === StatusExchange.APPROVED &&
+                  exchange.exchangeHistory.statusExchangeHistory ===
+                    StatusExchange.SUCCESSFUL
+                    ? StatusExchange.SUCCESSFUL
+                    : exchange.statusExchangeRequest
+                }
+                exchange={exchange}
+              />
+            ))}
+          </ScrollView>
+          {loading && pageNo !== 0 && (
+            <ActivityIndicator size="large" color="#00b0b9" className="mb-5" />
+          )}
+        </>
       )}
 
       {}

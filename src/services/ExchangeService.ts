@@ -30,22 +30,29 @@ const getAllExchangesByStatusOfCurrentUser = async (
   statusExchangeRequest: StatusExchange,
   statusExchangeHistory?: StatusExchange
 ): Promise<ResponseEntityPagination<ExchangeResponse>> => {
+  const url = `${API_BASE_URL}/exchange/current-user`;
+  const params = {
+    pageNo,
+    pageSize: 5,
+    sortBy: "id",
+    sortDir: "desc",
+    statusExchangeRequest,
+    ...(statusExchangeHistory ? { statusExchangeHistory } : {}),
+  };
+
+  // console.log("Request URL:", url);
+  // console.log("Params:", params);
+
   const response = await axios.get<ResponseEntityPagination<ExchangeResponse>>(
-    `${API_BASE_URL}/exchange/current-user`,
+    url,
     {
-      params: {
-        pageNo,
-        pageSize: 2,
-        sortBy: "id",
-        sortDir: "asc",
-        statusExchangeRequest,
-        ...(statusExchangeHistory ? { statusExchangeHistory } : {}),
-      },
+      params,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     }
   );
+
   return response.data;
 };
 

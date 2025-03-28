@@ -132,7 +132,9 @@ const ItemDetails: React.FC = () => {
           {itemDetail?.itemName}
         </Text>
         <Text className="text-2xl font-semibold text-[#00B0B9] mt-1">
-          {formatPrice(itemDetail?.price)} VND
+          {itemDetail?.price === 0
+            ? "Free"
+            : formatPrice(itemDetail?.price) + " VND"}
         </Text>
         {itemDetail?.moneyAccepted && (
           <Text

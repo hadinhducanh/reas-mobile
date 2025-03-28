@@ -12,7 +12,7 @@ export const defaultExchangeItem: ExtendExchangeRequestRequest = {
   sellerItemId: 0,
   buyerItemId: 0,
   paidByUserId: 0,
-  exchangeDate: new Date(),
+  exchangeDate: "",
   exchangeLocation: "",
   estimatePrice: 0,
   methodExchange: MethodExchange.NO_METHOD,
@@ -27,6 +27,8 @@ export const defaultExchangeItem: ExtendExchangeRequestRequest = {
     },
   },
   selectedItem: null,
+  exchangeDateExtend: new Date(),
+  paidBy: null,
 };
 
 export interface ExchangeItemContextType {
