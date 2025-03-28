@@ -161,8 +161,6 @@ export default function UploadItem() {
             : null,
       };
 
-      // console.log(uploadItemRequest);
-
       await dispatch(uploadItemThunk(uploadItemRequest));
     }
   }, [setUploadItem, uploadItem, dispatch]);

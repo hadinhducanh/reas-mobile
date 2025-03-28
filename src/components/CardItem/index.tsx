@@ -86,7 +86,7 @@ const CardItem: React.FC<CardItemProps> = ({
           {item.itemName}
         </Text>
         <Text className="text-gray-900 text-base font-semibold">
-          {formatPrice(item.price)} VND
+          {item.price === 0 ? "Free" : formatPrice(item.price) + " VND"}
         </Text>
         {mode === "default" && (
           <Text className="text-gray-400 text-sm" numberOfLines={1}>

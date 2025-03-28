@@ -7,6 +7,7 @@ import {
   UploadItemRequest,
 } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
+import { StatusItem } from "../../common/enums/StatusItem";
 
 export const uploadItemThunk = createAsyncThunk<
   ItemResponse,
@@ -42,6 +43,33 @@ export const getAllItemAvailableThunk = createAsyncThunk<
     );
   }
 });
+
+export const getAllItemOfCurrentUserByStatusThunk = createAsyncThunk<
+  ResponseEntityPagination<ItemResponse>,
+  { pageNo: number; statusItem: StatusItem },
+  { state: RootState }
+>(
+  "item/getAllItemOfCurrentUserByStatus",
+  async ({ pageNo, statusItem }, thunkAPI) => {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+    if (!accessToken) {
+      return thunkAPI.rejectWithValue("No access token available");
+    }
+    try {
+      const data = await ItemService.getAllItemOfCurrentUserByStatus(
+        pageNo,
+        statusItem,
+        accessToken
+      );
+      return data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Get all item of current user by status failed"
+      );
+    }
+  }
+);
 
 export const getItemDetailThunk = createAsyncThunk<ItemResponse, number>(
   "item/getItemDetail",

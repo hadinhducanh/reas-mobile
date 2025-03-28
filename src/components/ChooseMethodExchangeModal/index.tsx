@@ -6,10 +6,8 @@ import {
   defaultExchangeItem,
   useExchangeItem,
 } from "../../context/ExchangeContext";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../redux/store";
-import { getPlaceDetailsThunk } from "../../redux/thunk/locationThunks";
-import { resetPlaceDetail } from "../../redux/slices/locationSlice";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 const exchangeMethods = [
   { label: "Pick up in person", value: MethodExchange.PICK_UP_IN_PERSON },

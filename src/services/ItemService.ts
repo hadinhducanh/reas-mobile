@@ -6,6 +6,7 @@ import {
   UploadItemRequest,
 } from "../common/models/item";
 import { ResponseEntityPagination } from "../common/models/pagination";
+import { StatusItem } from "../common/enums/StatusItem";
 
 const uploadItem = async (
   request: UploadItemRequest,
@@ -34,6 +35,22 @@ const getAllItemAvailable = async (
   return response.data;
 };
 
+const getAllItemOfCurrentUserByStatus = async (
+  pageNo: number,
+  statusItem: StatusItem,
+  accessToken: string
+): Promise<ResponseEntityPagination<ItemResponse>> => {
+  const response = await axios.get<ResponseEntityPagination<ItemResponse>>(
+    `${API_BASE_URL}/item/current-user?pageNo=${pageNo}&pageSize=5&sortBy=id&sortDir=asc&statusItem=${statusItem}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
 const getItemDetail = async (id: number): Promise<ItemResponse> => {
   const response = await axios.get<ItemResponse>(`${API_BASE_URL}/item/${id}`);
   return response.data;
@@ -43,4 +60,5 @@ export default {
   uploadItem,
   getAllItemAvailable,
   getItemDetail,
+  getAllItemOfCurrentUserByStatus,
 };

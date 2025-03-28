@@ -45,6 +45,17 @@ const exchangeMethods = [
   },
 ];
 
+const statusExchanges = [
+  { label: "Approved", value: StatusExchange.APPROVED },
+  { label: "Cancelled", value: StatusExchange.CANCELLED },
+  { label: "Failed", value: StatusExchange.FAILED },
+  { label: "Not yet exchange", value: StatusExchange.NOT_YET_EXCHANGE },
+  { label: "Pending", value: StatusExchange.PENDING },
+  { label: "Pending evidence", value: StatusExchange.PENDING_EVIDENCE },
+  { label: "Rejected", value: StatusExchange.REJECTED },
+  { label: "Successful", value: StatusExchange.SUCCESSFUL },
+];
+
 const AccpectRejectExchange: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -147,6 +158,14 @@ const AccpectRejectExchange: React.FC = () => {
     const found = exchangeMethods.find((item) => item.value === method);
     return found ? found.label : "";
   };
+
+  const getStatusExchangeLabel = (
+    status: StatusExchange | undefined
+  ): string => {
+    const found = statusExchanges.find((item) => item.value === status);
+    return found ? found.label : "";
+  };
+
   return (
     <>
       <SafeAreaView className="flex-1 bg-[#f6f9f9]" edges={["top"]}>
@@ -167,7 +186,7 @@ const AccpectRejectExchange: React.FC = () => {
                 </Text>
               </View>
               <Text className="items-center text-sm font-medium text-[#00b0b9] bg-[rgb(0,176,185,0.2)] rounded-full px-5 py-2">
-                {exchangeDetail?.statusExchangeRequest}
+                {getStatusExchangeLabel(exchangeDetail?.statusExchangeRequest)}
               </Text>
             </View>
             <View className="flex-row justify-between items-center py-5">
@@ -179,6 +198,8 @@ const AccpectRejectExchange: React.FC = () => {
                   <Text className="justify-start items-center text-left text-[18px] font-medium text-black">
                     {user?.id !== exchangeDetail?.sellerItem.owner.id
                       ? exchangeDetail?.sellerItem.owner.fullName
+                      : exchangeDetail?.buyerItem === null
+                      ? exchangeDetail.paidBy.fullName
                       : exchangeDetail?.buyerItem.owner.fullName}
                   </Text>
                   <Text className="justify-start items-center text-left text-[14px] font-normal text-[#6b7280]">
@@ -204,12 +225,20 @@ const AccpectRejectExchange: React.FC = () => {
               <View className="flex-row items-center">
                 <View>
                   <Text className="justify-start items-center text-right text-[18px] font-medium text-black">
-                    {user?.id === exchangeDetail?.buyerItem.owner.id
-                      ? exchangeDetail?.buyerItem.owner.fullName
+                    {user?.id ===
+                    (exchangeDetail?.buyerItem === null
+                      ? exchangeDetail.paidBy.id
+                      : exchangeDetail?.buyerItem.owner.id)
+                      ? exchangeDetail?.buyerItem === null
+                        ? exchangeDetail.paidBy.fullName
+                        : exchangeDetail?.buyerItem.owner.fullName
                       : exchangeDetail?.sellerItem.owner.fullName}
                   </Text>
                   <Text className="justify-start items-center text-right text-[14px] font-normal text-[#6b7280]">
-                    {user?.id === exchangeDetail?.buyerItem.owner.id
+                    {user?.id ===
+                    (exchangeDetail?.buyerItem === null
+                      ? exchangeDetail.paidBy.id
+                      : exchangeDetail?.buyerItem.owner.id)
                       ? "@Buyer"
                       : "@Seller"}
                   </Text>
@@ -229,59 +258,129 @@ const AccpectRejectExchange: React.FC = () => {
                 </Text>
               </View>
               <View className="flex-row justify-between mt-2">
-                <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
-                  <View className="w-full h-40">
-                    <Image
-                      source={{
-                        uri:
-                          user?.id !== exchangeDetail?.sellerItem.owner.id
-                            ? exchangeDetail?.sellerItem.imageUrl.split(", ")[0]
-                            : exchangeDetail?.buyerItem.imageUrl.split(", ")[0],
-                      }}
-                      className="w-full h-full object-contain"
-                      resizeMode="contain"
-                    />
-                  </View>
-
-                  <Text className="mt-2 text-base text-gray-500">
-                    {user?.id !== exchangeDetail?.sellerItem.owner.id
-                      ? exchangeDetail?.sellerItem.itemName
-                      : exchangeDetail?.buyerItem.itemName}
-                  </Text>
-                  <Text className="text-sm">
-                    {user?.id !== exchangeDetail?.sellerItem.owner.id
-                      ? formatPrice(exchangeDetail?.sellerItem.price!)
-                      : formatPrice(exchangeDetail?.buyerItem.price!)}
-                    VND
-                  </Text>
-                </View>
-                <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
-                  <View className="w-full h-40">
-                    <Image
-                      source={{
-                        uri:
-                          user?.id === exchangeDetail?.buyerItem.owner.id
-                            ? exchangeDetail?.buyerItem.imageUrl.split(", ")[0]
-                            : exchangeDetail?.sellerItem.imageUrl.split(
+                {user?.id === exchangeDetail?.sellerItem.owner.id ? (
+                  <>
+                    {exchangeDetail?.buyerItem === null ? (
+                      <View className="bg-white rounded-lg p-4 shadow-sm w-[47%] justify-center items-center">
+                        <Text className="text-gray-500 text-lg">None</Text>
+                      </View>
+                    ) : (
+                      <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
+                        <View className="w-full h-40">
+                          <Image
+                            source={{
+                              uri: exchangeDetail?.buyerItem.imageUrl.split(
                                 ", "
                               )[0],
-                      }}
-                      className="w-full h-full object-contain"
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <Text className="mt-2 text-base text-gray-500">
-                    {user?.id === exchangeDetail?.buyerItem.owner.id
-                      ? exchangeDetail?.buyerItem.itemName
-                      : exchangeDetail?.sellerItem.itemName}
-                  </Text>
-                  <Text className="text-sm">
-                    {user?.id === exchangeDetail?.buyerItem.owner.id
-                      ? formatPrice(exchangeDetail?.buyerItem.price!)
-                      : formatPrice(exchangeDetail?.sellerItem.price!)}
-                    VND
-                  </Text>
-                </View>
+                            }}
+                            className="w-full h-full object-contain"
+                            resizeMode="contain"
+                          />
+                        </View>
+
+                        <Text
+                          className="mt-2 text-base text-gray-500"
+                          numberOfLines={1}
+                        >
+                          {exchangeDetail?.buyerItem.itemName}
+                        </Text>
+                        <Text className="text-sm">
+                          {exchangeDetail?.buyerItem.price! === 0
+                            ? "Free"
+                            : formatPrice(exchangeDetail?.buyerItem.price!) +
+                              " VND"}
+                        </Text>
+                      </View>
+                    )}
+
+                    <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
+                      <View className="w-full h-40">
+                        <Image
+                          source={{
+                            uri: exchangeDetail?.sellerItem.imageUrl.split(
+                              ", "
+                            )[0],
+                          }}
+                          className="w-full h-full object-contain"
+                          resizeMode="contain"
+                        />
+                      </View>
+                      <Text
+                        className="mt-2 text-base text-gray-500"
+                        numberOfLines={1}
+                      >
+                        {exchangeDetail?.sellerItem.itemName}
+                      </Text>
+                      <Text className="text-sm">
+                        {exchangeDetail?.sellerItem.price! === 0
+                          ? "Free"
+                          : formatPrice(exchangeDetail?.sellerItem.price!) +
+                            " VND"}
+                      </Text>
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
+                      <View className="w-full h-40">
+                        <Image
+                          source={{
+                            uri: exchangeDetail?.sellerItem.imageUrl.split(
+                              ", "
+                            )[0],
+                          }}
+                          className="w-full h-full object-contain"
+                          resizeMode="contain"
+                        />
+                      </View>
+
+                      <Text
+                        className="mt-2 text-base text-gray-500"
+                        numberOfLines={1}
+                      >
+                        {exchangeDetail?.sellerItem.itemName}
+                      </Text>
+                      <Text className="text-sm">
+                        {exchangeDetail?.sellerItem.price! === 0
+                          ? "Free"
+                          : formatPrice(exchangeDetail?.sellerItem.price!) +
+                            " VND"}
+                      </Text>
+                    </View>
+
+                    {exchangeDetail?.buyerItem === null ? (
+                      <View className="bg-white rounded-lg p-4 shadow-sm w-[47%] justify-center items-center">
+                        <Text className="text-gray-500 text-lg">None</Text>
+                      </View>
+                    ) : (
+                      <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
+                        <View className="w-full h-40">
+                          <Image
+                            source={{
+                              uri: exchangeDetail?.buyerItem.imageUrl.split(
+                                ", "
+                              )[0],
+                            }}
+                            className="w-full h-full object-contain"
+                            resizeMode="contain"
+                          />
+                        </View>
+                        <Text
+                          className="mt-2 text-base text-gray-500"
+                          numberOfLines={1}
+                        >
+                          {exchangeDetail?.buyerItem.itemName}
+                        </Text>
+                        <Text className="text-sm">
+                          {exchangeDetail?.buyerItem.price! === 0
+                            ? "Free"
+                            : formatPrice(exchangeDetail?.buyerItem.price!) +
+                              " VND"}
+                        </Text>
+                      </View>
+                    )}
+                  </>
+                )}
               </View>
             </View>
 
@@ -368,36 +467,75 @@ const AccpectRejectExchange: React.FC = () => {
                 <Text className="font-bold text-lg text-gray-500">
                   Price of item
                 </Text>
-                {exchangeDetail?.numberOfOffer !== 0 && (
-                  <Pressable onPress={handleNegotiatePrice}>
-                    <Icon name="create-outline" size={24} color="#00b0b9" />
-                  </Pressable>
-                )}
+                {exchangeDetail?.numberOfOffer !== 0 &&
+                  exchangeDetail?.estimatePrice !== 0 && (
+                    <Pressable onPress={handleNegotiatePrice}>
+                      <Icon name="create-outline" size={24} color="#00b0b9" />
+                    </Pressable>
+                  )}
               </View>
 
               <View className="bg-white mt-2 rounded-lg p-4 flex-col justify-center h-fit">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-base text-gray-800">
-                    Their item price
-                  </Text>
-                  <Text className="text-base text-gray-800">
-                    {user?.id !== exchangeDetail?.sellerItem.owner.id
-                      ? formatPrice(exchangeDetail?.sellerItem.price!)
-                      : formatPrice(exchangeDetail?.buyerItem.price!)}
-                    VND
-                  </Text>
-                </View>
-                <View className="flex-row items-center justify-between mt-1">
-                  <Text className="text-base text-gray-800">
-                    Your item price
-                  </Text>
-                  <Text className="text-base text-gray-800">
-                    {user?.id === exchangeDetail?.buyerItem.owner.id
-                      ? formatPrice(exchangeDetail?.buyerItem.price!)
-                      : formatPrice(exchangeDetail?.sellerItem.price!)}
-                    VND
-                  </Text>
-                </View>
+                {user?.id === exchangeDetail?.sellerItem.owner.id ? (
+                  <>
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-base text-gray-800">
+                        Your item price
+                      </Text>
+                      <Text className="text-base text-gray-800">
+                        {exchangeDetail?.sellerItem.price! === 0
+                          ? "Free"
+                          : formatPrice(exchangeDetail?.sellerItem.price!) +
+                            " VND"}
+                      </Text>
+                    </View>
+                    {exchangeDetail?.buyerItem === null ? (
+                      ""
+                    ) : (
+                      <View className="flex-row items-center justify-between mt-1">
+                        <Text className="text-base text-gray-800">
+                          Their item price
+                        </Text>
+                        <Text className="text-base text-gray-800">
+                          {exchangeDetail?.buyerItem.price! === 0
+                            ? "Free"
+                            : formatPrice(exchangeDetail?.buyerItem.price!) +
+                              " VND"}
+                        </Text>
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {exchangeDetail?.buyerItem === null ? (
+                      ""
+                    ) : (
+                      <View className="flex-row items-center justify-between">
+                        <Text className="text-base text-gray-800">
+                          Your item price
+                        </Text>
+                        <Text className="text-base text-gray-800">
+                          {exchangeDetail?.buyerItem.price! === 0
+                            ? "Free"
+                            : formatPrice(exchangeDetail?.buyerItem.price!) +
+                              " VND"}
+                        </Text>
+                      </View>
+                    )}
+                    <View className="flex-row items-center justify-between mt-1">
+                      <Text className="text-base text-gray-800">
+                        Their item price
+                      </Text>
+                      <Text className="text-base text-gray-800">
+                        {exchangeDetail?.sellerItem.price! === 0
+                          ? "Free"
+                          : formatPrice(exchangeDetail?.sellerItem.price!) +
+                            " VND"}
+                      </Text>
+                    </View>
+                  </>
+                )}
+
                 <View className="border-[0.2px] border-gray-300 my-2"></View>
 
                 <View className="flex-row items-center justify-between">
@@ -405,16 +543,19 @@ const AccpectRejectExchange: React.FC = () => {
                     Estimated difference
                   </Text>
                   <Text className="font-bold text-lg text-[#00b0b9]">
-                    {formatPrice(exchangeDetail?.estimatePrice)}
-                    VND
+                    {exchangeDetail?.estimatePrice === 0
+                      ? "Free"
+                      : formatPrice(exchangeDetail?.estimatePrice) + " VND"}
                   </Text>
                 </View>
                 <View className="flex-row items-center justify-end">
-                  <Text className="text-sm text-gray-500">
-                    Paid by:{" "}
-                    {exchangeDetail?.paidBy.id === user?.id
-                      ? "You"
-                      : exchangeDetail?.paidBy.fullName}
+                  <Text className="text-sm text-right text-gray-500">
+                    {exchangeDetail?.estimatePrice === 0
+                      ? `This is a free item exchange${"\n"}so payment is not needed`
+                      : "Paid by: " +
+                        (exchangeDetail?.paidBy.id === user?.id
+                          ? "You"
+                          : exchangeDetail?.paidBy.fullName)}
                   </Text>
                 </View>
               </View>
@@ -496,14 +637,28 @@ const AccpectRejectExchange: React.FC = () => {
                           />
                         </View>
                         <Text className="ml-2 text-lg font-medium text-black">
-                          {exchangeDetail?.buyerItem.owner.fullName}
+                          {exchangeDetail?.buyerItem === null
+                            ? exchangeDetail.paidBy.fullName
+                            : exchangeDetail?.buyerItem.owner.fullName}
                         </Text>
                       </View>
                       <TouchableOpacity
                         onPress={() => {}}
                         disabled={true}
-                        className="w-8 h-8 rounded-md justify-center items-center bg-gray-300"
-                      ></TouchableOpacity>
+                        className={`w-8 h-8 rounded-md justify-center items-center ${
+                          exchangeDetail?.buyerConfirmation
+                            ? "bg-[rgb(0,176,185,0.2)]"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        {exchangeDetail?.buyerConfirmation && (
+                          <Icon
+                            name="checkmark-outline"
+                            size={25}
+                            color="#00B0B9"
+                          />
+                        )}
+                      </TouchableOpacity>
                     </View>
                   </>
                 ) : (
@@ -558,8 +713,20 @@ const AccpectRejectExchange: React.FC = () => {
                       <TouchableOpacity
                         onPress={() => {}}
                         disabled={true}
-                        className="w-8 h-8 rounded-md justify-center items-center bg-gray-300"
-                      ></TouchableOpacity>
+                        className={`w-8 h-8 rounded-md justify-center items-center ${
+                          exchangeDetail?.sellerConfirmation
+                            ? "bg-[rgb(0,176,185,0.2)]"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        {exchangeDetail?.sellerConfirmation && (
+                          <Icon
+                            name="checkmark-outline"
+                            size={25}
+                            color="#00B0B9"
+                          />
+                        )}
+                      </TouchableOpacity>
                     </View>
                   </>
                 )}
@@ -629,11 +796,7 @@ const AccpectRejectExchange: React.FC = () => {
 
       <ConfirmModal
         title="Confirm price"
-        content={`Are you sure to confirmed price with ${
-          exchangeDetail?.finalPrice === 0
-            ? formatPrice(exchangeDetail.estimatePrice)
-            : formatPrice(exchangeDetail?.finalPrice)
-        } of exchange?`}
+        content={`Are you sure to with present of exchange?`}
         visible={confirmPriceVisible}
         onCancel={() => setConfirmPriceVisible(false)}
         onConfirm={handleConfirmPrice}

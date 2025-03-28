@@ -7,7 +7,7 @@ import { StatusExchange } from "../../enums/StatusExchange";
 
 export interface ExchangeRequestRequest {
   sellerItemId: number;
-  buyerItemId: number;
+  buyerItemId: number | null;
   paidByUserId: number;
   exchangeDate: string;
   exchangeLocation: string;
@@ -21,6 +21,7 @@ export interface ExtendExchangeRequestRequest extends ExchangeRequestRequest {
   locationGoong: Suggestion;
   selectedItem: ItemResponse | null;
   exchangeDateExtend: Date;
+  paidBy: UserResponse | null;
 }
 
 export interface ExchangeHistoryResponse {

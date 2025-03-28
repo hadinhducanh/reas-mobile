@@ -48,16 +48,20 @@ const statusStyles: Record<
     backgroundColor: "bg-[rgba(22,163,74,0.2)]",
   },
   FAILED: {
-    textColor: "text-gray-500",
-    backgroundColor: "bg-[rgba(116,139,150,0.2)]",
+    textColor: "text-[#D067BD]",
+    backgroundColor: "bg-[rgba(208,103,189,0.2)]",
   },
   NOT_YET_EXCHANGE: {
-    textColor: "text-[#6b7280]",
-    backgroundColor: "bg-[rgba(107,114,128,0.2)]",
+    textColor: "",
+    backgroundColor: "",
   },
   PENDING_EVIDENCE: {
-    textColor: "text-[#d97706]",
-    backgroundColor: "bg-[rgba(217,119,6,0.2)]",
+    textColor: "",
+    backgroundColor: "",
+  },
+  CANCELLED: {
+    textColor: "text-gray-500",
+    backgroundColor: "bg-[rgba(116,139,150,0.2)]",
   },
 };
 
@@ -68,6 +72,17 @@ const exchangeMethods = [
     label: "Meet at a given location",
     value: MethodExchange.MEET_AT_GIVEN_LOCATION,
   },
+];
+
+const statusExchanges = [
+  { label: "Approved", value: StatusExchange.APPROVED },
+  { label: "Cancelled", value: StatusExchange.CANCELLED },
+  { label: "Failed", value: StatusExchange.FAILED },
+  { label: "Not yet exchange", value: StatusExchange.NOT_YET_EXCHANGE },
+  { label: "Pending", value: StatusExchange.PENDING },
+  { label: "Pending evidence", value: StatusExchange.PENDING_EVIDENCE },
+  { label: "Rejected", value: StatusExchange.REJECTED },
+  { label: "Successful", value: StatusExchange.SUCCESSFUL },
 ];
 
 const ExchangeDetail: React.FC = () => {
@@ -122,6 +137,13 @@ const ExchangeDetail: React.FC = () => {
     await dispatch(cancelExchangeThunk(exchangeDetail?.id!));
   };
 
+  const getStatusExchangeLabel = (
+    status: StatusExchange | undefined
+  ): string => {
+    const found = statusExchanges.find((item) => item.value === status);
+    return found ? found.label : "";
+  };
+
   return (
     <>
       <SafeAreaView className="flex-1 bg-[#f6f9f9]" edges={["top"]}>
@@ -144,7 +166,7 @@ const ExchangeDetail: React.FC = () => {
               <Text
                 className={`items-center text-[13px] font-medium ${textColor} ${backgroundColor} rounded-full px-5 py-2`}
               >
-                {statusDetail}
+                {getStatusExchangeLabel(statusDetail)}
               </Text>
             </View>
             <View className="flex-row justify-between items-center py-5">
@@ -156,6 +178,8 @@ const ExchangeDetail: React.FC = () => {
                   <Text className="justify-start items-center text-left text-[18px] font-medium text-black">
                     {user?.id !== exchangeDetail?.sellerItem.owner.id
                       ? exchangeDetail?.sellerItem.owner.fullName
+                      : exchangeDetail?.buyerItem === null
+                      ? exchangeDetail.paidBy.fullName
                       : exchangeDetail?.buyerItem.owner.fullName}
                   </Text>
                   <Text className="justify-start items-center text-left text-[14px] font-normal text-[#6b7280]">
@@ -181,12 +205,20 @@ const ExchangeDetail: React.FC = () => {
               <View className="flex-row items-center">
                 <View>
                   <Text className="justify-start items-center text-right text-[18px] font-medium text-black">
-                    {user?.id === exchangeDetail?.buyerItem.owner.id
-                      ? exchangeDetail?.buyerItem.owner.fullName
-                      : exchangeDetail?.sellerItem.owner.fullName}{" "}
+                    {user?.id ===
+                    (exchangeDetail?.buyerItem === null
+                      ? exchangeDetail.paidBy.id
+                      : exchangeDetail?.buyerItem.owner.id)
+                      ? exchangeDetail?.buyerItem === null
+                        ? exchangeDetail.paidBy.fullName
+                        : exchangeDetail?.buyerItem.owner.fullName
+                      : exchangeDetail?.sellerItem.owner.fullName}
                   </Text>
                   <Text className="justify-start items-center text-right text-[14px] font-normal text-[#6b7280]">
-                    {user?.id === exchangeDetail?.buyerItem.owner.id
+                    {user?.id ===
+                    (exchangeDetail?.buyerItem === null
+                      ? exchangeDetail.paidBy.id
+                      : exchangeDetail?.buyerItem.owner.id)
                       ? "@Buyer"
                       : "@Seller"}
                   </Text>
@@ -206,58 +238,117 @@ const ExchangeDetail: React.FC = () => {
                 </Text>
               </View>
               <View className="flex-row justify-between mt-2">
-                <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
-                  <View className="w-full h-40">
-                    <Image
-                      source={{
-                        uri:
-                          user?.id !== exchangeDetail?.sellerItem.owner.id
-                            ? exchangeDetail?.sellerItem.imageUrl.split(", ")[0]
-                            : exchangeDetail?.buyerItem.imageUrl.split(", ")[0],
-                      }}
-                      className="w-full h-full object-contain"
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <Text className="mt-2 text-base text-gray-500">
-                    {user?.id !== exchangeDetail?.sellerItem.owner.id
-                      ? exchangeDetail?.sellerItem.itemName
-                      : exchangeDetail?.buyerItem.itemName}
-                  </Text>
-                  <Text className="text-sm">
-                    {user?.id !== exchangeDetail?.sellerItem.owner.id
-                      ? formatPrice(exchangeDetail?.sellerItem.price!)
-                      : formatPrice(exchangeDetail?.buyerItem.price!)}
-                    VND
-                  </Text>
-                </View>
-                <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
-                  <View className="w-full h-40">
-                    <Image
-                      source={{
-                        uri:
-                          user?.id === exchangeDetail?.buyerItem.owner.id
-                            ? exchangeDetail?.buyerItem.imageUrl.split(", ")[0]
-                            : exchangeDetail?.sellerItem.imageUrl.split(
+                {user?.id === exchangeDetail?.sellerItem.owner.id ? (
+                  <>
+                    {exchangeDetail?.buyerItem === null ? (
+                      <View className="bg-white rounded-lg p-4 shadow-sm w-[47%] justify-center items-center">
+                        <Text className="text-gray-500 text-lg">None</Text>
+                      </View>
+                    ) : (
+                      <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
+                        <View className="w-full h-40">
+                          <Image
+                            source={{
+                              uri: exchangeDetail?.buyerItem.imageUrl.split(
                                 ", "
                               )[0],
-                      }}
-                      className="w-full h-full object-contain"
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <Text className="mt-2 text-base text-gray-500">
-                    {user?.id === exchangeDetail?.buyerItem.owner.id
-                      ? exchangeDetail?.buyerItem.itemName
-                      : exchangeDetail?.sellerItem.itemName}
-                  </Text>
-                  <Text className="text-sm">
-                    {user?.id === exchangeDetail?.buyerItem.owner.id
-                      ? formatPrice(exchangeDetail?.buyerItem.price!)
-                      : formatPrice(exchangeDetail?.sellerItem.price!)}
-                    VND
-                  </Text>
-                </View>
+                            }}
+                            className="w-full h-full object-contain"
+                            resizeMode="contain"
+                          />
+                        </View>
+
+                        <Text className="mt-2 text-base text-gray-500">
+                          {exchangeDetail?.buyerItem.itemName}
+                        </Text>
+                        <Text className="text-sm">
+                          {exchangeDetail?.buyerItem.price! === 0
+                            ? "Free"
+                            : formatPrice(exchangeDetail?.buyerItem.price!) +
+                              " VND"}
+                        </Text>
+                      </View>
+                    )}
+
+                    <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
+                      <View className="w-full h-40">
+                        <Image
+                          source={{
+                            uri: exchangeDetail?.sellerItem.imageUrl.split(
+                              ", "
+                            )[0],
+                          }}
+                          className="w-full h-full object-contain"
+                          resizeMode="contain"
+                        />
+                      </View>
+                      <Text className="mt-2 text-base text-gray-500">
+                        {exchangeDetail?.sellerItem.itemName}
+                      </Text>
+                      <Text className="text-sm">
+                        {exchangeDetail?.sellerItem.price! === 0
+                          ? "Free"
+                          : formatPrice(exchangeDetail?.sellerItem.price!) +
+                            " VND"}
+                      </Text>
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
+                      <View className="w-full h-40">
+                        <Image
+                          source={{
+                            uri: exchangeDetail?.sellerItem.imageUrl.split(
+                              ", "
+                            )[0],
+                          }}
+                          className="w-full h-full object-contain"
+                          resizeMode="contain"
+                        />
+                      </View>
+
+                      <Text className="mt-2 text-base text-gray-500">
+                        {exchangeDetail?.sellerItem.itemName}
+                      </Text>
+                      <Text className="text-sm">
+                        {exchangeDetail?.sellerItem.price! === 0
+                          ? "Free"
+                          : formatPrice(exchangeDetail?.sellerItem.price!) +
+                            " VND"}
+                      </Text>
+                    </View>
+
+                    {exchangeDetail?.buyerItem === null ? (
+                      <View className="bg-white rounded-lg p-4 shadow-sm w-[47%] justify-center items-center">
+                        <Text className="text-gray-500 text-lg">None</Text>
+                      </View>
+                    ) : (
+                      <View className="bg-white rounded-lg p-4 shadow-sm w-[47%]">
+                        <View className="w-full h-40">
+                          <Image
+                            source={{
+                              uri: exchangeDetail?.buyerItem.imageUrl.split(
+                                ", "
+                              )[0],
+                            }}
+                            className="w-full h-full object-contain"
+                            resizeMode="contain"
+                          />
+                        </View>
+                        <Text className="mt-2 text-base text-gray-500">
+                          {exchangeDetail?.buyerItem.itemName}
+                        </Text>
+                        <Text className="text-sm">
+                          {exchangeDetail?.buyerItem.price! === 0
+                            ? "Free"
+                            : formatPrice(exchangeDetail?.buyerItem.price!) +
+                              " VND"}
+                        </Text>
+                      </View>
+                    )}
+                  </>
+                )}
               </View>
             </View>
 
@@ -344,50 +435,86 @@ const ExchangeDetail: React.FC = () => {
               </Text>
 
               <View className="bg-white mt-2 rounded-lg p-4 flex-col justify-center h-fit">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-base text-gray-800">
-                    Their item price
-                  </Text>
-                  <Text className="text-base text-gray-800">
-                    {user?.id !== exchangeDetail?.sellerItem.owner.id
-                      ? formatPrice(exchangeDetail?.sellerItem.price!)
-                      : formatPrice(exchangeDetail?.buyerItem.price!)}
-                    VND
-                  </Text>
-                </View>
-                <View className="flex-row items-center justify-between mt-1">
-                  <Text className="text-base text-gray-800">
-                    Your item price
-                  </Text>
-                  <Text className="text-base text-gray-800">
-                    {user?.id === exchangeDetail?.buyerItem.owner.id
-                      ? formatPrice(exchangeDetail?.buyerItem.price!)
-                      : formatPrice(exchangeDetail?.sellerItem.price!)}
-                    VND
-                  </Text>
-                </View>
+                {user?.id === exchangeDetail?.sellerItem.owner.id ? (
+                  <>
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-base text-gray-800">
+                        Your item price
+                      </Text>
+                      <Text className="text-base text-gray-800">
+                        {exchangeDetail?.sellerItem.price! === 0
+                          ? "Free"
+                          : formatPrice(exchangeDetail?.sellerItem.price!) +
+                            " VND"}
+                      </Text>
+                    </View>
+                    {exchangeDetail?.buyerItem === null ? (
+                      ""
+                    ) : (
+                      <View className="flex-row items-center justify-between mt-1">
+                        <Text className="text-base text-gray-800">
+                          Their item price
+                        </Text>
+                        <Text className="text-base text-gray-800">
+                          {exchangeDetail?.buyerItem.price! === 0
+                            ? "Free"
+                            : formatPrice(exchangeDetail?.buyerItem.price!) +
+                              " VND"}
+                        </Text>
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {exchangeDetail?.buyerItem === null ? (
+                      ""
+                    ) : (
+                      <View className="flex-row items-center justify-between">
+                        <Text className="text-base text-gray-800">
+                          Your item price
+                        </Text>
+                        <Text className="text-base text-gray-800">
+                          {exchangeDetail?.buyerItem.price! === 0
+                            ? "Free"
+                            : formatPrice(exchangeDetail?.buyerItem.price!) +
+                              " VND"}
+                        </Text>
+                      </View>
+                    )}
+                    <View className="flex-row items-center justify-between mt-1">
+                      <Text className="text-base text-gray-800">
+                        Their item price
+                      </Text>
+                      <Text className="text-base text-gray-800">
+                        {exchangeDetail?.sellerItem.price! === 0
+                          ? "Free"
+                          : formatPrice(exchangeDetail?.sellerItem.price!) +
+                            " VND"}
+                      </Text>
+                    </View>
+                  </>
+                )}
+
                 <View className="border-[0.2px] border-gray-300 my-2"></View>
+
                 <View className="flex-row items-center justify-between">
                   <Text className="font-bold text-lg">
                     Estimated difference
                   </Text>
-                  <Text
-                    className={`font-bold text-lg ${
-                      statusDetail === StatusExchange.APPROVED
-                        ? "text-gray-800"
-                        : "text-[#00b0b9]"
-                    } `}
-                  >
-                    {formatPrice(exchangeDetail?.estimatePrice)}
-                    VND
+                  <Text className="font-bold text-lg text-[#00b0b9]">
+                    {exchangeDetail?.estimatePrice === 0
+                      ? "Free"
+                      : formatPrice(exchangeDetail?.estimatePrice) + " VND"}
                   </Text>
                 </View>
                 <View className="flex-row items-center justify-end">
-                  <Text className="text-sm text-gray-500">
-                    Paid by:{" "}
-                    {exchangeDetail?.paidBy.id === user?.id
-                      ? "You"
-                      : exchangeDetail?.paidBy.fullName}
+                  <Text className="text-sm text-right text-gray-500">
+                    {exchangeDetail?.estimatePrice === 0
+                      ? `This is a free item exchange${"\n"}so payment is not needed`
+                      : "Paid by: " +
+                        (exchangeDetail?.paidBy.id === user?.id
+                          ? "You"
+                          : exchangeDetail?.paidBy.fullName)}
                   </Text>
                 </View>
               </View>
@@ -422,8 +549,10 @@ const ExchangeDetail: React.FC = () => {
           Platform.OS === "ios" ? "pt-4 pb-7" : "py-3"
         } px-5 bg-white mt-auto rounded-t-xl flex-row items-center`}
       >
-        {exchangeDetail?.exchangeDate &&
-          new Date(exchangeDetail.exchangeDate) > new Date() && (
+        {(exchangeDetail?.exchangeDate &&
+          new Date(exchangeDetail.exchangeDate) > new Date()) ||
+          (exchangeDetail?.statusExchangeRequest ===
+            StatusExchange.CANCELLED && (
             <View className="flex-1 mr-2">
               <LoadingButton
                 title="Cancel exchange"
@@ -432,7 +561,7 @@ const ExchangeDetail: React.FC = () => {
                 textColor="text-[#00B0B9]"
               />
             </View>
-          )}
+          ))}
       </View>
 
       <ConfirmModal
