@@ -1,3 +1,4 @@
+import { TypeSubscriptionPlan } from "../../enums/TypeSubscriptionPlan";
 
 
 export interface SubscriptionResponse {
@@ -6,7 +7,7 @@ export interface SubscriptionResponse {
     description: string;
     price: number;
     imageUrl: string;
-    typeSubscriptionPlan: string;
+    typeSubscriptionPlan: TypeSubscriptionPlan;
     duration: number;
   }
   
