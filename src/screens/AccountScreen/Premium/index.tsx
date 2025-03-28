@@ -6,14 +6,21 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import LoadingButton from "../../../components/LoadingButton";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../redux/store";
 
 const Premium: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const {  accessToken } = useSelector((state: RootState) => state.auth);
 
-  const handleSubcribe = () => {
-    navigation.navigate("ExtendPremium");
+  const handleSubscribe = () => {
+    if (!accessToken) {
+      navigation.navigate("SignIn"); 
+      return;
+    }
+    navigation.navigate("ExtendPremium"); 
   };
-
+  
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
       <Header
@@ -97,7 +104,7 @@ const Premium: React.FC = () => {
 
         <LoadingButton
           title="Subscribe now"
-          onPress={handleSubcribe}
+          onPress={handleSubscribe}
           buttonClassName="p-4"
         />
       </View>

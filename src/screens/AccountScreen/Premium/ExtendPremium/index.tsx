@@ -1,19 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../../../components/Header";
 import LoadingButton from "../../../../components/LoadingButton";
+import SubscriptionService from "../../../../services/SubscriptionService";
+import { SubscriptionResponse } from "../../../../common/models/subscription";
 
 const ExtendPremium: React.FC = () => {
-  const handleSubcribe = () => {};
-  const [selectedExtension, setSelectedExtension] = useState<"1" | "2" | null>(
-    null
-  );
+  const [selectedExtension, setSelectedExtension] = useState<string | null>(null);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionResponse[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchSubscriptionPlans = async () => {
+      setLoading(true);
+      try {
+        const data = await SubscriptionService.getSubscription();
+  
+        if (Array.isArray(data)) {
+          setSubscriptionPlans(data);
+        } else {
+          console.error("Unexpected API response format:", data);
+          setSubscriptionPlans([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch subscription plans", error);
+        setSubscriptionPlans([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchSubscriptionPlans();
+  }, []);
+  
+  const handleSubscribe = () => {
+    if (!selectedExtension) return;
+    console.log("User selected subscription plan ID:", selectedExtension);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
       <Header
-        title="Extend subscription"
+        title="Extend Subscription"
         backgroundColor="bg-[#00B0B9]"
         backIconColor="white"
         textColor="text-white"
@@ -22,72 +51,33 @@ const ExtendPremium: React.FC = () => {
       />
 
       <View className="flex-1 bg-gray-100 px-4 py-6 flex-col">
-        <View className="bg-white rounded-lg p-4">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-xl font-semibold text-black">
-              Current Plan
-            </Text>
-            <Text
-              className={`items-center text-[13px] font-medium text-[#16A34A] bg-[rgba(22,163,74,0.2)] rounded-full px-5 py-2`}
-            >
-              Active
-            </Text>
+        {loading ? (
+          <Text className="text-center text-lg text-gray-500">Loading plans...</Text>
+        ) : (
+          <View className="my-4">
+            {subscriptionPlans.map((plan) => (
+              <TouchableOpacity
+                key={plan.id}
+                onPress={() => setSelectedExtension(plan.id.toString())}
+                className={`flex-row justify-between items-center p-5 mb-2 rounded-lg border-2 bg-white ${
+                  selectedExtension === plan.id.toString() ? "border-[#00b0b9]" : "border-gray-200"
+                }`}
+              >
+                <View>
+                  <Text className="text-base font-semibold text-gray-900">{plan.name}</Text>
+                  <Text className="text-sm text-gray-600">{plan.description}</Text>
+                </View>
+                <Text className="text-lg font-bold text-gray-900">{Number(plan.price).toLocaleString()}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
-
-          <View className="flex-row justify-between">
-            <Text className="text-base text-gray-500">Annual Premium</Text>
-            <Text className="text-base font-semibold text-gray-900 px-2">
-              $99/month
-            </Text>
-          </View>
-
-          <Text className="text-sm text-gray-400 mt-1">
-            Next billing date: March 15, 2025
-          </Text>
-        </View>
-
-        <View className="my-4">
-          {/* 1 Year Extension */}
-          <TouchableOpacity
-            onPress={() => setSelectedExtension("1")}
-            className={`flex-row justify-between items-center p-5 mb-2 rounded-lg border-2 bg-white ${
-              selectedExtension === "1" ? "border-[#00b0b9]" : "border-gray-200"
-            }`}
-          >
-            <View>
-              <Text className="text-base font-semibold text-gray-900">
-                1 Month Extension
-              </Text>
-              <Text className="text-sm text-gray-400">
-                Extend until March 15, 2026
-              </Text>
-            </View>
-            <Text className="text-lg font-bold text-gray-900">$89</Text>
-          </TouchableOpacity>
-
-          {/* 2 Years Extension */}
-          <TouchableOpacity
-            onPress={() => setSelectedExtension("2")}
-            className={`flex-row justify-between items-center p-5 rounded-lg border-2 bg-white ${
-              selectedExtension === "2" ? "border-[#00b0b9]" : "border-gray-200"
-            }`}
-          >
-            <View>
-              <Text className="text-base font-semibold text-gray-900">
-                2 Months Extension
-              </Text>
-              <Text className="text-sm text-gray-400">
-                Extend until March 15, 2027
-              </Text>
-            </View>
-            <Text className="text-lg font-bold text-gray-900">$169</Text>
-          </TouchableOpacity>
-        </View>
+        )}
 
         <LoadingButton
-          title="Extend now"
-          onPress={handleSubcribe}
+          title="Extend Now"
+          onPress={handleSubscribe}
           buttonClassName="p-4"
+          disable={!selectedExtension}
         />
       </View>
     </SafeAreaView>
