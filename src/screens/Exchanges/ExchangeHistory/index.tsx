@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, FlatList, ActivityIndicator, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TabHeader from "../../../components/TabHeader";
@@ -13,6 +13,7 @@ import {
   getExchangeCountsThunk,
 } from "../../../redux/thunk/exchangeThunk";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useFocusEffect } from "@react-navigation/native";
 
 const ExchangeHistory: React.FC = () => {
   const { loading, exchangeByStatus, counts } = useSelector(
@@ -53,15 +54,17 @@ const ExchangeHistory: React.FC = () => {
     },
   ];
 
-  useEffect(() => {
-    dispatch(
-      getAllExchangesByStatusOfCurrentUserThunk({
-        pageNo: 0,
-        statusExchangeRequest: selectedStatus,
-      })
-    );
-    dispatch(getExchangeCountsThunk());
-  }, [dispatch, selectedStatus]);
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(
+        getAllExchangesByStatusOfCurrentUserThunk({
+          pageNo: 0,
+          statusExchangeRequest: selectedStatus,
+        })
+      );
+      dispatch(getExchangeCountsThunk());
+    }, [dispatch, selectedStatus])
+  );
 
   const handleLoadMore = () => {
     if (!loading && !last) {
@@ -116,11 +119,13 @@ const ExchangeHistory: React.FC = () => {
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             loading && pageNo !== 0 ? (
-              <ActivityIndicator
-                size="large"
-                color="#00b0b9"
-                className="mb-5"
-              />
+              <View className="flex-1 justify-center items-center">
+                <ActivityIndicator
+                  size="large"
+                  color="#00b0b9"
+                  className="mb-5"
+                />
+              </View>
             ) : null
           }
         />

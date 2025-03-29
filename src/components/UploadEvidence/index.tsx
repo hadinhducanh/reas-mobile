@@ -176,7 +176,7 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
                               : "text-gray-500 active:text-gray-600"
                           }`}
                         >
-                          Their evidence
+                          Your evidence
                         </Text>
                       </Pressable>
                       {exchangeDetail.exchangeHistory.buyerConfirmation ? (
@@ -227,7 +227,7 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
                               : "text-gray-500 active:text-gray-600"
                           }`}
                         >
-                          Your evidence
+                          Their evidence
                         </Text>
                       </Pressable>
                       {exchangeDetail.exchangeHistory.sellerConfirmation ? (

@@ -22,6 +22,7 @@ interface ImagePickerProps {
   transferReceiptImage?: string | null;
   setTransferReceiptImage?: React.Dispatch<React.SetStateAction<string>>;
   isUploadEvidence: boolean;
+  isFeedback?: boolean;
 }
 
 const MAX_IMAGES = 4;
@@ -38,6 +39,7 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
     transferReceiptImage = null,
     setTransferReceiptImage = () => {},
     isUploadEvidence,
+    isFeedback,
   } = props;
 
   const parseImages = useCallback((imageStr: string | null): string[] => {
@@ -282,7 +284,7 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
     <>
       {isUploadEvidence ? (
         // SINGLE-IMAGE UI (2 ô)
-        <View className="flex-row mt-2">
+        <View className="flex-row justify-center mt-2">
           <TouchableOpacity
             onPress={() => showPickerOptions(setReceivedItemImage)}
             className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2"
@@ -296,7 +298,9 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
               <>
                 <Icon name="photo-camera" size={30} color="#00b0b9" />
                 <Text className="text-gray-500 text-center text-xs mt-2 w-32">
-                  Please add your received item picture
+                  {isFeedback
+                    ? "(Optional)"
+                    : " Please add your received item picture"}
                 </Text>
               </>
             )}
@@ -315,7 +319,9 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
               <>
                 <Icon name="photo-camera" size={30} color="#00b0b9" />
                 <Text className="text-gray-500 text-center text-xs mt-2 w-32">
-                  Please add your transfer receipt (optional)
+                  {isFeedback
+                    ? "(Optional)"
+                    : "Please add your transfer receipt (optional)"}
                 </Text>
               </>
             )}

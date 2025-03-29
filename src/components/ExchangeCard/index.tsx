@@ -8,6 +8,7 @@ import { RootState } from "../../redux/store";
 import Icon from "react-native-vector-icons/Ionicons";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import LoadingButton from "../LoadingButton";
+import FeebackModal from "../FeedbackModal";
 
 interface ExchangeCardProps {
   status: StatusExchange;
@@ -70,6 +71,7 @@ const formatPrice = (price: number | undefined): string => {
 const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { user } = useSelector((state: RootState) => state.auth);
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
 
   const handlePress = () => {
     if (status === StatusExchange.PENDING) {
@@ -115,123 +117,149 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
   };
 
   return (
-    <Pressable
-      className="bg-white mx-5 mt-4 px-5 py-4 rounded-xl active:bg-gray-100"
-      onPress={handlePress}
-    >
-      <View className="flex-row justify-between items-center">
-        <Text className="items-center text-[14px] font-normal text-[#6b7280]">
-          {formatExchangeDate(exchange.creationDate, true)}
-        </Text>
-        <Text
-          className={`items-center text-[13px] font-medium ${textColor} ${backgroundColor} rounded-full px-5 py-2`}
-        >
-          {getStatusExchangeLabel(status)}
-        </Text>
-      </View>
-
-      <View className="flex-row items-center my-1">
-        <View className="items-center">
-          <Icon name="person-circle-outline" size={60} color="gray" />
-        </View>
-
-        <View>
-          <Text className="justify-start items-center text-left text-[16px] font-medium text-black">
-            {exchange.buyerItem === null
-              ? exchange.paidBy.fullName
-              : exchange.buyerItem.owner.fullName}
+    <>
+      <Pressable
+        className="bg-white mx-5 mt-4 px-5 py-4 rounded-xl active:bg-gray-100"
+        onPress={handlePress}
+      >
+        <View className="flex-row justify-between items-center">
+          <Text className="items-center text-[14px] font-normal text-[#6b7280]">
+            {formatExchangeDate(exchange.creationDate, true)}
           </Text>
-          <Text className="justify-start items-center text-left text-[14px] font-normal text-[#6b7280]">
-            {exchange.buyerItem === null
-              ? "Item free"
-              : exchange.buyerItem.itemName}
+          <Text
+            className={`items-center text-[13px] font-medium ${textColor} ${backgroundColor} rounded-full px-5 py-2`}
+          >
+            {getStatusExchangeLabel(status)}
           </Text>
         </View>
-      </View>
-      <View className="my-2 border-t-[1px] border-b-[1px] py-2 border-gray-200">
-        <Text className="text-[12px] font-normal">
-          <Text className="text-[#6b7280]">Exchange ID: </Text>
-          <Text className="font-bold text-[#6b7280]">#EX{exchange.id}</Text>
-        </Text>
-        <Text className="text-[12px] font-normal my-4">
-          <Text className="text-[#6b7280]">Date & Time: </Text>
-          <Text className="font-bold text-[#6b7280]">
-            {formatExchangeDate(exchange.exchangeDate, false)}
-          </Text>
-        </Text>
-        <Text className="text-[12px] font-normal text-left" numberOfLines={1}>
-          <Text className="text-[#6b7280]">Location: </Text>
-          <Text className="font-bold text-[#6b7280] flex-1">
-            {exchange.exchangeLocation.split("//")[1]}
-          </Text>
-        </Text>
-      </View>
 
-      <View className="mt-2">
-        <Text className="text-[14px] font-bold text-right">
-          <Text className="text-black">Estimated difference: </Text>
-          <Text className="text-[#00b0b9]">
-            {exchange.sellerItem.price === 0
-              ? "Free"
-              : formatPrice(exchange.estimatePrice) + " VND"}
-          </Text>
-        </Text>
-        <Text className="my-2 text-right items-center text-[12px] font-normal text-[#738aa0]">
-          {exchange?.estimatePrice === 0
-            ? `This is a free item exchange${"\n"}so payment is not needed`
-            : "Paid by: " +
-              (exchange?.paidBy.id === user?.id
-                ? "You"
-                : exchange?.paidBy.fullName)}
-        </Text>
-        <View
-          className={`flex-row items-center ${
-            status === StatusExchange.APPROVED
-              ? "justify-between"
-              : " justify-end"
-          }`}
-        >
-          {status === StatusExchange.APPROVED && (
-            <View>
-              <Text className="text-[#00b0b9]">
-                {getStatusExchangeLabel(
-                  exchange.exchangeHistory.statusExchangeHistory
-                )}
-              </Text>
-            </View>
-          )}
+        <View className="flex-row items-center my-1">
+          <View className="items-center">
+            <Icon name="person-circle-outline" size={60} color="gray" />
+          </View>
 
           <View>
-            {status === StatusExchange.SUCCESSFUL && (
-              <View className="mr-2">
-                <LoadingButton
-                  title="Feedback"
-                  onPress={() => navigation.navigate("FeedbackItem")}
-                  buttonClassName="py-4 px-8 bg-white border-2 border-[#00b0b9]"
-                  textColor="text-[#00b0b9]"
-                  iconColor="#00b0b9"
-                  showIcon={true}
-                  iconName="pencil-outline"
-                  iconSize={18}
-                />
+            <Text className="justify-start items-center text-left text-[16px] font-medium text-black">
+              {exchange.buyerItem === null
+                ? exchange.paidBy.fullName
+                : exchange.buyerItem.owner.fullName}
+            </Text>
+            <Text className="justify-start items-center text-left text-[14px] font-normal text-[#6b7280]">
+              {exchange.buyerItem === null
+                ? "Item free"
+                : exchange.buyerItem.itemName}
+            </Text>
+          </View>
+        </View>
+        <View className="my-2 border-t-[1px] border-b-[1px] py-2 border-gray-200">
+          <Text className="text-[12px] font-normal">
+            <Text className="text-[#6b7280]">Exchange ID: </Text>
+            <Text className="font-bold text-[#6b7280]">#EX{exchange.id}</Text>
+          </Text>
+          <Text className="text-[12px] font-normal my-4">
+            <Text className="text-[#6b7280]">Date & Time: </Text>
+            <Text className="font-bold text-[#6b7280]">
+              {formatExchangeDate(exchange.exchangeDate, false)}
+            </Text>
+          </Text>
+          <Text className="text-[12px] font-normal text-left" numberOfLines={1}>
+            <Text className="text-[#6b7280]">Location: </Text>
+            <Text className="font-bold text-[#6b7280] flex-1">
+              {exchange.exchangeLocation.split("//")[1]}
+            </Text>
+          </Text>
+        </View>
+
+        <View className="mt-2">
+          <Text className="text-[14px] font-bold text-right">
+            <Text className="text-black">Estimated difference: </Text>
+            <Text className="text-[#00b0b9]">
+              {exchange.sellerItem.price === 0
+                ? "Free"
+                : formatPrice(exchange.estimatePrice) + " VND"}
+            </Text>
+          </Text>
+          <Text className="my-2 text-right items-center text-[12px] font-normal text-[#738aa0]">
+            {exchange?.estimatePrice === 0
+              ? `This is a free item exchange${"\n"}so payment is not needed`
+              : "Paid by: " +
+                (exchange?.paidBy.id === user?.id
+                  ? "You"
+                  : exchange?.paidBy.fullName)}
+          </Text>
+          <View
+            className={`flex-row items-center ${
+              status === StatusExchange.APPROVED
+                ? "justify-between"
+                : " justify-end"
+            }`}
+          >
+            {status === StatusExchange.APPROVED && (
+              <View>
+                <Text className="text-[#00b0b9]">
+                  {getStatusExchangeLabel(
+                    exchange.exchangeHistory.statusExchangeHistory
+                  )}
+                </Text>
               </View>
             )}
 
-            <View>
-              <LoadingButton
-                title="Chat"
-                onPress={() => navigation.navigate("ChatHistory")}
-                buttonClassName="py-4 px-8 border-2 border-transparent"
-                iconColor="#fff"
-                showIcon={true}
-                iconName="chatbox-ellipses-outline"
-                iconSize={18}
-              />
+            <View className="flex-row">
+              {((status === StatusExchange.SUCCESSFUL &&
+                user?.id ===
+                  (exchange.buyerItem === null
+                    ? exchange.paidBy.id
+                    : exchange.buyerItem.owner.id)) ||
+                exchange.feedbackId !== null) && (
+                <View className="mr-2">
+                  <LoadingButton
+                    title={
+                      exchange.feedbackId !== null
+                        ? "View feedback"
+                        : "Feedback"
+                    }
+                    onPress={
+                      exchange.feedbackId !== null
+                        ? () => setFeedbackVisible(true)
+                        : () =>
+                            navigation.navigate("FeedbackItem", {
+                              exchangeId: exchange.id,
+                            })
+                    }
+                    buttonClassName="py-4 px-8 bg-white border-2 border-[#00b0b9]"
+                    textColor="text-[#00b0b9]"
+                    iconColor="#00b0b9"
+                    showIcon={true}
+                    iconName="pencil-outline"
+                    iconSize={18}
+                  />
+                </View>
+              )}
+              <View>
+                <LoadingButton
+                  title="Chat"
+                  onPress={() => navigation.navigate("ChatHistory")}
+                  buttonClassName="py-4 px-8 border-2 border-transparent"
+                  iconColor="#fff"
+                  showIcon={true}
+                  iconName="chatbox-ellipses-outline"
+                  iconSize={18}
+                />
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </Pressable>
+      </Pressable>
+      {exchange.feedbackId !== null && (
+        <FeebackModal
+          key={exchange.feedbackId}
+          visible={feedbackVisible}
+          onCancel={() => setFeedbackVisible(false)}
+          feedbackId={exchange.feedbackId}
+          exchangeId={exchange.id}
+        />
+      )}
+    </>
   );
 };
 

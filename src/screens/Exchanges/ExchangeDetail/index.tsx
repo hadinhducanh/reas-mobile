@@ -102,7 +102,6 @@ const ExchangeDetail: React.FC = () => {
 
   useEffect(() => {
     dispatch(getExchangeDetailThunk(exchangeId));
-    console.log(exchangeDetail?.exchangeHistory);
   }, [dispatch, exchangeId]);
 
   const formatPrice = (price: number | undefined): string => {

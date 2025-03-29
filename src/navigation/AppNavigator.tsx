@@ -99,7 +99,7 @@ export type RootStackParamList = {
   DifferentItem: undefined;
   ConfirmExchange: undefined;
   AccpectRejectExchange: { exchangeId: number };
-  FeedbackItem: undefined;
+  FeedbackItem: { exchangeId: number };
   SearchResult: undefined;
   OwnerItem: undefined;
   OwnerFeedback: undefined;

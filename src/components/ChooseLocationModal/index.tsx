@@ -12,7 +12,6 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { UserLocationDto } from "../../common/models/auth";
 import LocationService from "../../services/LocationService";
 import { PlaceDetail } from "../../common/models/location";
-import LocationModal from "../LocationModal";
 import { useExchangeItem } from "../../context/ExchangeContext";
 
 interface ChooseLocationModalProps {
