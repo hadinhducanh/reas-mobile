@@ -17,8 +17,6 @@ export interface UploadItemRequest {
   imageUrl: string;
   methodExchanges: MethodExchange[];
   isMoneyAccepted: boolean;
-  typeExchange: TypeExchange;
-  typeItem: TypeItem;
   termsAndConditionsExchange: string;
   categoryId: number;
   brandId: number;
@@ -70,7 +68,8 @@ export interface ExtendedUploadItem extends UploadItemRequest {
   methodExchangeName: string;
   categoryName: string;
   brandName: string;
-
+  typeExchange: TypeExchange;
+  typeItem: TypeItem;
   conditionDesiredItemName: string;
   categoryDesiredItemName: string;
   brandDesiredItemName: string;

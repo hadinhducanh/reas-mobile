@@ -4,6 +4,7 @@ import {
   NavigationContainer,
   NavigatorScreenParams,
   useNavigation,
+  useNavigationState,
 } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -35,8 +36,8 @@ import Notifications from "../screens/Notification";
 import ItemExpire from "../screens/ItemManagement/ItemExpire";
 import Premium from "../screens/AccountScreen/Premium";
 import About from "../screens/AccountScreen/About";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../redux/store";
 import UploadItemSuccess from "../screens/PostItemScreen/UploadItemSuccess";
 import ExtendPremium from "../screens/AccountScreen/Premium/ExtendPremium";
 import Statistics from "../screens/AccountScreen/Statistics";
@@ -51,6 +52,7 @@ import ItemManagement from "../screens/ItemManagement";
 import UploadItemFlow from "./UploadItemFlow";
 import UploadItem from "../screens/PostItemScreen";
 import { StatusExchange } from "../common/enums/StatusExchange";
+import { resetItemUpload } from "../redux/slices/itemSlice";
 
 export type ItemType = {
   id: number;
@@ -143,6 +145,7 @@ const TabArr = [
 const Tab = createBottomTabNavigator();
 
 function BottomTabs() {
+  const dispatch = useDispatch<AppDispatch>();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { accessToken } = useSelector((state: RootState) => state.auth);
@@ -157,6 +160,7 @@ function BottomTabs() {
 
   const handleConfirm = async () => {
     setConfirmVisible(false);
+    dispatch(resetItemUpload());
     setUploadItem(defaultUploadItem);
 
     if (pendingTabName) {

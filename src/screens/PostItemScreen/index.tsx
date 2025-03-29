@@ -9,7 +9,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useNavigation, useNavigationState } from "@react-navigation/native";
+import {
+  useFocusEffect,
+  useNavigation,
+  useNavigationState,
+} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -60,6 +64,14 @@ export default function UploadItem() {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
+  useEffect(() => {
+    setPrice(uploadItem.price.toString());
+    setItemName(uploadItem.itemName);
+    setDescription(uploadItem.description);
+    setTermCondition(uploadItem.termsAndConditionsExchange);
+    setImages(uploadItem.imageUrl);
+  }, [uploadItem.itemName]);
+
   const handleFieldChange = useCallback(
     (
       field:
@@ -78,7 +90,10 @@ export default function UploadItem() {
         else if (field === "description") setDescription(value);
         else if (field === "termsAndConditionsExchange")
           setTermCondition(value);
-        setUploadItem((prev) => ({ ...prev, [field]: value }));
+        setUploadItem((prev) => ({
+          ...prev,
+          [field]: value.trim().replace(/\n/g, "\\n"),
+        }));
       }
     },
     [setUploadItem]
@@ -106,8 +121,8 @@ export default function UploadItem() {
     const priceItem = isCheckedFree
       ? 0
       : parseInt(price.replace(/,/g, ""), 10) || 0;
-    const formattedDescription = description.replace(/\n/g, "\n");
-    const formattedTermAndCondition = termCondition.replace(/\n/g, "\n");
+    // const formattedDescription = description.replace(/\n/g, "\n");
+    // const formattedTermAndCondition = termCondition.replace(/\n/g, "\n");
 
     if (
       !images ||
@@ -144,15 +159,15 @@ export default function UploadItem() {
 
       const uploadItemRequest = {
         itemName: uploadItem.itemName.trim(),
-        description: formattedDescription.trim(),
+        description: uploadItem.description,
         price: uploadItem.price,
         conditionItem: uploadItem.conditionItem,
         imageUrl: processedImages,
         methodExchanges: uploadItem.methodExchanges,
         isMoneyAccepted: uploadItem.isMoneyAccepted,
-        typeExchange: uploadItem.typeExchange,
-        typeItem: uploadItem.typeItem,
-        termsAndConditionsExchange: formattedTermAndCondition.trim(),
+        // typeExchange: uploadItem.typeExchange,
+        // typeItem: uploadItem.typeItem,
+        termsAndConditionsExchange: uploadItem.termsAndConditionsExchange,
         categoryId: uploadItem.categoryId,
         brandId: uploadItem.brandId,
         desiredItem:
@@ -160,6 +175,7 @@ export default function UploadItem() {
             ? uploadItem.desiredItem
             : null,
       };
+      // console.log(uploadItemRequest);
 
       await dispatch(uploadItemThunk(uploadItemRequest));
     }
@@ -167,6 +183,7 @@ export default function UploadItem() {
 
   useEffect(() => {
     if (itemUpload !== null) {
+      setUploadItem(defaultUploadItem);
       dispatch(resetItemUpload());
       navigation.navigate("UploadItemSuccess");
     }
@@ -218,7 +235,8 @@ export default function UploadItem() {
       ) : (
         <ScrollView className="mx-5" showsVerticalScrollIndicator={false}>
           <KeyboardAwareScrollView
-            extraScrollHeight={10}
+            contentContainerStyle={{ flexGrow: 1 }}
+            extraScrollHeight={20}
             enableOnAndroid={true}
             keyboardShouldPersistTaps="handled"
           >
@@ -273,7 +291,7 @@ export default function UploadItem() {
                 <Text className="text-black text-base">Price</Text>
                 <View className="flex-row justify-between items-center mt-1">
                   <TextInput
-                    className="flex-1 text-lg font-normal text-black"
+                    className="flex-1 text-lg font-normal text-black h-10"
                     placeholder="0"
                     placeholderTextColor="#d1d5db"
                     value={formatPrice(price)}
@@ -289,7 +307,7 @@ export default function UploadItem() {
               <Text className="text-black text-base">Name</Text>
               <View className="mt-1">
                 <TextInput
-                  className="flex-1 text-lg font-normal text-black"
+                  className="flex-1 text-lg font-normal text-black h-10"
                   placeholder="Aaaaa"
                   placeholderTextColor="#d1d5db"
                   value={itemName}

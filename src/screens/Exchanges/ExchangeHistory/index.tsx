@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  FlatList,
-  ActivityIndicator,
-  Text,
-  ScrollView,
-} from "react-native";
+import { View, FlatList, ActivityIndicator, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TabHeader from "../../../components/TabHeader";
 import ExchangeCard from "../../../components/ExchangeCard";
@@ -92,18 +86,6 @@ const ExchangeHistory: React.FC = () => {
     />
   );
 
-  const isCloseToBottom = ({
-    layoutMeasurement,
-    contentOffset,
-    contentSize,
-  }: any) => {
-    const paddingToBottom = 80;
-    return (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - paddingToBottom
-    );
-  };
-
   return (
     <SafeAreaView className="flex-1 bg-[#f6f9f9]">
       <View>
@@ -120,44 +102,29 @@ const ExchangeHistory: React.FC = () => {
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#00b0b9" />
         </View>
-      ) : exchangeByStatus.content.length === 0 ? (
+      ) : content.length === 0 ? (
         <View className="flex-1 justify-center items-center">
           <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
           <Text className="text-gray-500">No exchange</Text>
         </View>
       ) : (
-        <>
-          <ScrollView
-            className="bg-gray-100"
-            showsVerticalScrollIndicator={false}
-            onScroll={({ nativeEvent }) => {
-              if (isCloseToBottom(nativeEvent)) {
-                handleLoadMore();
-              }
-            }}
-            scrollEventThrottle={100}
-          >
-            {exchangeByStatus.content.map((exchange) => (
-              <ExchangeCard
-                key={exchange.id}
-                status={
-                  exchange.statusExchangeRequest === StatusExchange.APPROVED &&
-                  exchange.exchangeHistory.statusExchangeHistory ===
-                    StatusExchange.SUCCESSFUL
-                    ? StatusExchange.SUCCESSFUL
-                    : exchange.statusExchangeRequest
-                }
-                exchange={exchange}
+        <FlatList
+          data={content}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderExchangeCard}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loading && pageNo !== 0 ? (
+              <ActivityIndicator
+                size="large"
+                color="#00b0b9"
+                className="mb-5"
               />
-            ))}
-          </ScrollView>
-          {loading && pageNo !== 0 && (
-            <ActivityIndicator size="large" color="#00b0b9" className="mb-5" />
-          )}
-        </>
+            ) : null
+          }
+        />
       )}
-
-      {}
     </SafeAreaView>
   );
 };
