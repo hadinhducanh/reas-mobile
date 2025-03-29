@@ -121,11 +121,11 @@ const CreateExchange: React.FC = () => {
 
   const handleProposeExchange = () => {
     const isRecommended = itemSuggested.content.some(
-      (recItem) => recItem.id === selectedItem?.id
+      (recItem) => recItem.id === exchangeItem.selectedItem?.id
     );
 
     if (
-      // (!itemDetail?.moneyAccepted && !selectedItem) ||
+      (!itemDetail?.moneyAccepted && !exchangeItem.selectedItem) ||
       !exchangeItem.methodExchangeName ||
       !exchangeItem.exchangeLocation ||
       !selectedDateTime

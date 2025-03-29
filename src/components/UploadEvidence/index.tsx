@@ -16,9 +16,7 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [titleModal, setTitleModal] = useState<string>("");
   const [isSeller, setIsSeller] = useState<boolean>(false);
-  const { exchangeDetail, loading } = useSelector(
-    (state: RootState) => state.exchange
-  );
+  const { exchangeDetail } = useSelector((state: RootState) => state.exchange);
   const { user } = useSelector((state: RootState) => state.auth);
 
   const handlUploadEvidenceModal = (
@@ -110,7 +108,9 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
                         />
                       </View>
                       <Text className="justify-start items-center text-left text-lg font-medium text-black">
-                        {exchangeDetail.buyerItem.owner.fullName}
+                        {exchangeDetail.buyerItem === null
+                          ? exchangeDetail.paidBy.fullName
+                          : exchangeDetail.buyerItem.owner.fullName}
                       </Text>
                     </View>
                     <View className="flex-row items-center ">
@@ -176,7 +176,7 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
                               : "text-gray-500 active:text-gray-600"
                           }`}
                         >
-                          Their evidence
+                          Your evidence
                         </Text>
                       </Pressable>
                       {exchangeDetail.exchangeHistory.buyerConfirmation ? (
@@ -227,7 +227,7 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
                               : "text-gray-500 active:text-gray-600"
                           }`}
                         >
-                          Your evidence
+                          Their evidence
                         </Text>
                       </Pressable>
                       {exchangeDetail.exchangeHistory.sellerConfirmation ? (

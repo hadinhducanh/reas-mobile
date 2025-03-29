@@ -7,6 +7,7 @@ import exchangeReducer from "./slices/exchangeSlice";
 import chatReducer from "./slices/chatSlice";
 import locationReducer from "./slices/locationSlice";
 import subscriptionReducer from "./slices/subscriptionSlice";
+import feebackReducer from "./slices/feedbackSlice";
 
 const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ const store = configureStore({
     chat: chatReducer,
     location: locationReducer,
     subscription: subscriptionReducer,
+    feeback: feebackReducer,
   },
 });
 

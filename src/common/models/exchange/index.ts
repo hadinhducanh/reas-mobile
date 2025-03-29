@@ -52,6 +52,7 @@ export interface ExchangeResponse {
   additionalNotes: string;
   creationDate: string;
   exchangeHistory: ExchangeHistoryResponse;
+  feedbackId: number | null;
 }
 
 export interface EvidenceExchangeRequest {

@@ -1,11 +1,11 @@
 const LOGO =
   "https://res.cloudinary.com/dpysbryyk/image/upload/v1739892939/REAS/Logo/Logo.png";
-const API_BASE_URL = "http://192.168.1.8:8080/api/v1";
-const API_BASE_URL_LOG_OUT = "http://192.168.1.8:8080";
+const API_BASE_URL = "http://192.168.1.11:8080/api/v1";
+const API_BASE_URL_LOG_OUT = "http://192.168.1.11:8080";
 
 const GOONG_MAP_KEY = "grEVvU6DjdqfSNkKKEM2G2lpQtcnpCDDa3zmI8jL";
 const GOONG_API_KEY = "WnK4VtdhzZPf6k4wpi6GYn9A35UUr311iZ94fEB5";
-const WEB_SOCKET_ENDPOINT = "http://192.168.1.8:8080/ws";
+const WEB_SOCKET_ENDPOINT = "http://192.168.1.11:8080/ws";
 
 const COOLING_TYPE_IMAGE =
   "https://res.cloudinary.com/dpysbryyk/image/upload/v1742137599/REAS/ItemType/Cooling.png";

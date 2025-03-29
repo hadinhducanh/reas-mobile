@@ -132,29 +132,45 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
                     />
                   ) : (
                     <>
-                      <View className="flex-row mt-2">
-                        <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
-                          <Image
-                            source={{
-                              uri: exchangeDetail?.exchangeHistory?.sellerImageUrl.split(
-                                ", "
-                              )[0],
-                            }}
-                            className="w-full h-full rounded-lg"
-                          />
+                      {exchangeDetail?.exchangeHistory.sellerImageUrl.split(
+                        ", "
+                      ).length === 1 ? (
+                        <View className="flex-row mt-2 justify-center">
+                          <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
+                            <Image
+                              source={{
+                                uri: exchangeDetail?.exchangeHistory?.sellerImageUrl.split(
+                                  ", "
+                                )[0],
+                              }}
+                              className="w-full h-full rounded-lg"
+                            />
+                          </View>
                         </View>
-
-                        <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
-                          <Image
-                            source={{
-                              uri: exchangeDetail?.exchangeHistory?.sellerImageUrl.split(
-                                ", "
-                              )[1],
-                            }}
-                            className="w-full h-full rounded-lg"
-                          />
+                      ) : (
+                        <View className="flex-row justify-center mt-2">
+                          <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
+                            <Image
+                              source={{
+                                uri: exchangeDetail?.exchangeHistory?.sellerImageUrl.split(
+                                  ", "
+                                )[0],
+                              }}
+                              className="w-full h-full rounded-lg"
+                            />
+                          </View>
+                          <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
+                            <Image
+                              source={{
+                                uri: exchangeDetail?.exchangeHistory?.sellerImageUrl.split(
+                                  ", "
+                                )[1],
+                              }}
+                              className="w-full h-full rounded-lg"
+                            />
+                          </View>
                         </View>
-                      </View>
+                      )}
                     </>
                   )}
 
@@ -238,29 +254,44 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
                     />
                   ) : (
                     <>
-                      <View className="flex-row mt-2">
-                        <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
-                          <Image
-                            source={{
-                              uri: exchangeDetail?.exchangeHistory?.buyerImageUrl.split(
-                                ", "
-                              )[0],
-                            }}
-                            className="w-full h-full rounded-lg"
-                          />
+                      {exchangeDetail?.exchangeHistory.buyerImageUrl.split(", ")
+                        .length === 1 ? (
+                        <View className="flex-row mt-2 justify-center">
+                          <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
+                            <Image
+                              source={{
+                                uri: exchangeDetail?.exchangeHistory?.buyerImageUrl.split(
+                                  ", "
+                                )[0],
+                              }}
+                              className="w-full h-full rounded-lg"
+                            />
+                          </View>
                         </View>
-
-                        <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
-                          <Image
-                            source={{
-                              uri: exchangeDetail?.exchangeHistory?.buyerImageUrl.split(
-                                ", "
-                              )[1],
-                            }}
-                            className="w-full h-full rounded-lg"
-                          />
+                      ) : (
+                        <View className="flex-row mt-2 justify-center">
+                          <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
+                            <Image
+                              source={{
+                                uri: exchangeDetail?.exchangeHistory?.buyerImageUrl.split(
+                                  ", "
+                                )[0],
+                              }}
+                              className="w-full h-full rounded-lg"
+                            />
+                          </View>
+                          <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
+                            <Image
+                              source={{
+                                uri: exchangeDetail?.exchangeHistory?.buyerImageUrl.split(
+                                  ", "
+                                )[1],
+                              }}
+                              className="w-full h-full rounded-lg"
+                            />
+                          </View>
                         </View>
-                      </View>
+                      )}
                     </>
                   )}
 

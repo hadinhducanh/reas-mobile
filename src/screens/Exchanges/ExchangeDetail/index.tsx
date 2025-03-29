@@ -429,7 +429,7 @@ const ExchangeDetail: React.FC = () => {
               </View>
             )}
 
-            <View className="mt-8">
+            <View className="my-8">
               <Text className="font-bold text-lg text-gray-500">
                 Price of item
               </Text>
@@ -521,7 +521,7 @@ const ExchangeDetail: React.FC = () => {
             </View>
 
             {exchangeDetail?.finalPrice !== exchangeDetail?.estimatePrice && (
-              <View className="my-8">
+              <View className="mb-8">
                 <View className="flex-row justify-between">
                   <Text className="font-bold text-lg text-gray-500">
                     Negotiated price
@@ -539,7 +539,9 @@ const ExchangeDetail: React.FC = () => {
               </View>
             )}
 
-            <UploadEvidence status={statusDetail} />
+            {exchangeDetail?.exchangeHistory !== null && (
+              <UploadEvidence status={statusDetail} />
+            )}
           </ScrollView>
         )}
       </SafeAreaView>
@@ -549,10 +551,9 @@ const ExchangeDetail: React.FC = () => {
           Platform.OS === "ios" ? "pt-4 pb-7" : "py-3"
         } px-5 bg-white mt-auto rounded-t-xl flex-row items-center`}
       >
-        {(exchangeDetail?.exchangeDate &&
-          new Date(exchangeDetail.exchangeDate) > new Date()) ||
-          (exchangeDetail?.statusExchangeRequest ===
-            StatusExchange.CANCELLED && (
+        {exchangeDetail?.exchangeDate &&
+          new Date(exchangeDetail.exchangeDate) > new Date() &&
+          exchangeDetail?.statusExchangeRequest === StatusExchange.APPROVED && (
             <View className="flex-1 mr-2">
               <LoadingButton
                 title="Cancel exchange"
@@ -561,7 +562,7 @@ const ExchangeDetail: React.FC = () => {
                 textColor="text-[#00B0B9]"
               />
             </View>
-          ))}
+          )}
       </View>
 
       <ConfirmModal
