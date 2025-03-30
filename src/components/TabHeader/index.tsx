@@ -4,14 +4,14 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { StatusExchange } from "../../common/enums/StatusExchange";
 
 interface Tab {
-  label: StatusExchange;
+  label: StatusExchange | string;
   count: number;
 }
 
 interface TabHeaderProps {
   tabs: Tab[];
   selectedTab: string;
-  onSelectTab: (label: StatusExchange) => void;
+  onSelectTab: (label: StatusExchange | string) => void;
   owner?: boolean;
   ownerFeedback?: boolean;
 }
@@ -23,7 +23,7 @@ const TabHeader: FC<TabHeaderProps> = ({
   owner = false,
   ownerFeedback = false,
 }) => {
-  const isSelected = (label: StatusExchange) => selectedTab === label;
+  const isSelected = (label: StatusExchange | string) => selectedTab === label;
 
   if (ownerFeedback) {
     return (

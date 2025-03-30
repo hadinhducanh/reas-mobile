@@ -5,6 +5,7 @@ import {
 } from "../../common/models/feedback";
 import { RootState } from "../store";
 import FeedbackService from "../../services/FeedbackService";
+import { ResponseEntityPagination } from "../../common/models/pagination";
 
 export const createFeedbackThunk = createAsyncThunk<
   FeedbackResponse,
@@ -67,6 +68,20 @@ export const viewFeedbackDetailThunk = createAsyncThunk<
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
       error.response.data || "Get feedback detail failed"
+    );
+  }
+});
+
+export const getAllFeedbackOfUserThunk = createAsyncThunk<
+  ResponseEntityPagination<FeedbackResponse>,
+  { pageNo: number; userId: number }
+>("feedback/getAllFeedbackOfUser", async ({ pageNo, userId }, thunkAPI) => {
+  try {
+    const data = await FeedbackService.getAllFeedbackOfUser(pageNo, userId);
+    return data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Get all feedback of user failed"
     );
   }
 });

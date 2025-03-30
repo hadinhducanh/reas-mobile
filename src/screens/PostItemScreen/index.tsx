@@ -33,6 +33,7 @@ import Toggle from "../../components/Toggle";
 import ConfirmModal from "../../components/DeleteConfirmModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { uploadToCloudinary } from "../../utils/CloudinaryImageUploader";
+import { ConditionItem } from "../../common/enums/ConditionItem";
 
 export default function UploadItem() {
   const navigation =
@@ -67,9 +68,13 @@ export default function UploadItem() {
   useEffect(() => {
     setPrice(uploadItem.price.toString());
     setItemName(uploadItem.itemName);
-    setDescription(uploadItem.description);
-    setTermCondition(uploadItem.termsAndConditionsExchange);
+    setDescription(uploadItem.description.replace(/\\n/g, "\n"));
+    setTermCondition(
+      uploadItem.termsAndConditionsExchange.replace(/\\n/g, "\n")
+    );
     setImages(uploadItem.imageUrl);
+    setIsCheckedFree(uploadItem.isCheckedFree);
+    setIsMoneyAccepted(uploadItem.isMoneyAccepted);
   }, [uploadItem.itemName]);
 
   const handleFieldChange = useCallback(
@@ -121,8 +126,6 @@ export default function UploadItem() {
     const priceItem = isCheckedFree
       ? 0
       : parseInt(price.replace(/,/g, ""), 10) || 0;
-    // const formattedDescription = description.replace(/\n/g, "\n");
-    // const formattedTermAndCondition = termCondition.replace(/\n/g, "\n");
 
     if (
       !images ||
@@ -165,21 +168,17 @@ export default function UploadItem() {
         imageUrl: processedImages,
         methodExchanges: uploadItem.methodExchanges,
         isMoneyAccepted: uploadItem.isMoneyAccepted,
-        // typeExchange: uploadItem.typeExchange,
-        // typeItem: uploadItem.typeItem,
         termsAndConditionsExchange: uploadItem.termsAndConditionsExchange,
         categoryId: uploadItem.categoryId,
         brandId: uploadItem.brandId,
-        desiredItem:
-          uploadItem.desiredItem?.categoryId !== 0
-            ? uploadItem.desiredItem
-            : null,
+        desiredItem: uploadItem.desiredItem ? uploadItem.desiredItem : null,
       };
-      // console.log(uploadItemRequest);
 
       await dispatch(uploadItemThunk(uploadItemRequest));
     }
   }, [setUploadItem, uploadItem, dispatch]);
+
+  console.log(uploadItem.desiredItem);
 
   useEffect(() => {
     if (itemUpload !== null) {
@@ -291,7 +290,7 @@ export default function UploadItem() {
                 <Text className="text-black text-base">Price</Text>
                 <View className="flex-row justify-between items-center mt-1">
                   <TextInput
-                    className="flex-1 text-lg font-normal text-black h-10"
+                    className="flex-1 text-lg font-normal text-black py-2"
                     placeholder="0"
                     placeholderTextColor="#d1d5db"
                     value={formatPrice(price)}
@@ -307,7 +306,7 @@ export default function UploadItem() {
               <Text className="text-black text-base">Name</Text>
               <View className="mt-1">
                 <TextInput
-                  className="flex-1 text-lg font-normal text-black h-10"
+                  className="flex-1 text-lg font-normal text-black py-2"
                   placeholder="Aaaaa"
                   placeholderTextColor="#d1d5db"
                   value={itemName}

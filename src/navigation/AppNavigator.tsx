@@ -102,7 +102,7 @@ export type RootStackParamList = {
   FeedbackItem: { exchangeId: number };
   SearchResult: undefined;
   OwnerItem: undefined;
-  OwnerFeedback: undefined;
+  OwnerFeedback: { userId: number };
   Favorite: undefined;
   Notifications: undefined;
   FilterMap: undefined;

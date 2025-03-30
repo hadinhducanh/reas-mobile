@@ -3,6 +3,8 @@ import {
   getAllItemAvailableThunk,
   getAllItemOfCurrentUserByStatusThunk,
   getItemDetailThunk,
+  getRecommendedItemsInExchangeThunk,
+  getRecommendedItemsThunk,
   uploadItemThunk,
 } from "../thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
@@ -12,8 +14,9 @@ import { getAllExchangesByStatusOfCurrentUserThunk } from "../thunk/exchangeThun
 interface ItemState {
   itemDetail: ItemResponse | null;
   itemAvailable: ResponseEntityPagination<ItemResponse>;
-  itemRecommnand: ResponseEntityPagination<ItemResponse>;
-  itemSuggested: ResponseEntityPagination<ItemResponse>;
+  itemRecommnand: ItemResponse[];
+  itemByStatus: ResponseEntityPagination<ItemResponse>;
+  itemSuggested: ItemResponse[];
   itemUpload: ItemResponse | null;
   loading: boolean;
   error: string | null;
@@ -29,7 +32,8 @@ const initialState: ItemState = {
     last: false,
     content: [],
   },
-  itemRecommnand: {
+  itemRecommnand: [],
+  itemByStatus: {
     pageNo: 0,
     pageSize: 10,
     totalPages: 0,
@@ -37,14 +41,7 @@ const initialState: ItemState = {
     last: false,
     content: [],
   },
-  itemSuggested: {
-    pageNo: 0,
-    pageSize: 10,
-    totalPages: 0,
-    totalRecords: 0,
-    last: false,
-    content: [],
-  },
+  itemSuggested: [],
   itemUpload: null,
   loading: false,
   error: null,
@@ -93,7 +90,6 @@ const itemSlice = createSlice({
           state.loading = false;
           if (action.payload.pageNo === 0) {
             state.itemAvailable = action.payload;
-            state.itemRecommnand = action.payload;
           } else {
             state.itemAvailable = {
               ...action.payload,
@@ -145,7 +141,7 @@ const itemSlice = createSlice({
           action: PayloadAction<ResponseEntityPagination<ItemResponse>>
         ) => {
           state.loading = false;
-          state.itemSuggested = action.payload;
+          state.itemByStatus = action.payload;
         }
       )
       .addCase(
@@ -154,6 +150,48 @@ const itemSlice = createSlice({
           state.loading = false;
           state.error =
             action.payload || "Get all item of current user by status failed";
+        }
+      );
+
+    builder
+      .addCase(getRecommendedItemsInExchangeThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getRecommendedItemsInExchangeThunk.fulfilled,
+        (state, action: PayloadAction<ItemResponse[]>) => {
+          state.loading = false;
+          state.itemSuggested = action.payload;
+        }
+      )
+      .addCase(
+        getRecommendedItemsInExchangeThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error =
+            action.payload || "Get recommend item in exchange failed";
+        }
+      );
+
+    builder
+      .addCase(getRecommendedItemsThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getRecommendedItemsThunk.fulfilled,
+        (state, action: PayloadAction<ItemResponse[]>) => {
+          state.loading = false;
+          state.itemRecommnand = action.payload;
+        }
+      )
+      .addCase(
+        getRecommendedItemsThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error =
+            action.payload || "Get recommend item in exchange failed";
         }
       );
   },

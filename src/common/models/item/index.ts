@@ -24,12 +24,12 @@ export interface UploadItemRequest {
 }
 
 export interface DesiredItemDto {
-  typeItem: TypeItem;
-  categoryId: number;
-  conditionItem: ConditionItem;
-  brandId: number;
+  categoryId: number | null;
+  conditionItem: ConditionItem | null;
+  brandId: number | null;
   minPrice: number;
-  maxPrice: number;
+  maxPrice: number | null;
+  description: string;
 }
 
 export interface ItemResponse {
@@ -54,12 +54,12 @@ export interface ItemResponse {
 
 export interface DesiredItemResponse {
   id: number;
-  typeItem: TypeItem;
   categoryName: string;
   conditionItem: ConditionItem;
   brandName: string;
   minPrice: number;
   maxPrice: number;
+  description: string;
 }
 
 export interface ExtendedUploadItem extends UploadItemRequest {

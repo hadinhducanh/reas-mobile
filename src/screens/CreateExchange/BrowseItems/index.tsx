@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
@@ -7,14 +7,18 @@ import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import ItemCard from "../../../components/CardItem";
 import { ItemResponse } from "../../../common/models/item";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../redux/store";
 import LoadingButton from "../../../components/LoadingButton";
 import { useExchangeItem } from "../../../context/ExchangeContext";
+import { getAllItemOfCurrentUserByStatusThunk } from "../../../redux/thunk/itemThunks";
+import { StatusItem } from "../../../common/enums/StatusItem";
 
 const BrowseItems: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { itemSuggested } = useSelector((state: RootState) => state.item);
+  const { itemByStatus } = useSelector((state: RootState) => state.item);
   const chunkArray = (array: ItemResponse[], size: number) => {
     const chunked: ItemResponse[][] = [];
     for (let i = 0; i < array.length; i += size) {
@@ -39,6 +43,15 @@ const BrowseItems: React.FC = () => {
     navigation.goBack();
   };
 
+  useEffect(() => {
+    dispatch(
+      getAllItemOfCurrentUserByStatusThunk({
+        pageNo: 0,
+        statusItem: StatusItem.AVAILABLE,
+      })
+    );
+  }, [dispatch]);
+
   const handleGoBack = () => {
     if (selectedItem === null) {
       setExchangeItem({
@@ -50,7 +63,7 @@ const BrowseItems: React.FC = () => {
       navigation.goBack();
     }
   };
-  const rows = chunkArray(itemSuggested.content, 2);
+  const rows = chunkArray(itemByStatus.content, 2);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
@@ -68,7 +81,7 @@ const BrowseItems: React.FC = () => {
         </Text>
         <Icon name="add" size={20} />
       </Pressable>
-      {itemSuggested.content.length === 0 ? (
+      {itemByStatus.content.length === 0 ? (
         <View className="flex-1 justify-center items-center">
           <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
           <Text className="text-gray-500">No item in inventory</Text>

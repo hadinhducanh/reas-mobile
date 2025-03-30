@@ -30,6 +30,61 @@ export const uploadItemThunk = createAsyncThunk<
   }
 });
 
+export const getRecommendedItemsThunk = createAsyncThunk<
+  ItemResponse[],
+  {
+    id: number;
+    limit?: number;
+  },
+  { state: RootState }
+>("item/getRecommendedItems", async ({ id, limit }, thunkAPI) => {
+  const state = thunkAPI.getState();
+  const accessToken = state.auth.accessToken;
+  if (!accessToken) {
+    return thunkAPI.rejectWithValue("No access token available");
+  }
+  try {
+    const data = await ItemService.getRecommendedItems(id, accessToken, limit);
+    return data;
+  } catch (error: any) {
+    console.log(error);
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Get recommend item failed"
+    );
+  }
+});
+
+export const getRecommendedItemsInExchangeThunk = createAsyncThunk<
+  ItemResponse[],
+  {
+    sellerItemId: number;
+    limit?: number;
+  },
+  { state: RootState }
+>(
+  "item/getRecommendedItemsInExchange",
+  async ({ sellerItemId, limit }, thunkAPI) => {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+    if (!accessToken) {
+      return thunkAPI.rejectWithValue("No access token available");
+    }
+    try {
+      const data = await ItemService.getRecommendedItemsInExchange(
+        sellerItemId,
+        accessToken,
+        limit
+      );
+      return data;
+    } catch (error: any) {
+      console.log(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Get recommend item in exchange failed"
+      );
+    }
+  }
+);
+
 export const getAllItemAvailableThunk = createAsyncThunk<
   ResponseEntityPagination<ItemResponse>,
   { pageNo: number; request: SearchItemRequest }

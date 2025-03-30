@@ -34,8 +34,6 @@ const FeebackModal: React.FC<ChooseLocationModalProps> = ({
     return price.toLocaleString("vi-VN");
   };
 
-  console.log(feedbackDetail);
-
   return (
     <>
       <Modal

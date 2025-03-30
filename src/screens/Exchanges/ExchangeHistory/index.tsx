@@ -97,7 +97,7 @@ const ExchangeHistory: React.FC = () => {
           owner={false}
           tabs={tabs}
           selectedTab={selectedStatus}
-          onSelectTab={setSelectedStatus}
+          onSelectTab={(value) => setSelectedStatus(value as StatusExchange)}
         />
       </View>
 
@@ -113,7 +113,9 @@ const ExchangeHistory: React.FC = () => {
       ) : (
         <FlatList
           data={content}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item, index) =>
+            item.id ? item.id.toString() : `${index}`
+          }
           renderItem={renderExchangeCard}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}

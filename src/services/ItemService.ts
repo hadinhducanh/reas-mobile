@@ -24,6 +24,38 @@ const uploadItem = async (
   return response.data;
 };
 
+const getRecommendedItems = async (
+  id: number,
+  accessToken: string,
+  limit?: number
+): Promise<ItemResponse[]> => {
+  const response = await axios.get<ItemResponse[]>(
+    `${API_BASE_URL}/item/recommend?id=${id}&limit=${limit}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+const getRecommendedItemsInExchange = async (
+  sellerItemId: number,
+  accessToken: string,
+  limit?: number
+): Promise<ItemResponse[]> => {
+  const response = await axios.get<ItemResponse[]>(
+    `${API_BASE_URL}/item/exchange/recommend?sellerItemId=${sellerItemId}&limit=${limit}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
 const getAllItemAvailable = async (
   pageNo: number,
   request: SearchItemRequest
@@ -61,4 +93,6 @@ export default {
   getAllItemAvailable,
   getItemDetail,
   getAllItemOfCurrentUserByStatus,
+  getRecommendedItems,
+  getRecommendedItemsInExchange,
 };

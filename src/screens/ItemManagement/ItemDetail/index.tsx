@@ -21,14 +21,38 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { AppDispatch, RootState } from "../../../redux/store";
-import { getItemDetailThunk } from "../../../redux/thunk/itemThunks";
+import {
+  getItemDetailThunk,
+  getRecommendedItemsThunk,
+} from "../../../redux/thunk/itemThunks";
 import HorizontalSection from "../../../components/HorizontalSection";
 import Header from "../../../components/Header";
 import LoadingButton from "../../../components/LoadingButton";
 import dayjs from "dayjs";
 import LocationModal from "../../../components/LocationModal";
+import { ConditionItem } from "../../../common/enums/ConditionItem";
+import { MethodExchange } from "../../../common/enums/MethodExchange";
 
 const { width } = Dimensions.get("window");
+
+const conditionItems = [
+  { label: "Brand new", value: ConditionItem.BRAND_NEW },
+  { label: "Excellent", value: ConditionItem.EXCELLENT },
+  { label: "Fair", value: ConditionItem.FAIR },
+  { label: "Good", value: ConditionItem.GOOD },
+  { label: "Not working", value: ConditionItem.NOT_WORKING },
+  { label: "Poor", value: ConditionItem.POOR },
+  { label: "Like new", value: ConditionItem.LIKE_NEW },
+];
+
+const methodExchanges = [
+  { label: "Delivery", value: MethodExchange.DELIVERY },
+  {
+    label: "Meet at location",
+    value: MethodExchange.MEET_AT_GIVEN_LOCATION,
+  },
+  { label: "Pick up", value: MethodExchange.PICK_UP_IN_PERSON },
+];
 
 const ItemDetails: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "ItemDetails">>();
@@ -41,11 +65,38 @@ const ItemDetails: React.FC = () => {
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
 
+  const getConditionItemLabel = (status: ConditionItem | undefined): string => {
+    const found = conditionItems.find((item) => item.value === status);
+    return found ? found.label : "";
+  };
+
+  const getMethodExchangeLabel = (
+    selectedMethods: MethodExchange[] | undefined
+  ): string => {
+    if (!selectedMethods || selectedMethods.length === 0) {
+      return "";
+    }
+
+    return methodExchanges
+      .filter((item) => selectedMethods.includes(item.value))
+      .map((item) => item.label)
+      .join(", ");
+  };
+
   const data = [
-    { label: "Tình trạng", value: itemDetail?.conditionItem },
+    {
+      label: "Tình trạng",
+      value: getConditionItemLabel(itemDetail?.conditionItem),
+    },
     { label: "Thiết bị", value: itemDetail?.category.categoryName },
     { label: "Hãng", value: itemDetail?.brand.brandName },
-    { label: "Phương thức trao đổi", value: "All of methods" },
+    {
+      label: "Phương thức trao đổi",
+      value:
+        itemDetail?.methodExchanges.length === 3
+          ? "All of methods"
+          : getMethodExchangeLabel(itemDetail?.methodExchanges),
+    },
     {
       label: "Loại giao dịch",
       value:
@@ -89,6 +140,13 @@ const ItemDetails: React.FC = () => {
 
   useEffect(() => {
     dispatch(getItemDetailThunk(itemId));
+    if (itemDetail?.desiredItem !== null) {
+      dispatch(
+        getRecommendedItemsThunk({
+          id: itemId,
+        })
+      );
+    }
   }, [dispatch, itemId]);
 
   const handleCreateExchange = () => {
@@ -190,11 +248,19 @@ const ItemDetails: React.FC = () => {
           </Pressable>
           <Pressable
             className="flex-col justify-center items-center px-5 border-l-2 border-gray-300"
-            onPress={() => navigation.navigate("OwnerFeedback")}
+            onPress={() =>
+              navigation.navigate("OwnerFeedback", {
+                userId: itemDetail?.owner.id!,
+              })
+            }
           >
             <View className="flex-row items-center">
               <Text className="mr-1 text-xl font-bold">
-                {itemDetail?.owner.numOfRatings}
+                {itemDetail?.owner.numOfRatings !== undefined
+                  ? Number.isInteger(itemDetail?.owner.numOfRatings)
+                    ? `${itemDetail?.owner.numOfRatings}.0`
+                    : itemDetail?.owner.numOfRatings
+                  : "0.0"}
               </Text>
               <Icon name="star" size={20} color="yellow" />
             </View>
@@ -247,17 +313,21 @@ const ItemDetails: React.FC = () => {
         )}
       </View>
 
-      <HorizontalSection
-        title="Bài đăng khác của Ngọc Cường"
-        data={itemRecommnand.content}
-        navigation={navigation}
-      />
+      {itemDetail?.desiredItem != null && itemRecommnand.length !== 0 && (
+        <HorizontalSection
+          title="Bài đăng khác của Ngọc Cường"
+          data={itemRecommnand}
+          navigation={navigation}
+        />
+      )}
 
-      <HorizontalSection
-        title="Bài đăng tương tự"
-        data={itemRecommnand.content}
-        navigation={navigation}
-      />
+      {itemDetail?.desiredItem != null && itemRecommnand.length !== 0 && (
+        <HorizontalSection
+          title="Bài đăng tương tự"
+          data={itemRecommnand}
+          navigation={navigation}
+        />
+      )}
     </View>
   );
 
