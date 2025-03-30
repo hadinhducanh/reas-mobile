@@ -30,7 +30,6 @@ import { ChatMessage } from "../../../common/models/chat";
 import Message from "../../../components/ChatMessage";
 import { formatTimestamp } from "../../../utils/TimestampFormatter";
 import moment from "moment-timezone";
-import PushNotification from "react-native-push-notification";
 
 const ChatDetails: React.FC = () => {
   const navigation = useNavigation();
@@ -68,12 +67,6 @@ const ChatDetails: React.FC = () => {
 
   const onMessageReceived = (payload: any) => {
     const receivedMessage = JSON.parse(payload.body);
-
-    PushNotification.localNotification({
-      title: "New Message", // Notification title
-      message: receivedMessage.content, // Message content
-      // Optionally add other properties like soundName, playSound, etc.
-    });
 
     if (
       receivedMessage.senderId === receiverUsername ||

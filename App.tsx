@@ -8,9 +8,12 @@ import "./global.css";
 import { Provider } from "react-redux";
 import store from "./src/redux/store";
 import { UploadItemProvider } from "./src/context/ItemContext";
+import { useNotification } from "./src/hook/useNotification";
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useNotification();
 
   useEffect(() => {
     const timer = setTimeout(() => {

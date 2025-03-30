@@ -18,7 +18,14 @@
         "NSCameraUsageDescription": "We need access to your camera to take photos.",
         "NSPhotoLibraryUsageDescription": "We need access to your photo library to upload images.",
         "NSPhotoLibraryAddUsageDescription": "We need permission to add images to your library.",
-        "NSMicrophoneUsageDescription": "We need access to your microphone to record videos."
+        "NSMicrophoneUsageDescription": "We need access to your microphone to record videos.",
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
+      },
+      "bundleIdentifier": "com.anonymous.REAS",
+      "entitlements": {
+        "aps-environment": "production"
       }
     },
     "android": {
@@ -29,8 +36,12 @@
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
-      ]
+      ],
+      "package": "com.anonymous.REAS"
     },
     "web": {
       "favicon": "./assets/favicon.png"
