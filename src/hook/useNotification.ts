@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { PermissionsAndroid } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 const requestNotificationPermission = async () => {
     const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
@@ -23,5 +24,6 @@ const getToken = async () => {
 export const useNotification = () => {
     useEffect(() => {
         requestNotificationPermission();
+        getToken();
     }, []);
 };
