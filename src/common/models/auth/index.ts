@@ -1,3 +1,4 @@
+import { number } from "zod";
 import { Gender } from "../../enums/Gender";
 import { RoleName } from "../../enums/RoleName";
 import { StatusEntity } from "../../enums/StatusEntity";
@@ -26,9 +27,13 @@ export interface UserResponse {
   email: string;
   phone: string;
   gender: Gender;
+  numOfExchangedItems: number;
+  numOfFeedbacks: number;
+  numOfRatings: number;
   statusEntity: StatusEntity;
   image: string;
   roleName: RoleName;
+  userLocations: UserLocationDto[]
 }
 
 export interface PasswordChangeRequest{

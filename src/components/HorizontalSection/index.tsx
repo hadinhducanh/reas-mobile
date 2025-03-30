@@ -1,6 +1,5 @@
 import React from "react";
-import { View, Text, ActivityIndicator } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
+import { View, Text, ActivityIndicator, FlatList } from "react-native";
 import CardItem from "../CardItem";
 import { ItemType, RootStackParamList } from "../../navigation/AppNavigator";
 import { NavigationProp } from "@react-navigation/native";

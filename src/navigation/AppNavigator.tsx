@@ -4,6 +4,7 @@ import {
   NavigationContainer,
   NavigatorScreenParams,
   useNavigation,
+  useNavigationState,
 } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -24,7 +25,6 @@ import SignUpSuccessScreen from "../screens/AuthenScreen/SignUpSuccess";
 import ResetPassword from "../screens/AccountScreen/ResetPassword";
 import CreateExchange from "../screens/CreateExchange";
 import BrowseItems from "../screens/CreateExchange/BrowseItems";
-import DifferentItem from "../screens/CreateExchange/DifferentItem";
 import ConfirmExchange from "../screens/CreateExchange/ConfirmExchange";
 import AccpectRejectExchange from "../screens/CreateExchange/AccpectRejectExchange";
 import FeedbackItem from "../screens/AccountScreen/FeedbackItem";
@@ -36,19 +36,23 @@ import Notifications from "../screens/Notification";
 import ItemExpire from "../screens/ItemManagement/ItemExpire";
 import Premium from "../screens/AccountScreen/SubscriptionPlan";
 import About from "../screens/AccountScreen/About";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../redux/store";
 import UploadItemSuccess from "../screens/PostItemScreen/UploadItemSuccess";
 import ExtendPremium from "../screens/AccountScreen/SubscriptionPlan/ExtendSubscriptionPlan";
 import Statistics from "../screens/AccountScreen/Statistics";
 import ItemDetails from "../screens/ItemManagement/ItemDetail";
 import FilterMap from "../screens/SearchResult/FilterMap";
 import { SignupDto } from "../common/models/auth";
-import CreateItemFlow from "./CreateItemFlow";
+import CreateItemFlow from "./UploadItemFlow";
 import { defaultUploadItem, useUploadItem } from "../context/ItemContext";
 import ConfirmModal from "../components/DeleteConfirmModal";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ItemManagement from "../screens/ItemManagement";
+import UploadItemFlow from "./UploadItemFlow";
+import UploadItem from "../screens/PostItemScreen";
+import { StatusExchange } from "../common/enums/StatusExchange";
+import { resetItemUpload } from "../redux/slices/itemSlice";
 
 export type ItemType = {
   id: number;
@@ -74,9 +78,9 @@ export type RootStackParamList = {
   SignUp: undefined;
   Profile: undefined;
   ExchangeHistory: undefined;
-  ExchangeDetail: { statusDetail: string };
+  ExchangeDetail: { statusDetail: StatusExchange; exchangeId: number };
   ChatHistory: undefined;
-  ChatDetails: { receiverUsername: string, receiverFullName: string };
+  ChatDetails: { receiverUsername: string; receiverFullName: string };
   Statistics: undefined;
   ItemDetails: { itemId: number };
   ItemPreview: { itemId: number };
@@ -94,8 +98,8 @@ export type RootStackParamList = {
   BrowseItems: undefined;
   DifferentItem: undefined;
   ConfirmExchange: undefined;
-  AccpectRejectExchange: undefined;
-  FeedbackItem: undefined;
+  AccpectRejectExchange: { exchangeId: number };
+  FeedbackItem: { exchangeId: number };
   SearchResult: undefined;
   OwnerItem: undefined;
   OwnerFeedback: undefined;
@@ -107,6 +111,7 @@ export type RootStackParamList = {
   About: undefined;
   UploadItemSuccess: undefined;
   UploadScreen: undefined;
+  Account: undefined;
 };
 
 const TabArr = [
@@ -120,7 +125,7 @@ const TabArr = [
   {
     route: "Upload",
     label: "Upload",
-    component: CreateItemFlow,
+    component: UploadItemFlow,
     type: "add-circle-outline",
   },
   {
@@ -140,6 +145,7 @@ const TabArr = [
 const Tab = createBottomTabNavigator();
 
 function BottomTabs() {
+  const dispatch = useDispatch<AppDispatch>();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { accessToken } = useSelector((state: RootState) => state.auth);
@@ -153,8 +159,8 @@ function BottomTabs() {
   >(null);
 
   const handleConfirm = async () => {
-    // hasConfirmedUploadRef.current = true;
     setConfirmVisible(false);
+    dispatch(resetItemUpload());
     setUploadItem(defaultUploadItem);
 
     if (pendingTabName) {
@@ -188,7 +194,11 @@ function BottomTabs() {
             component={item.component}
             listeners={({ navigation }) => ({
               tabPress: (e) => {
-                if (!accessToken) {
+                if (
+                  !accessToken &&
+                  item.route !== "Account" &&
+                  item.route !== "Home"
+                ) {
                   e.preventDefault();
                   navigation.navigate("SignIn");
                 } else if (hasUnsavedData && item.route !== "Upload") {
@@ -286,8 +296,9 @@ export default function RootNavigator() {
         <Stack.Screen name="About" component={About} />
         <Stack.Screen name="UploadItemSuccess" component={UploadItemSuccess} />
         <Stack.Screen name="BrowseItems" component={BrowseItems} />
-        <Stack.Screen name="DifferentItem" component={DifferentItem} />
+        {/* <Stack.Screen name="DifferentItem" component={DifferentItem} /> */}
         <Stack.Screen name="ConfirmExchange" component={ConfirmExchange} />
+        <Stack.Screen name="UploadScreen" component={UploadItem} />
         <Stack.Screen
           name="AccpectRejectExchange"
           component={AccpectRejectExchange}

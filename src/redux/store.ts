@@ -3,8 +3,11 @@ import authReducer from "./slices/authSlice";
 import itemReducer from "./slices/itemSlice";
 import brandReducer from "./slices/brandSlice";
 import categoryReducer from "./slices/categorySlice";
-import exchangeReducer from "./slices/categorySlice";
+import exchangeReducer from "./slices/exchangeSlice";
 import chatReducer from "./slices/chatSlice";
+import locationReducer from "./slices/locationSlice";
+import subscriptionReducer from "./slices/subscriptionSlice";
+import feebackReducer from "./slices/feedbackSlice";
 
 const store = configureStore({
   reducer: {
@@ -14,10 +17,11 @@ const store = configureStore({
     category: categoryReducer,
     exchange: exchangeReducer,
     chat: chatReducer,
+    location: locationReducer,
+    subscription: subscriptionReducer,
+    feeback: feebackReducer,
   },
 });
-
-
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

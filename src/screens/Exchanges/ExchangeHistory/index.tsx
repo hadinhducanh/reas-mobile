@@ -1,54 +1,92 @@
-import React, { useState } from "react";
-import { View, FlatList } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, FlatList, ActivityIndicator, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TabHeader from "../../../components/TabHeader";
 import ExchangeCard from "../../../components/ExchangeCard";
 import Header from "../../../components/Header";
-
-interface ExchangeData {
-  id: number;
-  status: string;
-}
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../redux/store";
+import { StatusExchange } from "../../../common/enums/StatusExchange";
+import { ExchangeResponse } from "../../../common/models/exchange";
+import {
+  getAllExchangesByStatusOfCurrentUserThunk,
+  getExchangeCountsThunk,
+} from "../../../redux/thunk/exchangeThunk";
+import Icon from "react-native-vector-icons/Ionicons";
+import { useFocusEffect } from "@react-navigation/native";
 
 const ExchangeHistory: React.FC = () => {
-  const [selectedStatus, setSelectedStatus] = useState<string>("Pending");
+  const { loading, exchangeByStatus, counts } = useSelector(
+    (state: RootState) => state.exchange
+  );
+  const dispatch = useDispatch<AppDispatch>();
 
-  const data: ExchangeData[] = [
-    { id: 1, status: "Pending" },
-    { id: 2, status: "Approved" },
-    { id: 3, status: "Completed" },
-    { id: 4, status: "Rejected" },
-    { id: 5, status: "Rejected" },
-    { id: 6, status: "Canceled" },
-  ];
+  const [selectedStatus, setSelectedStatus] = useState<StatusExchange>(
+    StatusExchange.PENDING
+  );
+
+  const { content, pageNo, last } = exchangeByStatus;
 
   const tabs = [
     {
-      label: "Pending",
-      count: data.filter((item) => item.status === "Pending").length,
+      label: StatusExchange.PENDING,
+      count: counts.PENDING!,
     },
     {
-      label: "Approved",
-      count: data.filter((item) => item.status === "Approved").length,
+      label: StatusExchange.APPROVED,
+      count: counts.APPROVED!,
     },
     {
-      label: "Rejected",
-      count: data.filter((item) => item.status === "Rejected").length,
+      label: StatusExchange.REJECTED,
+      count: counts.REJECTED!,
     },
     {
-      label: "Completed",
-      count: data.filter((item) => item.status === "Completed").length,
+      label: StatusExchange.CANCELLED,
+      count: counts.CANCELLED!,
     },
     {
-      label: "Canceled",
-      count: data.filter((item) => item.status === "Canceled").length,
+      label: StatusExchange.SUCCESSFUL,
+      count: counts.SUCCESSFUL!,
+    },
+    {
+      label: StatusExchange.FAILED,
+      count: counts.FAILED!,
     },
   ];
 
-  const filteredData = data.filter((item) => item.status === selectedStatus);
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(
+        getAllExchangesByStatusOfCurrentUserThunk({
+          pageNo: 0,
+          statusExchangeRequest: selectedStatus,
+        })
+      );
+      dispatch(getExchangeCountsThunk());
+    }, [dispatch, selectedStatus])
+  );
 
-  const renderItem = ({ item }: { item: ExchangeData }) => (
-    <ExchangeCard status={item.status} />
+  const handleLoadMore = () => {
+    if (!loading && !last) {
+      dispatch(
+        getAllExchangesByStatusOfCurrentUserThunk({
+          pageNo: pageNo + 1,
+          statusExchangeRequest: selectedStatus,
+        })
+      );
+    }
+  };
+
+  const renderExchangeCard = ({ item }: { item: ExchangeResponse }) => (
+    <ExchangeCard
+      status={
+        item.statusExchangeRequest === StatusExchange.APPROVED &&
+        item.exchangeHistory.statusExchangeHistory === StatusExchange.SUCCESSFUL
+          ? StatusExchange.SUCCESSFUL
+          : item.statusExchangeRequest
+      }
+      exchange={item}
+    />
   );
 
   return (
@@ -63,12 +101,35 @@ const ExchangeHistory: React.FC = () => {
         />
       </View>
 
-      <FlatList
-        showsVerticalScrollIndicator={false}
-        data={filteredData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-      />
+      {loading && pageNo === 0 ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#00b0b9" />
+        </View>
+      ) : content.length === 0 ? (
+        <View className="flex-1 justify-center items-center">
+          <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
+          <Text className="text-gray-500">No exchange</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={content}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderExchangeCard}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loading && pageNo !== 0 ? (
+              <View className="flex-1 justify-center items-center">
+                <ActivityIndicator
+                  size="large"
+                  color="#00b0b9"
+                  className="mb-5"
+                />
+              </View>
+            ) : null
+          }
+        />
+      )}
     </SafeAreaView>
   );
 };

@@ -18,7 +18,7 @@ import ItemCard from "../../components/CardItem";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux/store";
 import { getAllItemAvailableThunk } from "../../redux/thunk/itemThunks";
-import { ItemResponse } from "../../common/models/item";
+import { ItemResponse, SearchItemRequest } from "../../common/models/item";
 import {
   BATHROOM_TYPE_IMAGE,
   BEDROOM_TYPE_IMAGE,
@@ -29,6 +29,7 @@ import {
   LIGHTING_TYPE_IMAGE,
   LIVINGROOM_TYPE_IMAGE,
 } from "../../common/constant";
+import { StatusItem } from "../../common/enums/StatusItem";
 
 type HomeScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -45,7 +46,7 @@ const categories = [
   { id: 8, name: "Bathroom", image: BATHROOM_TYPE_IMAGE },
 ];
 
-const { width, height } = Dimensions.get("window"); // Lấy kích thước màn hình
+const { width } = Dimensions.get("window");
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -77,14 +78,20 @@ const HomeScreen: React.FC = () => {
     );
   };
 
+  const searchRequest: SearchItemRequest = {
+    statusItems: [StatusItem.AVAILABLE],
+  };
+
   const handleLoadMore = () => {
     if (!loading && !last) {
-      dispatch(getAllItemAvailableThunk(pageNo + 1));
+      dispatch(
+        getAllItemAvailableThunk({ pageNo: pageNo + 1, request: searchRequest })
+      );
     }
   };
 
   useEffect(() => {
-    dispatch(getAllItemAvailableThunk(0));
+    dispatch(getAllItemAvailableThunk({ pageNo: 0, request: searchRequest }));
   }, [dispatch]);
 
   return (

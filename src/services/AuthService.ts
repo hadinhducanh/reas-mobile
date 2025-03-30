@@ -20,10 +20,12 @@ const authenticateUser = async (
 };
 
 const signupUser = async (credentials: SignupDto): Promise<JWTAuthResponse> => {
+  
   const response = await axios.post<JWTAuthResponse>(
     `${API_BASE_URL}/auth/register/user`,
     credentials
   );
+
   return response.data;
 };
 
@@ -32,7 +34,6 @@ const sendOtp = async (credentials: SignupDto): Promise<string> => {
     `${API_BASE_URL}/auth/otp`,
     credentials
   );
-  console.log(response.data);
 
   return response.data;
 };

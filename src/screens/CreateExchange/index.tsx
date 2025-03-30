@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../components/Header";
 import {
@@ -9,6 +9,7 @@ import {
 } from "@react-navigation/native";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import {
+  Alert,
   Image,
   Modal,
   Platform,
@@ -21,246 +22,499 @@ import {
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../components/LoadingButton";
 import MatchedList from "../../components/MatchedList";
-
-type ItemType = {
-  id: number;
-  name: string;
-  price: string;
-  image: string;
-  location: string;
-  description: string;
-  isFavorited: boolean;
-};
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../redux/store";
+import { ItemResponse } from "../../common/models/item";
+import {
+  defaultExchangeItem,
+  useExchangeItem,
+} from "../../context/ExchangeContext";
+import ChooseMethodExchangeModal from "../../components/ChooseMethodExchangeModal";
+import { MethodExchange } from "../../common/enums/MethodExchange";
+import CalendarModal from "../../components/SchedulePicker";
+import SetLocation from "../../components/SetLocation";
+import ErrorModal from "../../components/ErrorModal";
+import ChooseLocationModal from "../../components/ChooseLocationModal";
+import ConfirmModal from "../../components/DeleteConfirmModal";
+import { resetPlaceDetail } from "../../redux/slices/locationSlice";
+import LocationModal from "../../components/LocationModal";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { getAllItemOfCurrentUserByStatusThunk } from "../../redux/thunk/itemThunks";
+import { StatusItem } from "../../common/enums/StatusItem";
 
 const CreateExchange: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "CreateExchange">>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const dispatch = useDispatch<AppDispatch>();
   const { itemId } = route.params;
+  const { itemDetail, itemSuggested } = useSelector(
+    (state: RootState) => state.item
+  );
+  const { user } = useSelector((state: RootState) => state.auth);
+  const hasConfirmedRef = useRef(false);
+  const pendingBeforeRemoveEvent = useRef<any>(null);
 
-  const [itemList] = useState<ItemType[]>([
-    {
-      id: 1,
-      name: "iPhone 20",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
-      location: "Vinhome Grand Park",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-    {
-      id: 2,
-      name: "iPhone 22",
-      price: "150.000",
-      image: "https://via.placeholder.com/150",
-      location: "Vinhome Grand Park",
-      description: "Brand new iPhone 20 with latest features.",
-      isFavorited: false,
-    },
-  ]);
-  const item = itemList.find((item) => item.id === itemId);
+  const { exchangeItem, setExchangeItem } = useExchangeItem();
+  const [warningVisible, setWarningVisible] = useState(false);
 
-  const [selectedItem, setSelectedItem] = useState<ItemType | null>(null);
+  const [items, setItems] = useState<ItemResponse[]>(itemSuggested.content);
+  const item = items.find((item) => item.id === itemId);
 
-  const handleSelectItem = (item: ItemType) => {
-    setSelectedItem(item);
+  const [selectedItem, setSelectedItem] = useState<ItemResponse | null>(
+    exchangeItem.selectedItem
+  );
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
+    null
+  );
+  const [methodVisible, setMethodVisible] = useState(false);
+  const [calendarVisible, setCalendarVisible] = useState<boolean>(false);
+  const [locationVisible, setLocationVisible] = useState<boolean>(false);
+  const [locationShowVisible, setLocationShowVisible] =
+    useState<boolean>(false);
+
+  const [deliveryVisible, setDeliveryVisible] = useState<boolean>(false);
+  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
+  const [errorTitleInput, setErrorTitleInput] = useState<string>("");
+  const [errorContentInput, setErrorContentInput] = useState<string>("");
+  const [errorVisible, setErrorVisible] = useState<boolean>(false);
+  const [additionalNotes, setAdditionalNotes] = useState<string>(
+    exchangeItem.additionalNotes
+  );
+
+  const handleSelectItem = (item: ItemResponse) => {
+    const index = items.findIndex((i) => i.id === item.id);
+    if (index !== -1) {
+      setExchangeItem({
+        ...exchangeItem,
+        buyerItemId: item.id,
+        selectedItem: item,
+      });
+      setSelectedItem(item);
+      setSelectedItemIndex(index);
+      setItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
+    }
   };
 
   const handleRemoveItem = () => {
+    if (selectedItem !== null && selectedItemIndex !== null) {
+      setItems((prevItems) => {
+        const newItems = [...prevItems];
+        if (selectedItemIndex > newItems.length) {
+          newItems.push(selectedItem);
+        } else {
+          newItems.splice(selectedItemIndex, 0, selectedItem);
+        }
+        return newItems;
+      });
+    }
+
+    setExchangeItem({
+      ...exchangeItem,
+      buyerItemId: 0,
+      selectedItem: null,
+    });
     setSelectedItem(null);
+    setSelectedItemIndex(null);
   };
 
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleProposeExchange = () => {
-    setModalVisible(true);
-  };
+    const isRecommended = itemSuggested.content.some(
+      (recItem) => recItem.id === exchangeItem.selectedItem?.id
+    );
 
-  const handleCancel = () => {
-    setModalVisible(false);
+    if (
+      (!itemDetail?.moneyAccepted && !exchangeItem.selectedItem) ||
+      !exchangeItem.methodExchangeName ||
+      !exchangeItem.exchangeLocation ||
+      !selectedDateTime
+    ) {
+      Alert.alert("Invalid information", "All fields are required.");
+      return;
+    } else if (
+      itemDetail?.moneyAccepted &&
+      exchangeItem.selectedItem === null
+    ) {
+      setExchangeItem({
+        ...exchangeItem,
+        sellerItemId: itemDetail?.id!,
+        paidByUserId: user?.id!,
+        paidBy: user,
+        exchangeDateExtend: selectedDateTime!,
+        estimatePrice: itemDetail.price,
+        buyerItemId: null,
+      });
+
+      navigation.navigate("ConfirmExchange");
+    } else if (isRecommended || itemDetail?.desiredItem === null) {
+      setExchangeItem({
+        ...exchangeItem,
+        sellerItemId: itemDetail?.id!,
+        selectedItem: exchangeItem.selectedItem,
+        paidByUserId:
+          itemDetail?.price! > exchangeItem.selectedItem?.price!
+            ? user?.id!
+            : itemDetail?.owner.id!,
+        paidBy:
+          itemDetail?.price! > exchangeItem.selectedItem?.price!
+            ? user
+            : itemDetail?.owner!,
+        exchangeDateExtend: selectedDateTime!,
+        estimatePrice:
+          itemDetail?.price === 0
+            ? 0
+            : itemDetail?.price! - exchangeItem.selectedItem?.price! < 0
+            ? -(itemDetail?.price! - exchangeItem.selectedItem?.price!)
+            : itemDetail?.price! - exchangeItem.selectedItem?.price!,
+      });
+
+      navigation.navigate("ConfirmExchange");
+    } else {
+      setModalVisible(true);
+    }
   };
 
   const handleContinue = () => {
     setModalVisible(false);
+    setExchangeItem({
+      ...exchangeItem,
+      sellerItemId: itemDetail?.id!,
+      selectedItem: exchangeItem.selectedItem,
+      paidByUserId:
+        itemDetail?.price! > exchangeItem.selectedItem?.price!
+          ? user?.id!
+          : itemDetail?.owner.id!,
+      paidBy:
+        itemDetail?.price! > exchangeItem.selectedItem?.price!
+          ? user
+          : itemDetail?.owner!,
+      exchangeDateExtend: selectedDateTime!,
+      estimatePrice:
+        itemDetail?.price === 0
+          ? 0
+          : itemDetail?.price! - exchangeItem.selectedItem?.price! < 0
+          ? -(itemDetail?.price! - exchangeItem.selectedItem?.price!)
+          : itemDetail?.price! - exchangeItem.selectedItem?.price!,
+    });
     navigation.navigate("ConfirmExchange");
+  };
+
+  useEffect(() => {
+    dispatch(
+      getAllItemOfCurrentUserByStatusThunk({
+        pageNo: 0,
+        statusItem: StatusItem.AVAILABLE,
+      })
+    );
+  }, [itemId]);
+
+  const formatPrice = (price: number | undefined): string => {
+    return price !== undefined ? price.toLocaleString("vi-VN") : "0";
+  };
+
+  const handleSetLocation = () => {
+    if (exchangeItem.methodExchangeName.length === 0) {
+      setErrorVisible(true);
+      setErrorTitleInput("Invalid");
+      setErrorContentInput("Please choose your method exchange first.");
+    } else if (
+      exchangeItem.methodExchange === MethodExchange.DELIVERY &&
+      user?.userLocations
+    ) {
+      setDeliveryVisible(true);
+    } else if (
+      exchangeItem.methodExchange === MethodExchange.PICK_UP_IN_PERSON
+    ) {
+      setLocationShowVisible(true);
+    } else {
+      setLocationVisible(true);
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (hasConfirmedRef.current) return;
+
+      if (
+        JSON.stringify(exchangeItem) !== JSON.stringify(defaultExchangeItem)
+      ) {
+        pendingBeforeRemoveEvent.current = e;
+        e.preventDefault();
+        setWarningVisible(true);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, exchangeItem]);
+
+  const handleConfirm = async () => {
+    hasConfirmedRef.current = true;
+    dispatch(resetPlaceDetail());
+    setWarningVisible(false);
+    setExchangeItem(defaultExchangeItem);
+    if (pendingBeforeRemoveEvent.current) {
+      navigation.dispatch(pendingBeforeRemoveEvent.current.data.action);
+    }
+  };
+
+  const handleCancel = () => {
+    setWarningVisible(false);
+  };
+
+  const handleAdditionalNotes = useCallback(
+    (value: string) => {
+      setAdditionalNotes(value);
+      setExchangeItem((prev) => ({
+        ...prev,
+        additionalNotes: value.trim().replace(/\n/g, "\\n"),
+      }));
+    },
+    [setExchangeItem]
+  );
+
+  const formatExchangeDate = (exchangeDate: string): string => {
+    const dt = new Date(exchangeDate);
+
+    const formattedTime = dt.toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const day = dt.getDate().toString().padStart(2, "0");
+    const month = (dt.getMonth() + 1).toString().padStart(2, "0");
+    const year = dt.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+
+    return `${formattedTime} ${formattedDate}`;
+  };
+
+  const getLocationDisplay = (): string => {
+    if (exchangeItem.methodExchangeName.length === 0) {
+      return "Set location";
+    }
+
+    switch (exchangeItem.methodExchange) {
+      case MethodExchange.PICK_UP_IN_PERSON:
+        return (
+          itemDetail?.userLocation.specificAddress.split("//")[1] ||
+          "Set location"
+        );
+      case MethodExchange.DELIVERY:
+      case MethodExchange.MEET_AT_GIVEN_LOCATION:
+        return exchangeItem.exchangeLocation.length !== 0
+          ? exchangeItem.exchangeLocation.split("//")[1]
+          : "Set location";
+      default:
+        return "Set location";
+    }
   };
 
   return (
     <>
       <SafeAreaView className="flex-1 bg-[#F6F9F9]" edges={["top"]}>
         <Header title="Create exchange" showOption={false} />
-        <ScrollView className="mx-5" showsVerticalScrollIndicator={false}>
-          <View className="py-5">
-            <Text className="text-lg text-gray-500 font-medium mb-1">
-              You want to exchange for:
-            </Text>
-            <View className="rounded-md p-3 flex-row items-center bg-white">
-              {/* Khung ảnh cố định size */}
+        <KeyboardAwareScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          extraScrollHeight={20}
+          enableOnAndroid={true}
+          keyboardShouldPersistTaps="handled"
+        >
+          <ScrollView className="mx-5" showsVerticalScrollIndicator={false}>
+            <View className="py-5">
+              <Text className="text-lg text-gray-500 font-medium mb-1">
+                You want to exchange for:
+              </Text>
+              <View className="rounded-md p-3 flex-row items-center bg-white">
+                <View className="w-40 h-28 rounded-md ">
+                  <Image
+                    source={{
+                      uri: itemDetail?.imageUrl.split(", ")[0],
+                    }}
+                    className="w-full h-full object-contain"
+                    resizeMode="contain"
+                  />
+                </View>
 
-              <View className="w-40 h-28 rounded-md ">
-                <Image
-                  source={{
-                    uri: "https://goldsun.vn/pic/ProductItem/Noi-com-d_637625508222561223.jpg",
-                  }}
-                  className="w-full h-full object-cover"
-                  resizeMode="cover"
-                />
-              </View>
-
-              {/* Thông tin sản phẩm */}
-              <View className="ml-3 flex-1">
-                <Text className="text-lg font-bold text-gray-900">
-                  {item?.name}
-                </Text>
-                <Text className="text-gray-500 text-base my-1">
-                  Listed by Đức Sơn
-                </Text>
-                <Text className="text-[#00B0B9] text-xl font-semibold">
-                  {item?.price}VND
-                </Text>
+                <View className="ml-3 flex-1">
+                  <Text className="text-lg font-bold text-gray-900">
+                    {itemDetail?.itemName}
+                  </Text>
+                  <Text className="text-gray-500 text-base my-1">
+                    Listed by {itemDetail?.owner.fullName}
+                  </Text>
+                  <Text className="text-[#00B0B9] text-xl font-semibold">
+                    {itemDetail?.price === 0
+                      ? "Free"
+                      : formatPrice(itemDetail?.price) + " VND"}
+                  </Text>
+                </View>
               </View>
             </View>
-          </View>
 
-          <View>
-            {/* Suggested item */}
-            <MatchedList
-              items={itemList.filter((item) => item.id !== selectedItem?.id)}
-              onSelectItem={handleSelectItem}
-            />
+            <View>
+              {itemDetail?.desiredItem === null ? (
+                ""
+              ) : (
+                <MatchedList items={items} onSelectItem={handleSelectItem} />
+              )}
 
-            <Pressable
-              className="flex-row justify-center items-center mx-5 bg-gray-100 border-[1px] border-gray-300 px-5 py-4 rounded-lg active:bg-gray-200 my-5"
-              onPress={() => navigation.navigate("BrowseItems")}
-            >
-              <Icon name="folder-open" size={20} />
-              <Text className="text-center text-lg text-gray-500 font-medium ml-1">
-                Browse my items
-              </Text>
-            </Pressable>
-            <Pressable
-              className="flex-row justify-center items-center mx-5 bg-gray-100 border-[1px] border-gray-300 px-5 py-4 rounded-lg active:bg-gray-200"
-              onPress={() => navigation.navigate("DifferentItem")}
-            >
-              <Text className="text-center text-lg text-gray-500 font-medium mr-1">
-                Add a different item
-              </Text>
-              <Icon name="add" size={20} />
-            </Pressable>
+              <Pressable
+                className="flex-row justify-center items-center bg-gray-100 border-[1px] border-gray-300 px-5 py-4 rounded-lg active:bg-gray-200 mt-5"
+                onPress={() => navigation.navigate("BrowseItems")}
+              >
+                <Icon name="folder-open" size={20} />
+                <Text className="text-center text-lg text-gray-500 font-medium mx-1">
+                  Browse my items
+                </Text>
+              </Pressable>
 
-            <View className="bg-gray-100 p-4 rounded-lg border border-gray-300 mt-10">
-              <Text className="text-gray-500 text-lg font-medium mb-2">
-                Your chosen item
-              </Text>
-              {selectedItem ? (
-                <View
-                  key={item?.id}
-                  className="mb-3 flex-row justify-between w-full items-center bg-white px-5 rounded-lg py-2"
-                >
-                  <View className="flex-row items-center mr-2">
+              <View className="bg-gray-100 p-4 rounded-lg border border-gray-300 mt-10">
+                <Text className="text-gray-500 text-lg font-medium mb-2">
+                  Your chosen item
+                </Text>
+                {exchangeItem.selectedItem ? (
+                  <View
+                    key={item?.id}
+                    className="mb-3 flex-row justify-between w-full items-center bg-white rounded-lg p-3"
+                  >
                     <View className="w-20 h-20 rounded-md overflow-hidden">
                       <Image
                         source={{
-                          uri: "https://goldsun.vn/pic/ProductItem/Noi-com-d_637625508222561223.jpg",
+                          uri: exchangeItem.selectedItem.imageUrl.split(
+                            ", "
+                          )[0],
                         }}
-                        className="w-full h-full object-cover"
-                        resizeMode="cover"
+                        className="w-full h-full object-contain"
+                        resizeMode="contain"
                       />
                     </View>
                     <Text
-                      className="text-gray-700 text-lg ml-2 w-40 font-medium"
+                      className="text-gray-700 text-lg mx-3 font-medium flex-1"
                       numberOfLines={1}
                       ellipsizeMode="tail"
                       style={{ flexShrink: 1 }}
                     >
-                      {selectedItem.name}
+                      {exchangeItem.selectedItem.itemName}
+                    </Text>
+
+                    <View className="flex-1">
+                      <LoadingButton
+                        title="Remove"
+                        onPress={handleRemoveItem}
+                        buttonClassName="border-2 border-[#00B0B9] py-3 px-5 bg-white"
+                        textColor="text-[#00B0B9]"
+                      />
+                    </View>
+                  </View>
+                ) : (
+                  <View className="py-10">
+                    <Text className="text-gray-300 text-center text-base mb-1">
+                      Please add an item you want to exchange
+                    </Text>
+                    <Text className="text-gray-300 text-center text-base">
+                      (optional for free exchange)
                     </Text>
                   </View>
+                )}
+              </View>
+            </View>
 
-                  <View>
-                    {/* <Pressable
-                    className="bg-white border-[1px] border-[#00B0B9] py-3 px-8 rounded-xl active:bg-[rgb(0,176,185,0.1)]"
-                    onPress={handleRemoveItem}
+            <View className="mt-8">
+              <Text className="font-bold text-lg text-gray-500">
+                Exchange Details
+              </Text>
+
+              <View className="bg-white mt-2 rounded-lg p-4">
+                <View className="items-center flex-row justify-between mb-3">
+                  <Text className="text-base text-gray-500">Method</Text>
+                  <Pressable onPress={() => setMethodVisible(true)}>
+                    <Text
+                      className={`text-right text-base text-[#00b0b9] underline font-normal`}
+                    >
+                      {exchangeItem.methodExchangeName.length !== 0
+                        ? exchangeItem.methodExchangeName
+                        : "Choose your method"}
+                    </Text>
+                  </Pressable>
+                </View>
+                <View className="items-center flex-row justify-between mb-3">
+                  <Text className="text-base text-gray-500">Type</Text>
+                  <Text className="text-right text-base text-[#00b0b9] font-normal">
+                    {itemDetail?.desiredItem === null
+                      ? "Open"
+                      : "Open with desired item"}
+                  </Text>
+                </View>
+
+                <View className="items-center flex-row justify-between mb-3">
+                  <Text className="text-base text-gray-500 w-1/2">
+                    Meeting location
+                  </Text>
+                  <Pressable
+                    className="flex-row items-center w-1/2 justify-end"
+                    onPress={handleSetLocation}
                   >
-                    <Text className="text-base text-[#00B0B9] font-medium">
-                      Remove
+                    <Icon name="location-outline" size={20} color="#00B0B9" />
+                    <Text
+                      className="text-base underline text-[#00b0b9] font-normal "
+                      numberOfLines={1}
+                    >
+                      {getLocationDisplay()}
                     </Text>
-                  </Pressable> */}
-                    <LoadingButton
-                      title="Remove"
-                      onPress={handleRemoveItem}
-                      buttonClassName="border-2 border-[#00B0B9] py-3 px-5 bg-white"
-                      textColor="text-[#00B0B9]"
+                  </Pressable>
+                </View>
+
+                <View className="items-center flex-row justify-between">
+                  <Text className="text-base text-gray-500">Date & Time</Text>
+                  <Pressable
+                    className="flex-row items-center justify-end"
+                    onPress={() => setCalendarVisible(true)}
+                  >
+                    <Icon
+                      name="calendar-clear-outline"
+                      size={20}
+                      color="#00B0B9"
                     />
-                  </View>
-                </View>
-              ) : (
-                <View className="py-10">
-                  <Text className="text-gray-300 text-center text-base mb-1">
-                    Please add an item you want to exchange
-                  </Text>
-                  <Text className="text-gray-300 text-center text-base">
-                    (optional for free exchange)
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
-
-          <View className="mt-8">
-            <Text className="font-bold text-lg text-gray-500">
-              Exchange Details
-            </Text>
-
-            <View className="bg-white mt-2 rounded-lg p-4 flex-row justify-between">
-              <View className="w-1/2 justify-between">
-                <Text className="text-base text-gray-500">Method</Text>
-                <Text className="text-base text-gray-500 my-4">Type</Text>
-                <Text className="text-base text-gray-500 mb-4">
-                  Meeting Location
-                </Text>
-                <Text className="text-base text-gray-500">Date & Time</Text>
-              </View>
-              <View className="w-1/2 justify-between">
-                <Text className="text-right text-base text-[#00b0b9]">
-                  Pick-up in person
-                </Text>
-                <Text className="text-right text-base text-[#00b0b9]">
-                  Open with desired item
-                </Text>
-                <View className="flex-row items-center justify-end">
-                  <Icon name="location-outline" size={20} color="#00B0B9" />
-                  <Text className="ml-[2px] text-base underline text-[#00b0b9]">
-                    Set location
-                  </Text>
+                    <Text className="ml-2 underline text-[#00B0B9] font-normal text-base">
+                      {selectedDateTime
+                        ? formatExchangeDate(selectedDateTime.toISOString())
+                        : "Choose Schedule"}
+                    </Text>
+                  </Pressable>
                 </View>
 
-                <View className="flex-row items-center justify-end">
-                  <Icon
-                    name="calendar-clear-outline"
-                    size={20}
-                    color="#00B0B9"
-                  />
-                  <Text className="ml-[2px] text-right text-base underline text-[#00b0b9]">
-                    Schedule
+                {itemDetail?.moneyAccepted && (
+                  <Text
+                    className="text-gray-500 font-semibold text-right mt-5"
+                    style={{ fontStyle: "italic" }}
+                  >
+                    *Accept exchange with cash
                   </Text>
-                </View>
+                )}
               </View>
             </View>
-          </View>
 
-          <View className="my-5">
-            <Text className="font-bold text-lg text-gray-500">Note</Text>
+            <View className="my-5">
+              <Text className="font-bold text-lg text-gray-500">
+                Note (Optional)
+              </Text>
 
-            <View className="px-3 py-3 rounded-lg my-2 bg-white">
-              <View className="pb-36">
+              <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
                 <TextInput
-                  className="text-gray-500 text-base"
-                  placeholder="Write your message here..."
-                ></TextInput>
+                  className="flex-1 text-base font-normal text-gray-500"
+                  placeholder="Aaaaa"
+                  placeholderTextColor="#d1d5db"
+                  multiline={true}
+                  textAlignVertical="top"
+                  value={additionalNotes}
+                  onChangeText={(text) => handleAdditionalNotes(text)}
+                />
               </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
       <View
         className={`${
@@ -278,11 +532,11 @@ const CreateExchange: React.FC = () => {
         transparent={true}
         visible={modalVisible}
         animationType="fade"
-        onRequestClose={handleCancel}
+        onRequestClose={() => setModalVisible(false)}
       >
         <Pressable
           className="flex-1 bg-[rgba(0,0,0,0.2)]"
-          onPress={handleCancel}
+          onPress={() => setModalVisible(false)}
         >
           <View className="absolute inset-0 justify-center items-center">
             <View className="w-[80%] bg-white rounded-md p-5">
@@ -294,12 +548,11 @@ const CreateExchange: React.FC = () => {
                 likely to be accepted.
               </Text>
 
-              {/* Nút Cancel & Continue */}
               <View className="flex-row justify-between mt-2 mx-3">
                 <View className="flex-1 mr-2">
                   <LoadingButton
                     title="Cancel"
-                    onPress={handleCancel}
+                    onPress={() => setModalVisible(false)}
                     buttonClassName="p-4 bg-white border-2 border-[#00B0B9]"
                     textColor="text-[#00B0B9]"
                   />
@@ -316,6 +569,54 @@ const CreateExchange: React.FC = () => {
           </View>
         </Pressable>
       </Modal>
+
+      <ChooseMethodExchangeModal
+        methods={itemDetail?.methodExchanges!}
+        visible={methodVisible}
+        onCancel={() => setMethodVisible(false)}
+      />
+
+      <ErrorModal
+        title={errorTitleInput}
+        content={errorContentInput}
+        visible={errorVisible}
+        onCancel={() => setErrorVisible(false)}
+      />
+
+      <ChooseLocationModal
+        locations={user?.userLocations || []}
+        visible={deliveryVisible}
+        onCancel={() => setDeliveryVisible(false)}
+      />
+
+      {itemDetail?.userLocation.specificAddress && (
+        <LocationModal
+          visible={locationShowVisible}
+          onClose={() => setLocationShowVisible(false)}
+          place_id={itemDetail.userLocation.specificAddress
+            .split("//")[0]
+            .trim()}
+        />
+      )}
+
+      <SetLocation
+        visible={locationVisible}
+        onCancel={() => setLocationVisible(false)}
+      />
+
+      <CalendarModal
+        visible={calendarVisible}
+        onClose={() => setCalendarVisible(false)}
+        onSelectDateTime={(date) => setSelectedDateTime(date)}
+      />
+
+      <ConfirmModal
+        title="Warning"
+        content={`You have unsaved item. ${"\n"} Do you really want to leave?`}
+        visible={warningVisible}
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+      />
     </>
   );
 };

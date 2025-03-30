@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TouchableOpacity, View, Text, Image } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { ItemType } from "../../navigation/AppNavigator";
 import { ItemResponse } from "../../common/models/item";
 
 interface CardItemProps {
@@ -52,11 +51,14 @@ const CardItem: React.FC<CardItemProps> = ({
       }`}
       onPress={handlePress}
     >
-      <View className="bg-gray-100 rounded-t-lg relative">
-        <Image
-          source={{ uri: imageArray[0] }}
-          className="w-full h-56 object-cover rounded-t-lg"
-        />
+      <View className="bg-white rounded-t-lg relative">
+        <View className="w-full h-56">
+          <Image
+            source={{ uri: imageArray[0] }}
+            className="w-full h-full object-contain"
+            resizeMode="contain"
+          />
+        </View>
 
         <TouchableOpacity
           onPress={handleIconPress}
@@ -84,11 +86,11 @@ const CardItem: React.FC<CardItemProps> = ({
           {item.itemName}
         </Text>
         <Text className="text-gray-900 text-base font-semibold">
-          {formatPrice(item.price)} VND
+          {item.price === 0 ? "Free" : formatPrice(item.price) + " VND"}
         </Text>
         {mode === "default" && (
           <Text className="text-gray-400 text-sm" numberOfLines={1}>
-            14 mins ago | {item?.userLocation.specificAddress}
+            14 mins ago | {item.owner.fullName}
           </Text>
         )}
       </View>

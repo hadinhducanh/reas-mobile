@@ -144,10 +144,6 @@ const SignUp: React.FC = () => {
     setConfirmPasswordVisible((prev) => !prev);
   }, []);
 
-  const handleGoBack = useCallback(() => {
-    navigation.goBack();
-  }, [navigation]);
-
   const handleNavigateToSignIn = useCallback(() => {
     navigation.navigate("SignIn");
   }, [navigation]);
@@ -179,7 +175,17 @@ const SignUp: React.FC = () => {
           <Header
             title=""
             showOption={false}
-            onBackPress={() => navigation.navigate("SignIn")}
+            onBackPress={() =>
+              navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: "MainTabs",
+                    state: { routes: [{ name: "Account" }] },
+                  },
+                ],
+              })
+            }
           />
 
           {/* Content Container */}

@@ -16,43 +16,36 @@ const OwnerFeedback: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>("Tất cả");
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const data: FeedbackTabData[] = [
-    { id: 1, status: "Tất cả" },
-    { id: 2, status: "Tất cả" },
-    { id: 3, status: "Tất cả" },
-    { id: 4, status: "1" },
-    { id: 5, status: "3" },
-    { id: 6, status: "5" },
-  ];
+  // const data: FeedbackTabData[] = [
+  //   { id: 1, status: "Tất cả" },
+  //   { id: 2, status: "Tất cả" },
+  //   { id: 3, status: "Tất cả" },
+  //   { id: 4, status: "1" },
+  //   { id: 5, status: "3" },
+  //   { id: 6, status: "5" },
+  // ];
 
   const tabs = [
     {
       label: "Tất cả",
-      count: data.filter((item) => item.status === "Tất cả").length,
     },
     {
       label: "5",
-      count: data.filter((item) => item.status === "5").length,
     },
     {
       label: "4",
-      count: data.filter((item) => item.status === "4").length,
     },
     {
       label: "3",
-      count: data.filter((item) => item.status === "3").length,
     },
     {
       label: "2",
-      count: data.filter((item) => item.status === "2").length,
     },
     {
       label: "1",
-      count: data.filter((item) => item.status === "1").length,
     },
     {
       label: "0",
-      count: data.filter((item) => item.status === "0").length,
     },
   ];
 

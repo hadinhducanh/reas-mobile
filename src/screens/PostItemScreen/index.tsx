@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   ScrollView,
@@ -8,7 +9,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import {
+  useFocusEffect,
+  useNavigation,
+  useNavigationState,
+} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -27,10 +32,15 @@ import NavigationListItem from "../../components/NavigationListItem";
 import Toggle from "../../components/Toggle";
 import ConfirmModal from "../../components/DeleteConfirmModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { uploadToCloudinary } from "../../utils/CloudinaryImageUploader";
 
-export default function UploadScreen() {
+export default function UploadItem() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const state = useNavigationState((state) => state);
+
+  const targetIndex = state.index - 1;
+
   const { user } = useSelector((state: RootState) => state.auth);
   const { itemUpload, loading } = useSelector((state: RootState) => state.item);
   const dispatch = useDispatch<AppDispatch>();
@@ -54,6 +64,14 @@ export default function UploadScreen() {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
+  useEffect(() => {
+    setPrice(uploadItem.price.toString());
+    setItemName(uploadItem.itemName);
+    setDescription(uploadItem.description);
+    setTermCondition(uploadItem.termsAndConditionsExchange);
+    setImages(uploadItem.imageUrl);
+  }, [uploadItem.itemName]);
+
   const handleFieldChange = useCallback(
     (
       field:
@@ -72,7 +90,10 @@ export default function UploadScreen() {
         else if (field === "description") setDescription(value);
         else if (field === "termsAndConditionsExchange")
           setTermCondition(value);
-        setUploadItem((prev) => ({ ...prev, [field]: value }));
+        setUploadItem((prev) => ({
+          ...prev,
+          [field]: value.trim().replace(/\n/g, "\\n"),
+        }));
       }
     },
     [setUploadItem]
@@ -85,35 +106,6 @@ export default function UploadScreen() {
       : "";
   }, []);
 
-  const uploadToCloudinary = useCallback(
-    async (
-      uri: string,
-      creatorName: string | undefined
-    ): Promise<string | null> => {
-      try {
-        const data = new FormData();
-        const timestamp = new Date().getTime();
-        data.append("file", {
-          uri,
-          type: "image/jpeg",
-          name: `${creatorName}-${timestamp}.jpg`,
-        } as any);
-        data.append("upload_preset", "reas_image_upload");
-        data.append("cloud_name", "dpysbryyk");
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/dpysbryyk/image/upload`,
-          { method: "POST", body: data }
-        );
-        const json = await response.json();
-        return json.secure_url;
-      } catch (error) {
-        console.error("Error uploading to Cloudinary:", error);
-        return null;
-      }
-    },
-    []
-  );
-
   const processImages = useCallback(async (): Promise<string> => {
     const imageArray = images.split(", ").filter((img) => img.trim() !== "");
     const uploadedUrls = await Promise.all(
@@ -124,15 +116,13 @@ export default function UploadScreen() {
   }, [images, uploadToCloudinary, user?.email]);
 
   const handleCreateItem = useCallback(async () => {
-    // hasConfirmedUploadRef.current = true;
-
     setConfirmVisible(false);
 
     const priceItem = isCheckedFree
       ? 0
       : parseInt(price.replace(/,/g, ""), 10) || 0;
-    const formattedDescription = description.replace(/\n/g, "\n");
-    const formattedTermAndCondition = termCondition.replace(/\n/g, "\n");
+    // const formattedDescription = description.replace(/\n/g, "\n");
+    // const formattedTermAndCondition = termCondition.replace(/\n/g, "\n");
 
     if (
       !images ||
@@ -144,8 +134,6 @@ export default function UploadScreen() {
       !description ||
       !uploadItem.methodExchanges
     ) {
-      console.log(uploadItem);
-
       Alert.alert("Invalid information", "All fields are required.");
       return;
     } else if (description.trim().length < 20) {
@@ -171,15 +159,15 @@ export default function UploadScreen() {
 
       const uploadItemRequest = {
         itemName: uploadItem.itemName.trim(),
-        description: formattedDescription.trim(),
+        description: uploadItem.description,
         price: uploadItem.price,
         conditionItem: uploadItem.conditionItem,
         imageUrl: processedImages,
         methodExchanges: uploadItem.methodExchanges,
         isMoneyAccepted: uploadItem.isMoneyAccepted,
-        typeExchange: uploadItem.typeExchange,
-        typeItem: uploadItem.typeItem,
-        termsAndConditionsExchange: formattedTermAndCondition.trim(),
+        // typeExchange: uploadItem.typeExchange,
+        // typeItem: uploadItem.typeItem,
+        termsAndConditionsExchange: uploadItem.termsAndConditionsExchange,
         categoryId: uploadItem.categoryId,
         brandId: uploadItem.brandId,
         desiredItem:
@@ -187,7 +175,6 @@ export default function UploadScreen() {
             ? uploadItem.desiredItem
             : null,
       };
-
       // console.log(uploadItemRequest);
 
       await dispatch(uploadItemThunk(uploadItemRequest));
@@ -196,6 +183,7 @@ export default function UploadScreen() {
 
   useEffect(() => {
     if (itemUpload !== null) {
+      setUploadItem(defaultUploadItem);
       dispatch(resetItemUpload());
       navigation.navigate("UploadItemSuccess");
     }
@@ -233,171 +221,183 @@ export default function UploadScreen() {
     <SafeAreaView className="flex-1 bg-[#F6F9F9]" edges={["top"]}>
       <Header
         title="Upload your item"
-        showBackButton={false}
+        showBackButton={
+          targetIndex > 0 && state.routes[targetIndex].name === "BrowseItems"
+            ? true
+            : false
+        }
         showOption={false}
       />
-      <ScrollView className="mx-5" showsVerticalScrollIndicator={false}>
-        <KeyboardAwareScrollView
-          extraScrollHeight={10}
-          enableOnAndroid={true}
-          keyboardShouldPersistTaps="handled"
-        >
-          <ChooseImage
-            images={images}
-            setImages={setImages}
-            isUploadEvidence={false}
-          />
+      {loading || isUploadingImages ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#00b0b9" />
+        </View>
+      ) : (
+        <ScrollView className="mx-5" showsVerticalScrollIndicator={false}>
+          <KeyboardAwareScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            extraScrollHeight={20}
+            enableOnAndroid={true}
+            keyboardShouldPersistTaps="handled"
+          >
+            <ChooseImage
+              images={images}
+              setImages={setImages}
+              isUploadEvidence={false}
+            />
 
-          <NavigationListItem
-            title="Type of item"
-            value={uploadItem.categoryName}
-            route="TypeOfItemScreen"
-            defaultValue="Select type"
-          />
+            <NavigationListItem
+              title="Type of item"
+              value={uploadItem.categoryName}
+              route="TypeOfItemScreen"
+              defaultValue="Select type"
+            />
 
-          <NavigationListItem
-            title="Brand"
-            value={uploadItem.brandName}
-            route="BrandSelectionScreen"
-            defaultValue="Select brand"
-          />
+            <NavigationListItem
+              title="Brand"
+              value={uploadItem.brandName}
+              route="BrandSelectionScreen"
+              defaultValue="Select brand"
+            />
 
-          <NavigationListItem
-            title="Condition"
-            value={uploadItem.conditionItemName}
-            route="ItemConditionScreen"
-            defaultValue="Select condition"
-          />
+            <NavigationListItem
+              title="Condition"
+              value={uploadItem.conditionItemName}
+              route="ItemConditionScreen"
+              defaultValue="Select condition"
+            />
 
-          <NavigationListItem
-            title="Method of exchange"
-            value={
-              uploadItem.methodExchanges.length === 3
-                ? "All method exchanges"
-                : uploadItem.methodExchanges.length > 0
-                ? uploadItem.methodExchangeName
-                : ""
-            }
-            route="MethodOfExchangeScreen"
-            defaultValue="Select methods"
-          />
+            <NavigationListItem
+              title="Method of exchange"
+              value={
+                uploadItem.methodExchanges.length === 3
+                  ? "All method exchanges"
+                  : uploadItem.methodExchanges.length > 0
+                  ? uploadItem.methodExchangeName
+                  : ""
+              }
+              route="MethodOfExchangeScreen"
+              defaultValue="Select methods"
+            />
 
-          <Toggle
-            label="I want to give it for free"
-            value={isCheckedFree}
-            onToggle={toggleCheckboxFree}
-          />
+            <Toggle
+              label="I want to give it for free"
+              value={isCheckedFree}
+              onToggle={toggleCheckboxFree}
+            />
 
-          {!isCheckedFree && (
+            {!isCheckedFree && (
+              <View className="w-full bg-white rounded-lg mt-4 px-5 py-3">
+                <Text className="text-black text-base">Price</Text>
+                <View className="flex-row justify-between items-center mt-1">
+                  <TextInput
+                    className="flex-1 text-lg font-normal text-black h-10"
+                    placeholder="0"
+                    placeholderTextColor="#d1d5db"
+                    value={formatPrice(price)}
+                    onChangeText={(text) => handleFieldChange("price", text)}
+                    keyboardType="numeric"
+                  />
+                  <Text className="font-bold text-[#00B0B9] text-lg">VND</Text>
+                </View>
+              </View>
+            )}
+
             <View className="w-full bg-white rounded-lg mt-4 px-5 py-3">
-              <Text className="text-black text-base">Price</Text>
-              <View className="flex-row justify-between items-center mt-1">
+              <Text className="text-black text-base">Name</Text>
+              <View className="mt-1">
                 <TextInput
-                  className="flex-1 text-lg font-normal text-black"
-                  placeholder="0"
+                  className="flex-1 text-lg font-normal text-black h-10"
+                  placeholder="Aaaaa"
                   placeholderTextColor="#d1d5db"
-                  value={formatPrice(price)}
-                  onChangeText={(text) => handleFieldChange("price", text)}
-                  keyboardType="numeric"
+                  value={itemName}
+                  onChangeText={(text) => handleFieldChange("itemName", text)}
                 />
-                <Text className="font-bold text-[#00B0B9] text-lg">VND</Text>
               </View>
             </View>
-          )}
 
-          <View className="w-full bg-white rounded-lg mt-4 px-5 py-3">
-            <Text className="text-black text-base">Name</Text>
-            <View className="mt-1">
+            <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
+              <Text className="text-black text-base">
+                Description{" "}
+                <Text className="text-[#00b0b9] font-semibold">
+                  (at least 20 characters)
+                </Text>
+              </Text>
               <TextInput
                 className="flex-1 text-lg font-normal text-black"
                 placeholder="Aaaaa"
                 placeholderTextColor="#d1d5db"
-                value={itemName}
-                onChangeText={(text) => handleFieldChange("itemName", text)}
+                value={description}
+                onChangeText={(text) => handleFieldChange("description", text)}
+                multiline={true}
+                textAlignVertical="top"
               />
             </View>
-          </View>
 
-          <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
-            <Text className="text-black text-base">
-              Description{" "}
-              <Text className="text-[#00b0b9] font-semibold">
-                (at least 20 characters)
-              </Text>
-            </Text>
-            <TextInput
-              className="flex-1 text-lg font-normal text-black"
-              placeholder="Aaaaa"
-              placeholderTextColor="#d1d5db"
-              value={description}
-              onChangeText={(text) => handleFieldChange("description", text)}
-              multiline={true}
-              textAlignVertical="top"
-            />
-          </View>
+            {!isCheckedFree && (
+              <Toggle
+                label="Accept exchanging with money"
+                value={isMoneyAccepted}
+                onToggle={toggleCheckboxDesiredItem}
+              />
+            )}
 
-          {!isCheckedFree && (
-            <Toggle
-              label="Accept exchanging with money"
-              value={isMoneyAccepted}
-              onToggle={toggleCheckboxDesiredItem}
-            />
-          )}
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate("ExchangeDesiredItemScreen")}
-            className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
-          >
-            <View>
-              <Text className="text-base font-normal text-black">
-                Add your desired item for exchanging
-              </Text>
-              {JSON.stringify(uploadItem.desiredItem) !==
-              JSON.stringify(defaultUploadItem.desiredItem) ? (
-                <Text
-                  className="text-[#00b0b9] text-lg underline font-bold"
-                  onPress={() =>
-                    navigation.navigate("ExchangeDesiredItemScreen")
-                  }
-                >
-                  Detail
+            <TouchableOpacity
+              onPress={() => navigation.navigate("ExchangeDesiredItemScreen")}
+              className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
+            >
+              <View>
+                <Text className="text-base font-normal text-black">
+                  Add your desired item for exchanging
                 </Text>
-              ) : (
-                <Text className="text-lg font-bold">(Optional)</Text>
-              )}
+                {JSON.stringify(uploadItem.desiredItem) !==
+                JSON.stringify(defaultUploadItem.desiredItem) ? (
+                  <Text
+                    className="text-[#00b0b9] text-lg underline font-bold"
+                    onPress={() =>
+                      navigation.navigate("ExchangeDesiredItemScreen")
+                    }
+                  >
+                    Detail
+                  </Text>
+                ) : (
+                  <Text className="text-lg font-bold">(Optional)</Text>
+                )}
+              </View>
+
+              <Icon name="arrow-forward-ios" size={20} color="black" />
+            </TouchableOpacity>
+
+            <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
+              <Text className="text-black text-base">
+                Exchange’s terms and conditions
+              </Text>
+              <TextInput
+                className="flex-1 text-lg font-normal text-black"
+                placeholder="Aaaaa"
+                placeholderTextColor="#d1d5db"
+                value={termCondition}
+                onChangeText={(text) =>
+                  handleFieldChange("termsAndConditionsExchange", text)
+                }
+                multiline={true}
+                textAlignVertical="top"
+              />
             </View>
 
-            <Icon name="arrow-forward-ios" size={20} color="black" />
-          </TouchableOpacity>
+            <View className="py-5">
+              <LoadingButton
+                title="Upload"
+                buttonClassName="p-4"
+                onPress={handleConfirm}
+                loading={loading}
+                loadingUploadImage={isUploadingImages}
+              />
+            </View>
+          </KeyboardAwareScrollView>
+        </ScrollView>
+      )}
 
-          <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
-            <Text className="text-black text-base">
-              Exchange’s terms and conditions
-            </Text>
-            <TextInput
-              className="flex-1 text-lg font-normal text-black"
-              placeholder="Aaaaa"
-              placeholderTextColor="#d1d5db"
-              value={termCondition}
-              onChangeText={(text) =>
-                handleFieldChange("termsAndConditionsExchange", text)
-              }
-              multiline={true}
-              textAlignVertical="top"
-            />
-          </View>
-
-          <View className="py-5">
-            <LoadingButton
-              title="Upload"
-              buttonClassName="p-4"
-              onPress={handleConfirm}
-              loading={loading}
-              loadingUploadImage={isUploadingImages}
-            />
-          </View>
-        </KeyboardAwareScrollView>
-      </ScrollView>
       <ConfirmModal
         title="Confirm upload"
         content="Are you sure you to upload this item?"
@@ -405,20 +405,6 @@ export default function UploadScreen() {
         onCancel={handleCancel}
         onConfirm={handleCreateItem}
       />
-      <Modal
-        transparent
-        visible={loading || isUploadingImages}
-        animationType="fade"
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "rgba(0,0,0,0.5)",
-          }}
-        ></View>
-      </Modal>
     </SafeAreaView>
   );
 }
