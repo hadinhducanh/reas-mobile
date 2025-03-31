@@ -9,6 +9,7 @@ import LoadingButton from "../../../components/LoadingButton";
 import { defaultUploadItem, useUploadItem } from "../../../context/ItemContext";
 import NavigationListItem from "../../../components/NavigationListItem";
 import ConfirmModal from "../../../components/DeleteConfirmModal";
+import { ConditionItem } from "../../../common/enums/ConditionItem";
 
 const ExchangeDesiredItemScreen = () => {
   const { uploadItem, setUploadItem } = useUploadItem();
@@ -20,7 +21,12 @@ const ExchangeDesiredItemScreen = () => {
     uploadItem.desiredItem?.minPrice.toString() || ""
   );
   const [maxPrice, setMaxPrice] = useState<string>(
-    uploadItem.desiredItem?.maxPrice.toString() || ""
+    uploadItem.desiredItem?.maxPrice === null
+      ? "0"
+      : uploadItem.desiredItem?.maxPrice.toString() || ""
+  );
+  const [description, setDescription] = useState<string>(
+    uploadItem.desiredItem?.description || ""
   );
 
   const pendingBeforeRemoveEvent = useRef<any>(null);
@@ -37,16 +43,10 @@ const ExchangeDesiredItemScreen = () => {
     const min = parseInt(minPrice.replace(/,/g, ""), 10) || 0;
     const max = parseInt(maxPrice.replace(/,/g, ""), 10) || 0;
 
-    if (
-      !minPrice ||
-      !maxPrice ||
-      !uploadItem.brandDesiredItemName ||
-      !uploadItem.conditionDesiredItemName ||
-      !uploadItem.categoryDesiredItemName
-    ) {
+    if (!minPrice || !description) {
       Alert.alert("Missing Information", "All fields is required.");
       return;
-    } else if (max <= min) {
+    } else if (max <= min && max !== 0) {
       Alert.alert("Invalid", "Max price must be greater than min price.");
       return;
     } else {
@@ -56,16 +56,29 @@ const ExchangeDesiredItemScreen = () => {
         ...uploadItem,
         desiredItem: {
           ...uploadItem.desiredItem!,
-          maxPrice: max,
+          categoryId:
+            uploadItem.desiredItem?.categoryId === 0
+              ? null
+              : uploadItem.desiredItem?.categoryId!,
+          brandId:
+            uploadItem.desiredItem?.brandId === 0
+              ? null
+              : uploadItem.desiredItem?.brandId!,
+          conditionItem:
+            uploadItem.desiredItem?.conditionItem === ConditionItem.NO_CONDITION
+              ? null
+              : uploadItem.desiredItem?.conditionItem!,
+          maxPrice: max === 0 ? null : max,
           minPrice: min,
         },
       });
+
       navigation.goBack();
     }
   };
 
   const handleFieldChange = useCallback(
-    (field: "minPrice" | "maxPrice", value: string) => {
+    (field: "minPrice" | "maxPrice" | "description", value: string) => {
       const priceValue = parseInt(value.replace(/,/g, ""), 10) || 0;
 
       if (field === "maxPrice") {
@@ -74,11 +87,20 @@ const ExchangeDesiredItemScreen = () => {
           ...prev,
           desiredItem: { ...prev.desiredItem!, maxPrice: priceValue },
         }));
-      } else {
+      } else if (field === "minPrice") {
         setMinPrice(value);
         setUploadItem((prev) => ({
           ...prev,
           desiredItem: { ...prev.desiredItem!, minPrice: priceValue },
+        }));
+      } else {
+        setDescription(value);
+        setUploadItem((prev) => ({
+          ...prev,
+          desiredItem: {
+            ...prev.desiredItem!,
+            description: value.trim().replace(/\n/g, "\\n"),
+          },
         }));
       }
     },
@@ -124,14 +146,14 @@ const ExchangeDesiredItemScreen = () => {
       <Header title="Your desired item for exchange" showOption={false} />
       <ScrollView className="flex-1 mx-5">
         <NavigationListItem
-          title="Type of item"
+          title="Type of item(Optional)"
           value={uploadItem.categoryDesiredItemName}
           route="TypeOfItemScreen"
           defaultValue="Select type"
         />
 
         <NavigationListItem
-          title="Brand"
+          title="Brand(Optional)"
           value={uploadItem.brandDesiredItemName}
           route="BrandSelectionScreen"
           defaultValue="Select brand"
@@ -140,7 +162,7 @@ const ExchangeDesiredItemScreen = () => {
         <View className="flex-row justify-center gap-4 mt-4">
           <View className="flex-1 rounded-lg border-2 border-[#00B0B9] bg-white p-2">
             <Text className="text-[#00b0b9] text-base font-bold">
-              Min price
+              Min price*
             </Text>
             <View className="flex-row justify-between items-center mt-1">
               <TextInput
@@ -157,7 +179,7 @@ const ExchangeDesiredItemScreen = () => {
 
           <View className="flex-1 rounded-lg border-2 border-[#00B0B9] bg-white p-2">
             <Text className="text-[#00b0b9] text-base font-bold">
-              Max price
+              Max price(Optional)
             </Text>
             <View className="flex-row justify-between items-center mt-1">
               <TextInput
@@ -174,11 +196,24 @@ const ExchangeDesiredItemScreen = () => {
         </View>
 
         <NavigationListItem
-          title="Condition"
+          title="Condition(Optional)"
           value={uploadItem.conditionDesiredItemName}
           route="ItemConditionScreen"
           defaultValue="Select condition"
         />
+
+        <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
+          <Text className="text-black text-base">Description*</Text>
+          <TextInput
+            className="flex-1 text-lg font-normal text-black"
+            placeholder="Aaaaa"
+            placeholderTextColor="#d1d5db"
+            value={description}
+            onChangeText={(text) => handleFieldChange("description", text)}
+            multiline={true}
+            textAlignVertical="top"
+          />
+        </View>
 
         <LoadingButton
           title="Done"

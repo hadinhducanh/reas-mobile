@@ -2,18 +2,32 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { FeedbackResponse } from "../../common/models/feedback";
 import {
   createFeedbackThunk,
+  getAllFeedbackOfUserThunk,
+  getFeedbackCountsThunk,
   updateFeedbackThunk,
   viewFeedbackDetailThunk,
 } from "../thunk/feedbackThunk";
+import { ResponseEntityPagination } from "../../common/models/pagination";
 
 interface FeebackState {
   feedbackDetail: FeedbackResponse | null;
+  feedbackByUser: ResponseEntityPagination<FeedbackResponse>;
+  countsOfFeedback: { [key in number]?: number };
   loading: boolean;
   error: string | null;
 }
 
 const initialState: FeebackState = {
   feedbackDetail: null,
+  feedbackByUser: {
+    pageNo: 0,
+    pageSize: 10,
+    totalPages: 0,
+    totalRecords: 0,
+    last: false,
+    content: [],
+  },
+  countsOfFeedback: {},
   loading: false,
   error: null,
 };
@@ -23,6 +37,14 @@ const feedbackSlice = createSlice({
   initialState,
   reducers: {
     resetFeedback: (state) => {
+      state.feedbackByUser = {
+        pageNo: 0,
+        pageSize: 10,
+        totalPages: 0,
+        totalRecords: 0,
+        last: false,
+        content: [],
+      };
       state.feedbackDetail = null;
     },
   },
@@ -84,6 +106,52 @@ const feedbackSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Get feedback detail failed";
+        }
+      );
+
+    builder
+      .addCase(getAllFeedbackOfUserThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getAllFeedbackOfUserThunk.fulfilled,
+        (
+          state,
+          action: PayloadAction<ResponseEntityPagination<FeedbackResponse>>
+        ) => {
+          state.loading = false;
+          if (action.payload.pageNo === 0) {
+            state.feedbackByUser = action.payload;
+          } else {
+            state.feedbackByUser = {
+              ...action.payload,
+              content: [
+                ...(state.feedbackByUser?.content || []),
+                ...action.payload.content,
+              ],
+            };
+          }
+        }
+      );
+
+    builder
+      .addCase(getFeedbackCountsThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getFeedbackCountsThunk.fulfilled,
+        (state, action: PayloadAction<{ [key in number]?: number }>) => {
+          state.loading = false;
+          state.countsOfFeedback = action.payload;
+        }
+      )
+      .addCase(
+        getFeedbackCountsThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Get feedback counts of user failed";
         }
       );
   },

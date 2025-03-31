@@ -7,6 +7,8 @@ import { AppDispatch, RootState } from "../../redux/store";
 import { viewFeedbackDetailThunk } from "../../redux/thunk/feedbackThunk";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import dayjs from "dayjs";
+import { resetFeedback } from "../../redux/slices/feedbackSlice";
 
 interface ChooseLocationModalProps {
   feedbackId: number;
@@ -26,6 +28,7 @@ const FeebackModal: React.FC<ChooseLocationModalProps> = ({
   const { feedbackDetail } = useSelector((state: RootState) => state.feeback);
 
   useEffect(() => {
+    dispatch(resetFeedback());
     dispatch(viewFeedbackDetailThunk(feedbackId));
   }, [dispatch, feedbackId]);
 
@@ -34,7 +37,31 @@ const FeebackModal: React.FC<ChooseLocationModalProps> = ({
     return price.toLocaleString("vi-VN");
   };
 
-  console.log(feedbackDetail);
+  function formatRelativeTime(timeStr: Date | undefined): string {
+    const givenTime = dayjs(timeStr);
+    const now = dayjs();
+
+    const diffInSeconds = now.diff(givenTime, "second");
+
+    if (diffInSeconds < 60) {
+      return `${diffInSeconds} seconds ago`;
+    } else if (diffInSeconds < 3600) {
+      const minutes = now.diff(givenTime, "minute");
+      return `${minutes} minutes ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = now.diff(givenTime, "hour");
+      return `${hours} hours ago`;
+    } else if (diffInSeconds < 86400 * 30) {
+      const days = now.diff(givenTime, "day");
+      return `${days} days ago`;
+    } else if (diffInSeconds < 86400 * 30 * 12) {
+      const months = now.diff(givenTime, "month");
+      return `${months} months ago`;
+    } else {
+      const years = now.diff(givenTime, "year");
+      return `${years} years ago`;
+    }
+  }
 
   return (
     <>
@@ -57,7 +84,7 @@ const FeebackModal: React.FC<ChooseLocationModalProps> = ({
                   {feedbackDetail?.user.fullName}
                 </Text>
               </View>
-              {feedbackDetail?.updated === undefined ? (
+              {feedbackDetail?.updated === false ? (
                 <View>
                   <LoadingButton
                     onPress={() =>
@@ -122,12 +149,15 @@ const FeebackModal: React.FC<ChooseLocationModalProps> = ({
             <View className="flex-row items-center mt-2">
               {[1, 2, 3, 4, 5].map((num) => (
                 <Icon
+                  key={num}
                   name="star"
                   size={16}
                   color={num <= feedbackDetail?.rating! ? "#FFD700" : "#dfecec"}
                 />
               ))}
-              <Text className="ml-2 text-gray-500 text-sm">| 2 năm trước</Text>
+              <Text className="ml-2 text-gray-500 text-sm">
+                | {formatRelativeTime(feedbackDetail?.creationDate)}
+              </Text>
             </View>
 
             <View className="flex-row items-center bg-[#D6F2F4] rounded-lg mt-4 p-3">

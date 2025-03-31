@@ -553,7 +553,8 @@ const ExchangeDetail: React.FC = () => {
       >
         {exchangeDetail?.exchangeDate &&
           new Date(exchangeDetail.exchangeDate) > new Date() &&
-          exchangeDetail?.statusExchangeRequest === StatusExchange.APPROVED && (
+          exchangeDetail?.statusExchangeRequest === StatusExchange.APPROVED &&
+          user?.id === exchangeDetail.buyerItem.owner.id && (
             <View className="flex-1 mr-2">
               <LoadingButton
                 title="Cancel exchange"

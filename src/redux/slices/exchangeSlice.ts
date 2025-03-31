@@ -45,6 +45,16 @@ const exchangeSlice = createSlice({
   reducers: {
     resetExchange: (state) => {
       state.exchangeRequest = null;
+      state.exchangeDetail = null;
+      state.exchangeByStatus = {
+        pageNo: 0,
+        pageSize: 10,
+        totalPages: 0,
+        totalRecords: 0,
+        last: false,
+        content: [],
+      };
+      state.counts = {};
     },
   },
   extraReducers: (builder) => {
