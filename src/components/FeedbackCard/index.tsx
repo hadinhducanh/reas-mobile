@@ -1,13 +1,8 @@
-import React, { useEffect } from "react";
-import { Modal, View, Text, Pressable, Image } from "react-native";
+import React from "react";
+import { Modal, View, Text, Image } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import LoadingButton from "../LoadingButton";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../redux/store";
-import { viewFeedbackDetailThunk } from "../../redux/thunk/feedbackThunk";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "../../navigation/AppNavigator";
 import { FeedbackResponse } from "../../common/models/feedback";
+import dayjs from "dayjs";
 
 interface ChooseLocationModalProps {
   feedback: FeedbackResponse;
@@ -19,9 +14,35 @@ const FeedbackCard: React.FC<ChooseLocationModalProps> = ({ feedback }) => {
     return price.toLocaleString("vi-VN");
   };
 
+  function formatRelativeTime(timeStr: Date | undefined): string {
+    const givenTime = dayjs(timeStr);
+    const now = dayjs();
+
+    const diffInSeconds = now.diff(givenTime, "second");
+
+    if (diffInSeconds < 60) {
+      return `${diffInSeconds} seconds ago`;
+    } else if (diffInSeconds < 3600) {
+      const minutes = now.diff(givenTime, "minute");
+      return `${minutes} minutes ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = now.diff(givenTime, "hour");
+      return `${hours} hours ago`;
+    } else if (diffInSeconds < 86400 * 30) {
+      const days = now.diff(givenTime, "day");
+      return `${days} days ago`;
+    } else if (diffInSeconds < 86400 * 30 * 12) {
+      const months = now.diff(givenTime, "month");
+      return `${months} months ago`;
+    } else {
+      const years = now.diff(givenTime, "year");
+      return `${years} years ago`;
+    }
+  }
+
   return (
     <>
-      <View className=" bg-white shadow-md p-5">
+      <View className=" bg-white p-5">
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center">
             <View className="items-center">
@@ -78,12 +99,15 @@ const FeedbackCard: React.FC<ChooseLocationModalProps> = ({ feedback }) => {
         <View className="flex-row items-center mt-2">
           {[1, 2, 3, 4, 5].map((num) => (
             <Icon
+              key={num}
               name="star"
               size={16}
               color={num <= feedback?.rating! ? "#FFD700" : "#dfecec"}
             />
           ))}
-          <Text className="ml-2 text-gray-500 text-sm">| 2 năm trước</Text>
+          <Text className="ml-2 text-gray-500 text-sm">
+            | {formatRelativeTime(feedback.creationDate)}
+          </Text>
         </View>
 
         <View className="flex-row items-center bg-[#D6F2F4] rounded-lg mt-4 p-3">

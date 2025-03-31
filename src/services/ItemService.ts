@@ -56,6 +56,27 @@ const getRecommendedItemsInExchange = async (
   return response.data;
 };
 
+const getSimilarItems = async (
+  itemId: number,
+  limit?: number
+): Promise<ItemResponse[]> => {
+  const response = await axios.get<ItemResponse[]>(
+    `${API_BASE_URL}/item/similar?itemId=${itemId}&limit=${limit}`
+  );
+  return response.data;
+};
+
+const getOtherItemsOfUser = async (
+  currItemId: number,
+  userId: number,
+  limit?: number
+): Promise<ItemResponse[]> => {
+  const response = await axios.get<ItemResponse[]>(
+    `${API_BASE_URL}/item/others?currItemId=${currItemId}&userId=${userId}&limit=${limit}`
+  );
+  return response.data;
+};
+
 const getAllItemAvailable = async (
   pageNo: number,
   request: SearchItemRequest
@@ -83,6 +104,17 @@ const getAllItemOfCurrentUserByStatus = async (
   return response.data;
 };
 
+const getAllAvailableItemOfUser = async (
+  pageNo: number,
+  userId: number,
+  statusItem: StatusItem
+): Promise<ResponseEntityPagination<ItemResponse>> => {
+  const response = await axios.get<ResponseEntityPagination<ItemResponse>>(
+    `${API_BASE_URL}/item/user?pageNo=${pageNo}&pageSize=5&sortBy=id&sortDir=asc&statusItem=${statusItem}&userId=${userId}`
+  );
+  return response.data;
+};
+
 const getItemDetail = async (id: number): Promise<ItemResponse> => {
   const response = await axios.get<ItemResponse>(`${API_BASE_URL}/item/${id}`);
   return response.data;
@@ -95,4 +127,7 @@ export default {
   getAllItemOfCurrentUserByStatus,
   getRecommendedItems,
   getRecommendedItemsInExchange,
+  getSimilarItems,
+  getOtherItemsOfUser,
+  getAllAvailableItemOfUser,
 };

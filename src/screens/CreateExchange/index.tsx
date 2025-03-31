@@ -204,11 +204,14 @@ const CreateExchange: React.FC = () => {
   };
 
   useEffect(() => {
-    dispatch(
-      getRecommendedItemsInExchangeThunk({
-        sellerItemId: itemDetail?.id!,
-      })
-    );
+    if (itemDetail !== null && itemDetail.desiredItem !== null) {
+      dispatch(
+        getRecommendedItemsInExchangeThunk({
+          sellerItemId: itemDetail?.id,
+          limit: 4,
+        })
+      );
+    }
   }, [itemId]);
 
   const formatPrice = (price: number | undefined): string => {

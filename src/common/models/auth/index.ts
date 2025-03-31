@@ -33,15 +33,16 @@ export interface UserResponse {
   statusEntity: StatusEntity;
   image: string;
   roleName: RoleName;
-  userLocations: UserLocationDto[]
+  creationDate: Date;
+  userLocations: UserLocationDto[];
 }
 
-export interface PasswordChangeRequest{
+export interface PasswordChangeRequest {
   oldPassword: string;
   newPassword: string;
 }
 
-export interface UserLocationDto{
+export interface UserLocationDto {
   id: number;
   userId: number;
   specificAddress: string;

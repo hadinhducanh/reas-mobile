@@ -52,7 +52,8 @@ const viewFeedbackDetail = async (
 
 const getAllFeedbackOfUser = async (
   pageNo: number,
-  userId: number
+  userId: number,
+  rating?: number
 ): Promise<ResponseEntityPagination<FeedbackResponse>> => {
   const response = await axios.get<ResponseEntityPagination<FeedbackResponse>>(
     `${API_BASE_URL}/feedback`,
@@ -63,6 +64,7 @@ const getAllFeedbackOfUser = async (
         sortBy: "id",
         sortDir: "desc",
         userId,
+        rating,
       },
     }
   );

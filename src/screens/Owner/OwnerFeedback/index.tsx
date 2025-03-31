@@ -21,48 +21,46 @@ import { AppDispatch, RootState } from "../../../redux/store";
 import { getUserThunk } from "../../../redux/thunk/userThunk";
 import LocationModal from "../../../components/LocationModal";
 import dayjs from "dayjs";
-import { getAllFeedbackOfUserThunk } from "../../../redux/thunk/feedbackThunk";
+import {
+  getAllFeedbackOfUserThunk,
+  getFeedbackCountsThunk,
+} from "../../../redux/thunk/feedbackThunk";
 import { FeedbackResponse } from "../../../common/models/feedback";
 import FeedbackCard from "../../../components/FeedbackCard";
 import { resetFeedback } from "../../../redux/slices/feedbackSlice";
 import TabHeader from "../../../components/TabHeader";
 
-interface FeedbackTabData {
-  id: number;
-  status: string;
-}
-
 const OwnerFeedback: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "OwnerFeedback">>();
   const { userId } = route.params;
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
 
   const { userDetail, loading } = useSelector((state: RootState) => state.user);
-  const { feedbackByUser } = useSelector((state: RootState) => state.feeback);
+  const { feedbackByUser, countsOfFeedback } = useSelector(
+    (state: RootState) => state.feeback
+  );
 
   const { content, pageNo, last } = feedbackByUser;
 
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
-  const [selectedStatus, setSelectedStatus] = useState<string>("Tất cả");
-
-  const handleLoadMore = () => {
-    if (!loading && !last) {
-      dispatch(
-        getAllFeedbackOfUserThunk({
-          pageNo: pageNo + 1,
-          userId: userDetail?.id!,
-        })
-      );
-    }
-  };
+  const [selectedStatus, setSelectedStatus] = useState<string>("All");
 
   useEffect(() => {
     dispatch(resetFeedback());
     dispatch(getUserThunk(userId));
 
     dispatch(getAllFeedbackOfUserThunk({ pageNo: 0, userId: userId }));
+    dispatch(getFeedbackCountsThunk(userId));
   }, [dispatch, userId]);
+
+  useEffect(() => {
+    if (selectedStatus === "All") {
+      dispatch(getAllFeedbackOfUserThunk({ pageNo: 0, userId }));
+    } else {
+      const rating = Number(selectedStatus);
+      dispatch(getAllFeedbackOfUserThunk({ pageNo: 0, userId, rating }));
+    }
+  }, [dispatch, selectedStatus]);
 
   function formatRelativeTime(timeStr: Date | undefined): string {
     const givenTime = dayjs(timeStr);
@@ -90,43 +88,30 @@ const OwnerFeedback: React.FC = () => {
     }
   }
 
-  const data: FeedbackTabData[] = [
-    { id: 1, status: "Tất cả" },
-    { id: 2, status: "Tất cả" },
-    { id: 3, status: "Tất cả" },
-    { id: 4, status: "1" },
-    { id: 5, status: "3" },
-    { id: 6, status: "5" },
-  ];
-
   const tabs = [
     {
-      label: "Tất cả",
-      count: 0,
+      label: "All",
+      count: countsOfFeedback[0]!,
     },
     {
       label: "5",
-      count: 0,
+      count: countsOfFeedback[5]!,
     },
     {
       label: "4",
-      count: 0,
+      count: countsOfFeedback[4]!,
     },
     {
       label: "3",
-      count: 0,
+      count: countsOfFeedback[3]!,
     },
     {
       label: "2",
-      count: 0,
+      count: countsOfFeedback[2]!,
     },
     {
       label: "1",
-      count: 0,
-    },
-    {
-      label: "0",
-      count: 0,
+      count: countsOfFeedback[1]!,
     },
   ];
 
@@ -135,6 +120,41 @@ const OwnerFeedback: React.FC = () => {
       <FeedbackCard feedback={item} />
     </>
   );
+
+  const isCloseToBottom = ({
+    layoutMeasurement,
+    contentOffset,
+    contentSize,
+  }: any) => {
+    const paddingToBottom = 80;
+    return (
+      layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom
+    );
+  };
+
+  const handleLoadMore = () => {
+    if (!loading && !last) {
+      if (selectedStatus === "All") {
+        dispatch(
+          getAllFeedbackOfUserThunk({
+            pageNo: pageNo + 1,
+            userId: userDetail?.id!,
+          })
+        );
+      } else {
+        const rating = Number(selectedStatus);
+
+        dispatch(
+          getAllFeedbackOfUserThunk({
+            pageNo: pageNo + 1,
+            userId: userDetail?.id!,
+            rating: rating,
+          })
+        );
+      }
+    }
+  };
 
   return (
     <SafeAreaView className="bg-[#00B0B9] flex-1" edges={["top"]}>
@@ -172,6 +192,7 @@ const OwnerFeedback: React.FC = () => {
                 </Text>
                 {[1, 2, 3, 4, 5].map((num) => (
                   <Icon
+                    key={`star-${num}`}
                     name="star"
                     size={16}
                     color={
@@ -205,19 +226,24 @@ const OwnerFeedback: React.FC = () => {
               <View className="flex-row items-center mt-1">
                 <Icon name="time-outline" size={20} color="#738AA0" />
                 <Text className="text-base text-gray-600 ml-1">
-                  Đã tham gia: <Text className="text-black">2 tuần trước</Text>
+                  Đã tham gia:{" "}
+                  <Text className="text-black">
+                    {formatRelativeTime(userDetail?.creationDate)}
+                  </Text>
                 </Text>
               </View>
             </View>
           </View>
+
           <View className="bg-white">
             <TabHeader
               ownerFeedback={true}
               tabs={tabs}
               selectedTab={selectedStatus}
-              onSelectTab={setSelectedStatus}
+              onSelectTab={(value) => setSelectedStatus(value as string)}
             />
           </View>
+
           {feedbackByUser.content.length === 0 ? (
             <View className="bg-white flex-1 justify-center items-center">
               <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
@@ -227,9 +253,7 @@ const OwnerFeedback: React.FC = () => {
             <View className="bg-white flex-1">
               <FlatList
                 data={content}
-                keyExtractor={(item, index) =>
-                  item.id ? item.id.toString() : `${index}`
-                }
+                keyExtractor={(item, index) => `feedback-${item.id ?? index}`}
                 renderItem={renderFeedbackCard}
                 onEndReached={handleLoadMore}
                 onEndReachedThreshold={0.5}

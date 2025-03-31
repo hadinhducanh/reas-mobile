@@ -3,6 +3,7 @@ import { FeedbackResponse } from "../../common/models/feedback";
 import {
   createFeedbackThunk,
   getAllFeedbackOfUserThunk,
+  getFeedbackCountsThunk,
   updateFeedbackThunk,
   viewFeedbackDetailThunk,
 } from "../thunk/feedbackThunk";
@@ -11,6 +12,7 @@ import { ResponseEntityPagination } from "../../common/models/pagination";
 interface FeebackState {
   feedbackDetail: FeedbackResponse | null;
   feedbackByUser: ResponseEntityPagination<FeedbackResponse>;
+  countsOfFeedback: { [key in number]?: number };
   loading: boolean;
   error: string | null;
 }
@@ -25,6 +27,7 @@ const initialState: FeebackState = {
     last: false,
     content: [],
   },
+  countsOfFeedback: {},
   loading: false,
   error: null,
 };
@@ -124,11 +127,31 @@ const feedbackSlice = createSlice({
             state.feedbackByUser = {
               ...action.payload,
               content: [
-                ...(state.feedbackByUser?.content || []), // ✅ Kiểm tra null
+                ...(state.feedbackByUser?.content || []),
                 ...action.payload.content,
               ],
             };
           }
+        }
+      );
+
+    builder
+      .addCase(getFeedbackCountsThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getFeedbackCountsThunk.fulfilled,
+        (state, action: PayloadAction<{ [key in number]?: number }>) => {
+          state.loading = false;
+          state.countsOfFeedback = action.payload;
+        }
+      )
+      .addCase(
+        getFeedbackCountsThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Get feedback counts of user failed";
         }
       );
   },

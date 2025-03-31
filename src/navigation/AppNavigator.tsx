@@ -101,7 +101,7 @@ export type RootStackParamList = {
   AccpectRejectExchange: { exchangeId: number };
   FeedbackItem: { exchangeId: number };
   SearchResult: undefined;
-  OwnerItem: undefined;
+  OwnerItem: { userId: number };
   OwnerFeedback: { userId: number };
   Favorite: undefined;
   Notifications: undefined;

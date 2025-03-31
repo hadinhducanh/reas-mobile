@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   Pressable,
   Dimensions,
   Platform,
-  Modal,
   ActivityIndicator,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -16,6 +15,7 @@ import {
   RouteProp,
   useNavigation,
   NavigationProp,
+  useFocusEffect,
 } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,7 +23,8 @@ import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { AppDispatch, RootState } from "../../../redux/store";
 import {
   getItemDetailThunk,
-  getRecommendedItemsThunk,
+  getOtherItemsOfUserThunk,
+  getSimilarItemsThunk,
 } from "../../../redux/thunk/itemThunks";
 import HorizontalSection from "../../../components/HorizontalSection";
 import Header from "../../../components/Header";
@@ -32,6 +33,7 @@ import dayjs from "dayjs";
 import LocationModal from "../../../components/LocationModal";
 import { ConditionItem } from "../../../common/enums/ConditionItem";
 import { MethodExchange } from "../../../common/enums/MethodExchange";
+import { resetItemDetailState } from "../../../redux/slices/itemSlice";
 
 const { width } = Dimensions.get("window");
 
@@ -59,9 +61,10 @@ const ItemDetails: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { itemId } = route.params;
   const dispatch = useDispatch<AppDispatch>();
-  const { itemDetail, itemRecommnand, loading } = useSelector(
+  const { itemDetail, itemSimilar, otherItemOfUser, loading } = useSelector(
     (state: RootState) => state.item
   );
+  const { user } = useSelector((state: RootState) => state.auth);
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
 
@@ -138,16 +141,25 @@ const ItemDetails: React.FC = () => {
     }
   }
 
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(resetItemDetailState());
+      dispatch(getItemDetailThunk(itemId));
+    }, [dispatch, itemId])
+  );
+
   useEffect(() => {
-    dispatch(getItemDetailThunk(itemId));
-    if (itemDetail?.desiredItem !== null) {
+    if (itemDetail) {
+      dispatch(getSimilarItemsThunk({ itemId, limit: 4 }));
       dispatch(
-        getRecommendedItemsThunk({
-          id: itemId,
+        getOtherItemsOfUserThunk({
+          currItemId: itemId,
+          userId: itemDetail.owner.id,
+          limit: 4,
         })
       );
     }
-  }, [dispatch, itemId]);
+  }, [dispatch, itemDetail, itemId]);
 
   const handleCreateExchange = () => {
     if (!accessToken) {
@@ -227,7 +239,11 @@ const ItemDetails: React.FC = () => {
         <View className="border-2 py-2 border-gray-300 rounded-xl mt-5 flex-row justify-between">
           <Pressable
             className="flex-row items-center"
-            onPress={() => navigation.navigate("OwnerItem")}
+            onPress={() =>
+              navigation.navigate("OwnerItem", {
+                userId: itemDetail?.owner.id!,
+              })
+            }
           >
             <Icon name="person-circle-outline" size={75} color="gray" />
             <View className="ml-1">
@@ -313,20 +329,36 @@ const ItemDetails: React.FC = () => {
         )}
       </View>
 
-      {itemDetail?.desiredItem != null && itemRecommnand.length !== 0 && (
-        <HorizontalSection
-          title="Bài đăng khác của Ngọc Cường"
-          data={itemRecommnand}
-          navigation={navigation}
-        />
-      )}
+      {!loading ? (
+        <>
+          {otherItemOfUser.length !== 0 && (
+            <>
+              {/* map item others of owner */}
+              <HorizontalSection
+                title={`Bài đăng khác của ${itemDetail?.owner.fullName}`}
+                data={otherItemOfUser}
+                navigation={navigation}
+              />
+            </>
+          )}
 
-      {itemDetail?.desiredItem != null && itemRecommnand.length !== 0 && (
-        <HorizontalSection
-          title="Bài đăng tương tự"
-          data={itemRecommnand}
-          navigation={navigation}
-        />
+          {itemSimilar.length !== 0 && (
+            <>
+              {/* map item suggested */}
+              <HorizontalSection
+                title="Bài đăng tương tự"
+                data={itemSimilar}
+                navigation={navigation}
+              />
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#00b0b9" />
+          </View>
+        </>
       )}
     </View>
   );

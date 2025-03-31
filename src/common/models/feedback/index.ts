@@ -19,5 +19,6 @@ export interface FeedbackResponse {
   rating: number;
   comment: string;
   imageUrl: string;
+  creationDate: Date;
   updated: boolean;
 }

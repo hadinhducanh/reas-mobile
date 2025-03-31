@@ -25,6 +25,8 @@ import { AppDispatch, RootState } from "../../../redux/store";
 import {
   cancelExchangeThunk,
   confirmNegotiatedPriceThunk,
+  getAllExchangesByStatusOfCurrentUserThunk,
+  getExchangeCountsThunk,
   getExchangeDetailThunk,
   reviewExchangeRequestThunk,
 } from "../../../redux/thunk/exchangeThunk";
@@ -35,6 +37,7 @@ import ErrorModal from "../../../components/ErrorModal";
 import { StatusExchange } from "../../../common/enums/StatusExchange";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MethodExchange } from "../../../common/enums/MethodExchange";
+import { resetExchange } from "../../../redux/slices/exchangeSlice";
 
 const exchangeMethods = [
   { label: "Pick up in person", value: MethodExchange.PICK_UP_IN_PERSON },
@@ -64,7 +67,7 @@ const AccpectRejectExchange: React.FC = () => {
   const { exchangeId } = route.params;
   const dispatch = useDispatch<AppDispatch>();
 
-  const { exchangeDetail, loading } = useSelector(
+  const { exchangeDetail, exchangeByStatus, loading } = useSelector(
     (state: RootState) => state.exchange
   );
   const { user } = useSelector((state: RootState) => state.auth);
@@ -127,7 +130,6 @@ const AccpectRejectExchange: React.FC = () => {
 
   const handleApproveExchange = async () => {
     setApproveVisible(false);
-    navigation.navigate("MainTabs", { screen: "Exchanges" });
 
     await dispatch(
       reviewExchangeRequestThunk({
@@ -135,23 +137,62 @@ const AccpectRejectExchange: React.FC = () => {
         statusExchangeRequest: StatusExchange.APPROVED,
       })
     );
+
+    dispatch(resetExchange());
+    await dispatch(
+      getAllExchangesByStatusOfCurrentUserThunk({
+        pageNo: 0,
+        statusExchangeRequest: StatusExchange.PENDING,
+      })
+    );
+
+    await dispatch(getExchangeCountsThunk());
+    if (exchangeByStatus.content.length !== 0) {
+      navigation.goBack();
+    }
   };
 
   const handleRejectExchange = async () => {
     setRejectVisible(false);
-    navigation.navigate("MainTabs", { screen: "Exchanges" });
+    navigation.goBack();
     await dispatch(
       reviewExchangeRequestThunk({
         exchangeId: exchangeDetail?.id!,
         statusExchangeRequest: StatusExchange.REJECTED,
       })
     );
+
+    dispatch(resetExchange());
+    await dispatch(
+      getAllExchangesByStatusOfCurrentUserThunk({
+        pageNo: 0,
+        statusExchangeRequest: StatusExchange.PENDING,
+      })
+    );
+
+    await dispatch(getExchangeCountsThunk());
+    if (exchangeByStatus.content.length !== 0) {
+      navigation.goBack();
+    }
   };
 
   const handleCancelExchange = async () => {
     setCancelVisible(false);
-    navigation.navigate("MainTabs", { screen: "Exchanges" });
+    navigation.goBack();
     await dispatch(cancelExchangeThunk(exchangeDetail?.id!));
+
+    dispatch(resetExchange());
+    await dispatch(
+      getAllExchangesByStatusOfCurrentUserThunk({
+        pageNo: 0,
+        statusExchangeRequest: StatusExchange.PENDING,
+      })
+    );
+
+    await dispatch(getExchangeCountsThunk());
+    if (exchangeByStatus.content.length !== 0) {
+      navigation.goBack();
+    }
   };
 
   const getMethodLabel = (method: MethodExchange | undefined): string => {
@@ -468,7 +509,11 @@ const AccpectRejectExchange: React.FC = () => {
                   Price of item
                 </Text>
                 {exchangeDetail?.numberOfOffer !== 0 &&
-                  exchangeDetail?.estimatePrice !== 0 && (
+                  exchangeDetail?.estimatePrice !== 0 &&
+                  ((!exchangeDetail?.buyerConfirmation &&
+                    !exchangeDetail?.sellerConfirmation) ||
+                    !exchangeDetail?.buyerConfirmation ||
+                    !exchangeDetail?.sellerConfirmation) && (
                     <Pressable onPress={handleNegotiatePrice}>
                       <Icon name="create-outline" size={24} color="#00b0b9" />
                     </Pressable>

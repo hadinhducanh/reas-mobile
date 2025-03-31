@@ -85,6 +85,50 @@ export const getRecommendedItemsInExchangeThunk = createAsyncThunk<
   }
 );
 
+export const getSimilarItemsThunk = createAsyncThunk<
+  ItemResponse[],
+  {
+    itemId: number;
+    limit?: number;
+  }
+>("item/getSimilarItems", async ({ itemId, limit }, thunkAPI) => {
+  try {
+    const data = await ItemService.getSimilarItems(itemId, limit);
+    return data;
+  } catch (error: any) {
+    console.log(error);
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Get similar items failed"
+    );
+  }
+});
+
+export const getOtherItemsOfUserThunk = createAsyncThunk<
+  ItemResponse[],
+  {
+    currItemId: number;
+    userId: number;
+    limit?: number;
+  }
+>(
+  "item/getOtherItemsOfUser",
+  async ({ currItemId, userId, limit }, thunkAPI) => {
+    try {
+      const data = await ItemService.getOtherItemsOfUser(
+        currItemId,
+        userId,
+        limit
+      );
+      return data;
+    } catch (error: any) {
+      console.log(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Get other items of user failed"
+      );
+    }
+  }
+);
+
 export const getAllItemAvailableThunk = createAsyncThunk<
   ResponseEntityPagination<ItemResponse>,
   { pageNo: number; request: SearchItemRequest }
@@ -126,6 +170,28 @@ export const getAllItemOfCurrentUserByStatusThunk = createAsyncThunk<
   }
 );
 
+export const getAllAvailableItemOfUserThunk = createAsyncThunk<
+  ResponseEntityPagination<ItemResponse>,
+  { pageNo: number; userId: number; statusItem: StatusItem },
+  { state: RootState }
+>(
+  "item/getAllAvailableItemOfUser",
+  async ({ pageNo, userId, statusItem }, thunkAPI) => {
+    try {
+      const data = await ItemService.getAllAvailableItemOfUser(
+        pageNo,
+        userId,
+        statusItem
+      );
+      return data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Get all item of user by status failed"
+      );
+    }
+  }
+);
+
 export const getItemDetailThunk = createAsyncThunk<ItemResponse, number>(
   "item/getItemDetail",
   async (id, thunkAPI) => {
@@ -139,3 +205,29 @@ export const getItemDetailThunk = createAsyncThunk<ItemResponse, number>(
     }
   }
 );
+
+export const getItemCountsOfUserThunk = createAsyncThunk<
+  { [key in StatusItem]?: number },
+  number
+>("item/getItemCountsOfUser", async (userId, thunkAPI) => {
+  try {
+    const statuses = [StatusItem.AVAILABLE, StatusItem.SOLD];
+
+    const requests = statuses.map((status) => {
+      return ItemService.getAllAvailableItemOfUser(0, userId, status);
+    });
+
+    const responses = await Promise.all(requests);
+
+    const counts: { [key in StatusItem]?: number } = {};
+    statuses.forEach((status, index) => {
+      counts[status] = responses[index].totalRecords;
+    });
+
+    return counts;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Get item counts of user failed"
+    );
+  }
+});

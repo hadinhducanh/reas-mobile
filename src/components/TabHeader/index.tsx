@@ -2,16 +2,17 @@ import React, { FC } from "react";
 import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { StatusExchange } from "../../common/enums/StatusExchange";
+import { StatusItem } from "../../common/enums/StatusItem";
 
 interface Tab {
-  label: StatusExchange | string;
+  label: StatusExchange | StatusItem | string | number;
   count: number;
 }
 
 interface TabHeaderProps {
   tabs: Tab[];
   selectedTab: string;
-  onSelectTab: (label: StatusExchange | string) => void;
+  onSelectTab: (label: StatusExchange | StatusItem | string | number) => void;
   owner?: boolean;
   ownerFeedback?: boolean;
 }
@@ -23,7 +24,8 @@ const TabHeader: FC<TabHeaderProps> = ({
   owner = false,
   ownerFeedback = false,
 }) => {
-  const isSelected = (label: StatusExchange | string) => selectedTab === label;
+  const isSelected = (label: StatusExchange | StatusItem | string | number) =>
+    selectedTab === label;
 
   if (ownerFeedback) {
     return (
@@ -53,14 +55,18 @@ const TabHeader: FC<TabHeaderProps> = ({
                   {`${tab.label}`}
                 </Text>
                 <Icon name="star" size={16} color="#FFA43D" className="mx-1" />
-                <Text
-                  className={`text-[13px] font-bold leading-[18px] text-center ${
-                    isSelected(tab.label) ? "text-[#00b0b9]" : "text-[#738aa0]"
-                  }`}
-                  numberOfLines={1}
-                >
-                  {`(${tab.count})`}
-                </Text>
+                {tab.count !== undefined && (
+                  <Text
+                    className={`text-[13px] font-bold leading-[18px] text-center ${
+                      isSelected(tab.label)
+                        ? "text-[#00b0b9]"
+                        : "text-[#738aa0]"
+                    }`}
+                    numberOfLines={1}
+                  >
+                    {`(${tab.count})`}
+                  </Text>
+                )}
               </View>
             </TouchableOpacity>
           ))}
