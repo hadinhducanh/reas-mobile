@@ -53,6 +53,9 @@ const SignUp: React.FC = () => {
   const { accessToken, loading, otp } = useSelector(
     (state: RootState) => state.auth
   );
+  const registrationToken = useSelector(
+    (state: RootState) => state.notification.token
+  );
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const [email, setEmail] = useState("");
@@ -126,6 +129,7 @@ const SignUp: React.FC = () => {
         fullName: trimmedFullName,
         email: trimmedEmail,
         password: trimmedPassword,
+        registrationTokens: registrationToken ? [registrationToken] : [],
       };
       // Chờ đến khi OTP được gửi thành công (với dispatch sendOtpThunk)
       await dispatch(sendOtpThunk(signUpDTO)).unwrap();

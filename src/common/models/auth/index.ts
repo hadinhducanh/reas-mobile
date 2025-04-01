@@ -12,12 +12,14 @@ export interface JWTAuthResponse {
 export interface LoginDto {
   userNameOrEmailOrPhone: string;
   password: string;
+  registrationTokens: string[];
 }
 
 export interface SignupDto {
   email: string;
   password: string;
   fullName: string;
+  registrationTokens: string[];
 }
 
 export interface UserResponse {

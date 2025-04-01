@@ -3,24 +3,23 @@ import AppNavigator from "./src/navigation/AppNavigator";
 import "./locales/i18n";
 import { StyleSheet } from "react-native";
 import SplashScreen from "./src/screens/Splash";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./global.css";
 import { Provider } from "react-redux";
-import store from "./src/redux/store";
+import store, { AppDispatch } from "./src/redux/store";
 import { UploadItemProvider } from "./src/context/ItemContext";
 import { ExchangeItemProvider } from "./src/context/ExchangeContext";
 import { useNotification } from "./src/hook/useNotification";
+import { useDispatch } from "react-redux";
+import { setRegistrationTokenThunk } from "./src/redux/thunk/notificationThunk";
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  useNotification();
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1500);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -29,16 +28,30 @@ const App: React.FC = () => {
   }
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      <Provider store={store}>
+    <Provider store={store}>
+      <SafeAreaProvider style={styles.container}>
         <UploadItemProvider>
           <ExchangeItemProvider>
+            <TokenHandler />
             <AppNavigator />
           </ExchangeItemProvider>
         </UploadItemProvider>
-      </Provider>
-    </SafeAreaProvider>
+      </SafeAreaProvider>
+    </Provider>
   );
+};
+
+const TokenHandler: React.FC = () => {
+  const token = useNotification();
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    if (token) {
+      dispatch(setRegistrationTokenThunk(token));
+    }
+  }, [token, dispatch]);
+
+  return null;
 };
 
 const styles = StyleSheet.create({

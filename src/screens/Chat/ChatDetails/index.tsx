@@ -30,6 +30,7 @@ import { ChatMessage } from "../../../common/models/chat";
 import Message from "../../../components/ChatMessage";
 import { formatTimestamp } from "../../../utils/TimestampFormatter";
 import moment from "moment-timezone";
+import { set } from "zod";
 
 const ChatDetails: React.FC = () => {
   const navigation = useNavigation();
@@ -91,6 +92,8 @@ const ChatDetails: React.FC = () => {
 
       if (response.payload) {
         setMessages(response.payload as ChatMessage[]);
+      } else {
+        setMessages([]);
       }
     };
     fetchChat();

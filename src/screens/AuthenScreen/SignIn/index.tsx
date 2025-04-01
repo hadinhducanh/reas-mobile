@@ -36,6 +36,9 @@ const SignIn: React.FC = () => {
   const { accessToken, loading } = useSelector(
     (state: RootState) => state.auth
   );
+  const registrationToken = useSelector(
+    (state: RootState) => state.notification.token
+  );
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -97,6 +100,7 @@ const SignIn: React.FC = () => {
         authenticateUserThunk({
           userNameOrEmailOrPhone: trimmedEmail,
           password: trimmedPassword,
+          registrationTokens: registrationToken ? [registrationToken] : [],
         })
       ).unwrap();
 
