@@ -576,7 +576,7 @@ const CreateExchange: React.FC = () => {
       </Modal>
 
       <ChooseMethodExchangeModal
-        methods={itemDetail?.methodExchanges!}
+        methods={itemDetail?.methodExchanges ?? []}
         visible={methodVisible}
         onCancel={() => setMethodVisible(false)}
       />

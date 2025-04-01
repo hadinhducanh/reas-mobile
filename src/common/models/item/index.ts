@@ -50,6 +50,7 @@ export interface ItemResponse {
   owner: UserResponse;
   desiredItem: DesiredItemResponse;
   userLocation: UserLocationDto;
+  favorite: Boolean;
 }
 
 export interface DesiredItemResponse {
@@ -87,4 +88,5 @@ export interface SearchItemRequest {
   locationIds?: [number];
   statusItems?: StatusItem[];
   statusEntities?: StatusEntity[];
+  typeItems?: TypeItem[];
 }

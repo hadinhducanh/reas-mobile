@@ -37,7 +37,7 @@ const ChooseLocationModal: React.FC<ChooseLocationModalProps> = ({
       setLoading(true);
       Promise.all(
         locations.map((loc) =>
-          LocationService.getPlaceDetails(
+          LocationService.getPlaceDetailsByReverseGeocode(
             loc.specificAddress.split("//")[0].trim()
           )
         )

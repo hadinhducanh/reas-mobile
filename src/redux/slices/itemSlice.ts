@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
-  getAllAvailableItemOfUserThunk,
+  getAllItemOfUserByStatusThunk,
   getAllItemAvailableThunk,
   getAllItemOfCurrentUserByStatusThunk,
   getItemCountsOfUserThunk,
@@ -10,22 +10,33 @@ import {
   getRecommendedItemsThunk,
   getSimilarItemsThunk,
   uploadItemThunk,
+  searchItemPaginationThunk,
+  getItemCountsOfCurrentUserThunk,
 } from "../thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
 import { StatusItem } from "../../common/enums/StatusItem";
+import {
+  addToFavoriteThunk,
+  deleteFromFavoriteThunk,
+  getAllFavoriteItemsThunk,
+} from "../thunk/favoriteThunk";
+import { FavoriteResponse } from "../../common/models/favorite";
 
 interface ItemState {
   itemDetail: ItemResponse | null;
   itemAvailable: ResponseEntityPagination<ItemResponse>;
+  itemSearch: ResponseEntityPagination<ItemResponse>;
   itemByStatus: ResponseEntityPagination<ItemResponse>;
   itemByStatusOfUser: ResponseEntityPagination<ItemResponse>;
+  itemFavorite: ResponseEntityPagination<FavoriteResponse>;
   itemRecommnand: ItemResponse[];
   itemSimilar: ItemResponse[];
   otherItemOfUser: ItemResponse[];
   itemSuggested: ItemResponse[];
   itemUpload: ItemResponse | null;
   countsOfUser: { [key in StatusItem]?: number };
+  countsOfCurrentUser: { [key in StatusItem]?: number };
   loading: boolean;
   error: string | null;
 }
@@ -33,6 +44,22 @@ interface ItemState {
 const initialState: ItemState = {
   itemDetail: null,
   itemAvailable: {
+    pageNo: 0,
+    pageSize: 10,
+    totalPages: 0,
+    totalRecords: 0,
+    last: false,
+    content: [],
+  },
+  itemFavorite: {
+    pageNo: 0,
+    pageSize: 10,
+    totalPages: 0,
+    totalRecords: 0,
+    last: false,
+    content: [],
+  },
+  itemSearch: {
     pageNo: 0,
     pageSize: 10,
     totalPages: 0,
@@ -62,6 +89,7 @@ const initialState: ItemState = {
   itemSuggested: [],
   itemUpload: null,
   countsOfUser: {},
+  countsOfCurrentUser: {},
   loading: false,
   error: null,
 };
@@ -77,6 +105,14 @@ const itemSlice = createSlice({
       state.itemSimilar = [];
       state.otherItemOfUser = [];
       state.itemSuggested = [];
+      state.itemSearch = {
+        pageNo: 0,
+        pageSize: 10,
+        totalPages: 0,
+        totalRecords: 0,
+        last: false,
+        content: [],
+      };
     },
   },
   extraReducers: (builder) => {
@@ -94,6 +130,29 @@ const itemSlice = createSlice({
       )
       .addCase(
         uploadItemThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Upload item failed";
+        }
+      );
+
+    builder
+      .addCase(getAllFavoriteItemsThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getAllFavoriteItemsThunk.fulfilled,
+        (
+          state,
+          action: PayloadAction<ResponseEntityPagination<FavoriteResponse>>
+        ) => {
+          state.loading = false;
+          state.itemFavorite = action.payload;
+        }
+      )
+      .addCase(
+        getAllFavoriteItemsThunk.rejected,
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Upload item failed";
@@ -134,6 +193,36 @@ const itemSlice = createSlice({
       );
 
     builder
+      .addCase(searchItemPaginationThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        searchItemPaginationThunk.fulfilled,
+        (
+          state,
+          action: PayloadAction<ResponseEntityPagination<ItemResponse>>
+        ) => {
+          state.loading = false;
+          if (action.payload.pageNo === 0) {
+            state.itemSearch = action.payload;
+          } else {
+            state.itemSearch = {
+              ...action.payload,
+              content: [...state.itemSearch.content, ...action.payload.content],
+            };
+          }
+        }
+      )
+      .addCase(
+        searchItemPaginationThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Search item failed";
+        }
+      );
+
+    builder
       .addCase(getItemDetailThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -150,6 +239,48 @@ const itemSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Get item detail failed";
+        }
+      );
+
+    builder
+      .addCase(addToFavoriteThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        addToFavoriteThunk.fulfilled,
+        (state, action: PayloadAction<FavoriteResponse>) => {
+          state.loading = false;
+          state.itemDetail = action.payload.item;
+        }
+      )
+      .addCase(
+        addToFavoriteThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Add item to favorite failed";
+        }
+      );
+
+    builder
+      .addCase(deleteFromFavoriteThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        deleteFromFavoriteThunk.fulfilled,
+        (state, action: PayloadAction<Boolean>) => {
+          state.loading = false;
+          if (state.itemDetail) {
+            state.itemDetail.favorite = !action.payload;
+          }
+        }
+      )
+      .addCase(
+        deleteFromFavoriteThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Add item to favorite failed";
         }
       );
 
@@ -178,12 +309,12 @@ const itemSlice = createSlice({
       );
 
     builder
-      .addCase(getAllAvailableItemOfUserThunk.pending, (state) => {
+      .addCase(getAllItemOfUserByStatusThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(
-        getAllAvailableItemOfUserThunk.fulfilled,
+        getAllItemOfUserByStatusThunk.fulfilled,
         (
           state,
           action: PayloadAction<ResponseEntityPagination<ItemResponse>>
@@ -193,7 +324,7 @@ const itemSlice = createSlice({
         }
       )
       .addCase(
-        getAllAvailableItemOfUserThunk.rejected,
+        getAllItemOfUserByStatusThunk.rejected,
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error =
@@ -300,6 +431,27 @@ const itemSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Get item counts of user failed";
+        }
+      );
+
+    builder
+      .addCase(getItemCountsOfCurrentUserThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getItemCountsOfCurrentUserThunk.fulfilled,
+        (state, action: PayloadAction<{ [key in StatusItem]?: number }>) => {
+          state.loading = false;
+          state.countsOfCurrentUser = action.payload;
+        }
+      )
+      .addCase(
+        getItemCountsOfCurrentUserThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error =
+            action.payload || "Get item counts of current user failed";
         }
       );
   },

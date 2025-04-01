@@ -1,6 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { PlaceDetail } from "../../common/models/location";
-import { getPlaceDetailsThunk } from "../thunk/locationThunks";
+import {
+  getPlaceDetailsByReverseGeocodeThunk,
+  getPlaceDetailsThunk,
+} from "../thunk/locationThunks";
 
 interface ItemState {
   selectedPlaceDetail: PlaceDetail | null;
@@ -38,6 +41,26 @@ const itemSlice = createSlice({
       )
       .addCase(
         getPlaceDetailsThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Get detail location failed";
+        }
+      );
+
+    builder
+      .addCase(getPlaceDetailsByReverseGeocodeThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getPlaceDetailsByReverseGeocodeThunk.fulfilled,
+        (state, action: PayloadAction<PlaceDetail>) => {
+          state.loading = false;
+          state.selectedPlaceDetail = action.payload;
+        }
+      )
+      .addCase(
+        getPlaceDetailsByReverseGeocodeThunk.rejected,
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Get detail location failed";
