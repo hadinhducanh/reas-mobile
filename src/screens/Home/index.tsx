@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   ScrollView,
@@ -8,6 +8,7 @@ import {
   Pressable,
   ActivityIndicator,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
@@ -30,20 +31,61 @@ import {
   LIVINGROOM_TYPE_IMAGE,
 } from "../../common/constant";
 import { StatusItem } from "../../common/enums/StatusItem";
+import { TypeItem } from "../../common/enums/TypeItem";
 
 type HomeScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
   "ItemDetails"
 >;
 const categories = [
-  { id: 1, name: "Kitchen", image: KITCHEN_TYPE_IMAGE },
-  { id: 2, name: "Cleaning", image: CLEANING_TYPE_IMAGE },
-  { id: 3, name: "Cooling", image: COOLING_TYPE_IMAGE },
-  { id: 4, name: "Electric", image: ELECTRICTION_TYPE_IMAGE },
-  { id: 5, name: "Lighting", image: LIGHTING_TYPE_IMAGE },
-  { id: 6, name: "Living room", image: LIVINGROOM_TYPE_IMAGE },
-  { id: 7, name: "Bedroom", image: BEDROOM_TYPE_IMAGE },
-  { id: 8, name: "Bathroom", image: BATHROOM_TYPE_IMAGE },
+  {
+    id: 1,
+    name: "Kitchen",
+    value: TypeItem.KITCHEN_APPLIANCES,
+    image: KITCHEN_TYPE_IMAGE,
+  },
+  {
+    id: 2,
+    name: "Cleaning",
+    value: TypeItem.CLEANING_LAUNDRY_APPLIANCES,
+    image: CLEANING_TYPE_IMAGE,
+  },
+  {
+    id: 3,
+    name: "Cooling",
+    value: TypeItem.COOLING_HEATING_APPLIANCES,
+    image: COOLING_TYPE_IMAGE,
+  },
+  {
+    id: 4,
+    name: "Electric",
+    value: TypeItem.ELECTRONICS_ENTERTAINMENT_DEVICES,
+    image: ELECTRICTION_TYPE_IMAGE,
+  },
+  {
+    id: 5,
+    name: "Lighting",
+    value: TypeItem.LIGHTING_SECURITY_DEVICES,
+    image: LIGHTING_TYPE_IMAGE,
+  },
+  {
+    id: 6,
+    name: "Living room",
+    value: TypeItem.LIVING_ROOM_APPLIANCES,
+    image: LIVINGROOM_TYPE_IMAGE,
+  },
+  {
+    id: 7,
+    name: "Bedroom",
+    value: TypeItem.BEDROOM_APPLIANCES,
+    image: BEDROOM_TYPE_IMAGE,
+  },
+  {
+    id: 8,
+    name: "Bathroom",
+    value: TypeItem.BATHROOM_APPLIANCES,
+    image: BATHROOM_TYPE_IMAGE,
+  },
 ];
 
 const { width } = Dimensions.get("window");
@@ -55,6 +97,7 @@ const HomeScreen: React.FC = () => {
     (state: RootState) => state.item
   );
   const { content, pageNo, last } = itemAvailable;
+  const [searchText, setSearchText] = useState<string>("");
 
   const chunkArray = (array: ItemResponse[], size: number) => {
     const chunked: ItemResponse[][] = [];
@@ -94,6 +137,15 @@ const HomeScreen: React.FC = () => {
     dispatch(getAllItemAvailableThunk({ pageNo: 0, request: searchRequest }));
   }, [dispatch]);
 
+  const handleSearch = () => {
+    if (searchText !== "") {
+      navigation.navigate("SearchResult", {
+        searchTextParam: searchText,
+      });
+      setSearchText("");
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
       <ScrollView
@@ -111,7 +163,7 @@ const HomeScreen: React.FC = () => {
             <View className="bg-white rounded-xl flex-row items-center px-2">
               <Pressable
                 className="p-2 bg-[#00B0B9] rounded-xl flex items-center justify-center mr-3"
-                onPress={() => navigation.navigate("SearchResult")}
+                onPress={handleSearch}
               >
                 <Icon name="search" size={20} color="#ffffff" />
               </Pressable>
@@ -119,6 +171,9 @@ const HomeScreen: React.FC = () => {
                 placeholder="Search..."
                 placeholderTextColor="#738aa0"
                 className="flex-1 text-lg text-gray-800 py-3"
+                onChangeText={setSearchText}
+                value={searchText}
+                onSubmitEditing={handleSearch}
               />
             </View>
           </View>
@@ -166,9 +221,14 @@ const HomeScreen: React.FC = () => {
                       className="flex flex-col justify-between mx-6"
                     >
                       {col.map((category: any) => (
-                        <View
+                        <TouchableOpacity
                           key={category.id}
                           className="flex flex-col items-center mb-5"
+                          onPress={() =>
+                            navigation.navigate("SearchResult", {
+                              itemType: category.value,
+                            })
+                          }
                         >
                           <View className="bg-gray-100 rounded-lg">
                             <Image
@@ -184,7 +244,7 @@ const HomeScreen: React.FC = () => {
                           <Text className="text-sm font-medium text-black capitalize mt-1">
                             {category.name}
                           </Text>
-                        </View>
+                        </TouchableOpacity>
                       ))}
                     </View>
                   ))}

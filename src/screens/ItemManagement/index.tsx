@@ -1,57 +1,90 @@
-import React, { useState } from "react";
-import { FlatList, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../components/Header";
 import TabHeader from "../../components/TabHeader";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import CardItem from "../../components/CardItem";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../redux/store";
 import { ItemResponse } from "../../common/models/item";
+import { StatusItem } from "../../common/enums/StatusItem";
+import {
+  getAllItemOfCurrentUserByStatusThunk,
+  getItemCountsOfCurrentUserThunk,
+} from "../../redux/thunk/itemThunks";
+import Icon from "react-native-vector-icons/Ionicons";
 
-interface ItemManageTabData {
-  id: number;
-  status: string;
-}
+const statusItems = [
+  { label: "AVAILABLE", value: StatusItem.AVAILABLE },
+  {
+    label: "EXPIRED",
+    value: StatusItem.EXPIRED,
+  },
+  { label: "PENDING", value: StatusItem.PENDING },
+  { label: "REJECTED", value: StatusItem.REJECTED },
+  { label: "NO LONGER FOR EXCHANGE", value: StatusItem.NO_LONGER_FOR_EXCHANGE },
+  { label: "SOLD", value: StatusItem.SOLD },
+  { label: "UNAVAILABLE", value: StatusItem.UNAVAILABLE },
+];
+
 const ItemManagement: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [selectedStatus, setSelectedStatus] = useState<string>("Approved");
-  const { itemRecommnand } = useSelector((state: RootState) => state.item);
-  const data: ItemManageTabData[] = [
-    { id: 1, status: "Approved" },
-    { id: 2, status: "Expired" },
-    { id: 3, status: "Rejected" },
-    { id: 4, status: "Pending" },
-    { id: 5, status: "No Longer For Exchange" },
-    { id: 6, status: "Unavailable" },
-  ];
+  const dispatch = useDispatch<AppDispatch>();
+
+  const [selectedStatus, setSelectedStatus] = useState<StatusItem>(
+    StatusItem.AVAILABLE
+  );
+  const { itemByStatus, countsOfCurrentUser, loading } = useSelector(
+    (state: RootState) => state.item
+  );
+
+  const { content, pageNo, last } = itemByStatus;
+
+  const getStatusItemLabel = (status: StatusItem | undefined): string => {
+    const found = statusItems.find((item) => item.value === status);
+    return found ? found.label : "";
+  };
+
+  useEffect(() => {
+    dispatch(
+      getAllItemOfCurrentUserByStatusThunk({
+        pageNo: 0,
+        statusItem: selectedStatus,
+      })
+    );
+    dispatch(getItemCountsOfCurrentUserThunk());
+  }, [dispatch, selectedStatus]);
 
   const tabs = [
     {
-      label: "Approved",
-      count: data.filter((item) => item.status === "Approved").length,
+      label: getStatusItemLabel(StatusItem.AVAILABLE),
+      count: countsOfCurrentUser.AVAILABLE!,
     },
     {
-      label: "Expired",
-      count: data.filter((item) => item.status === "Expired").length,
+      label: getStatusItemLabel(StatusItem.EXPIRED),
+      count: countsOfCurrentUser.EXPIRED!,
     },
     {
-      label: "Rejected",
-      count: data.filter((item) => item.status === "Rejected").length,
+      label: getStatusItemLabel(StatusItem.PENDING),
+      count: countsOfCurrentUser.PENDING!,
     },
     {
-      label: "Pending",
-      count: data.filter((item) => item.status === "Pending").length,
+      label: getStatusItemLabel(StatusItem.REJECTED),
+      count: countsOfCurrentUser.REJECTED!,
     },
     {
-      label: "No Longer For Exchange",
-      count: data.filter((item) => item.status === "No Longer For Exchange")
-        .length,
+      label: getStatusItemLabel(StatusItem.NO_LONGER_FOR_EXCHANGE),
+      count: countsOfCurrentUser.NO_LONGER_FOR_EXCHANGE!,
     },
     {
-      label: "Unavailable",
-      count: data.filter((item) => item.status === "Unavailable").length,
+      label: getStatusItemLabel(StatusItem.SOLD),
+      count: countsOfCurrentUser.SOLD!,
+    },
+    {
+      label: getStatusItemLabel(StatusItem.UNAVAILABLE),
+      count: countsOfCurrentUser.UNAVAILABLE!,
     },
   ];
 
@@ -63,15 +96,7 @@ const ItemManagement: React.FC = () => {
     return chunked;
   };
 
-  // const toggleLike = (itemId: number) => {
-  //   setItemList((prevList) =>
-  //     prevList.map((item) =>
-  //       item.id === itemId ? { ...item, isFavorited: !item.isFavorited } : item
-  //     )
-  //   );
-  // };
-
-  const rows = chunkArray(itemRecommnand.content, 2);
+  const rows = chunkArray(content, 2);
 
   return (
     <SafeAreaView className="flex-1 bg-[#f6f9f9]">
@@ -81,28 +106,44 @@ const ItemManagement: React.FC = () => {
           owner={false}
           tabs={tabs}
           selectedTab={selectedStatus}
-          onSelectTab={setSelectedStatus}
+          onSelectTab={(value) => setSelectedStatus(value as StatusItem)}
         />
       </View>
-      <View className="mx-5">
-        <View className="mt-3">
-          {rows.map((row, rowIndex) => (
-            <View key={rowIndex} className="flex flex-row mb-2 gap-x-2">
-              {row.map((item) => (
-                <View key={item.id} className="flex-1">
-                  <CardItem
-                    item={item}
-                    navigation={navigation}
-                    // toggleLike={toggleLike}
-                    mode="management"
-                  />
-                </View>
-              ))}
-              {row.length === 1 && <View className="flex-1" />}
-            </View>
-          ))}
+
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#00b0b9" />
         </View>
-      </View>
+      ) : (
+        <>
+          {content.length === 0 ? (
+            <View className="flex-1 justify-center items-center">
+              <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
+              <Text className="text-gray-500">No item</Text>
+            </View>
+          ) : (
+            <View className="mx-5">
+              <View className="mt-3">
+                {rows.map((row, rowIndex) => (
+                  <View key={rowIndex} className="flex flex-row mb-2 gap-x-2">
+                    {row.map((item) => (
+                      <View key={item.id} className="flex-1">
+                        <CardItem
+                          item={item}
+                          navigation={navigation}
+                          // toggleLike={toggleLike}
+                          mode="management"
+                        />
+                      </View>
+                    ))}
+                    {row.length === 1 && <View className="flex-1" />}
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+        </>
+      )}
     </SafeAreaView>
   );
 };

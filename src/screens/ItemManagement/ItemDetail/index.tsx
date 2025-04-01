@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Dimensions,
   Platform,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import {
@@ -34,6 +35,10 @@ import LocationModal from "../../../components/LocationModal";
 import { ConditionItem } from "../../../common/enums/ConditionItem";
 import { MethodExchange } from "../../../common/enums/MethodExchange";
 import { resetItemDetailState } from "../../../redux/slices/itemSlice";
+import {
+  addToFavoriteThunk,
+  deleteFromFavoriteThunk,
+} from "../../../redux/thunk/favoriteThunk";
 
 const { width } = Dimensions.get("window");
 
@@ -64,8 +69,8 @@ const ItemDetails: React.FC = () => {
   const { itemDetail, itemSimilar, otherItemOfUser, loading } = useSelector(
     (state: RootState) => state.item
   );
-  const { user } = useSelector((state: RootState) => state.auth);
   const { accessToken } = useSelector((state: RootState) => state.auth);
+  const [isFavorite, setIsFavorite] = useState(itemDetail?.favorite);
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
 
   const getConditionItemLabel = (status: ConditionItem | undefined): string => {
@@ -79,37 +84,39 @@ const ItemDetails: React.FC = () => {
     if (!selectedMethods || selectedMethods.length === 0) {
       return "";
     }
-
     return methodExchanges
       .filter((item) => selectedMethods.includes(item.value))
       .map((item) => item.label)
       .join(", ");
   };
 
-  const data = [
-    {
-      label: "Tình trạng",
-      value: getConditionItemLabel(itemDetail?.conditionItem),
-    },
-    { label: "Thiết bị", value: itemDetail?.category.categoryName },
-    { label: "Hãng", value: itemDetail?.brand.brandName },
-    {
-      label: "Phương thức trao đổi",
-      value:
-        itemDetail?.methodExchanges.length === 3
-          ? "All of methods"
-          : getMethodExchangeLabel(itemDetail?.methodExchanges),
-    },
-    {
-      label: "Loại giao dịch",
-      value:
-        itemDetail?.desiredItem !== null ? "Open with desired item" : "Open",
-    },
-  ];
+  const data = useMemo(
+    () => [
+      {
+        label: "Tình trạng",
+        value: getConditionItemLabel(itemDetail?.conditionItem),
+      },
+      { label: "Thiết bị", value: itemDetail?.category.categoryName },
+      { label: "Hãng", value: itemDetail?.brand.brandName },
+      {
+        label: "Phương thức trao đổi",
+        value:
+          itemDetail?.methodExchanges.length === 3
+            ? "All of methods"
+            : getMethodExchangeLabel(itemDetail?.methodExchanges),
+      },
+      {
+        label: "Loại giao dịch",
+        value:
+          itemDetail?.desiredItem !== null ? "Open with desired item" : "Open",
+      },
+    ],
+    [itemDetail]
+  );
 
-  const imageArray = itemDetail?.imageUrl
-    ? itemDetail.imageUrl.split(", ")
-    : [];
+  const imageArray = useMemo(() => {
+    return itemDetail?.imageUrl ? itemDetail.imageUrl.split(", ") : [];
+  }, [itemDetail?.imageUrl]);
 
   const formatPrice = (price: number | undefined): string => {
     return price !== undefined ? price.toLocaleString("vi-VN") : "0";
@@ -118,9 +125,7 @@ const ItemDetails: React.FC = () => {
   function formatRelativeTime(timeStr: Date | undefined): string {
     const givenTime = dayjs(timeStr);
     const now = dayjs();
-
     const diffInSeconds = now.diff(givenTime, "second");
-
     if (diffInSeconds < 60) {
       return `${diffInSeconds} seconds ago`;
     } else if (diffInSeconds < 3600) {
@@ -150,10 +155,11 @@ const ItemDetails: React.FC = () => {
 
   useEffect(() => {
     if (itemDetail) {
-      dispatch(getSimilarItemsThunk({ itemId, limit: 4 }));
+      setIsFavorite(itemDetail.favorite);
+      dispatch(getSimilarItemsThunk({ itemId: itemDetail.id, limit: 4 }));
       dispatch(
         getOtherItemsOfUserThunk({
-          currItemId: itemId,
+          currItemId: itemDetail.id,
           userId: itemDetail.owner.id,
           limit: 4,
         })
@@ -161,206 +167,237 @@ const ItemDetails: React.FC = () => {
     }
   }, [dispatch, itemDetail, itemId]);
 
-  const handleCreateExchange = () => {
+  const handleCreateExchange = useCallback(() => {
     if (!accessToken) {
       navigation.navigate("SignIn");
     } else {
       navigation.navigate("CreateExchange", { itemId });
     }
-  };
+  }, [accessToken, navigation, itemId]);
 
-  const renderContent = () => (
-    <View className="flex-1">
-      <FlatList
-        data={imageArray}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item: image }) => (
-          <View className="relative" style={{ width: width }}>
-            <View className={`w-[${width}] h-96 bg-white`}>
-              <Image
-                source={{ uri: image }}
-                className="w-full h-full"
-                resizeMode="contain"
-              />
-            </View>
+  const handleFavoritePress = useCallback(() => {
+    if (!accessToken) {
+      navigation.navigate("SignIn");
+      return;
+    }
+    setIsFavorite((prev) => !prev);
+    if (isFavorite) {
+      dispatch(deleteFromFavoriteThunk(itemId))
+        .unwrap()
+        .catch(() => setIsFavorite(true));
+    } else {
+      dispatch(addToFavoriteThunk(itemId))
+        .unwrap()
+        .catch(() => setIsFavorite(false));
+    }
+  }, [accessToken, dispatch, itemId, isFavorite, navigation]);
 
-            <Pressable
-              className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
-              // onPress={setFavorite}
+  const renderImageItem = useCallback(
+    ({ item: image }: { item: string }) => (
+      <View className="relative" style={{ width: width }}>
+        <View className={`w-[${width}] h-96 bg-white`}>
+          <Image
+            source={{ uri: image }}
+            className="w-full h-full"
+            resizeMode="contain"
+          />
+        </View>
+        <TouchableOpacity
+          className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
+          onPress={handleFavoritePress}
+        >
+          <Icon
+            name={isFavorite ? "heart" : "heart-outline"}
+            size={24}
+            color="#ff0000"
+          />
+        </TouchableOpacity>
+      </View>
+    ),
+    [handleFavoritePress, isFavorite]
+  );
+
+  const renderContent = useMemo(
+    () => (
+      <View className="flex-1">
+        <FlatList
+          data={imageArray}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={renderImageItem}
+        />
+
+        <View className="p-5 bg-white">
+          <Text className="text-2xl font-bold text-gray-900">
+            {itemDetail?.itemName}
+          </Text>
+          <Text className="text-2xl font-semibold text-[#00B0B9] mt-1">
+            {itemDetail?.price === 0
+              ? "Free"
+              : formatPrice(itemDetail?.price) + " VND"}
+          </Text>
+          {itemDetail?.moneyAccepted && (
+            <Text
+              className="text-gray-500 font-bold text-base mt-1"
+              style={{ fontStyle: "italic" }}
             >
-              <Icon name={"heart-outline"} size={24} color="#ff0000" />
+              *Có nhận trao đổi bằng tiền
+            </Text>
+          )}
+
+          <View className="mt-3">
+            <Pressable onPress={() => setLocationVisible(true)}>
+              <View className="flex flex-row items-center">
+                <Icon name="location-outline" size={25} color="black" />
+                <Text
+                  className="ml-1 text-gray-500 text-lg underline w-10/12"
+                  numberOfLines={1}
+                >
+                  {itemDetail?.userLocation.specificAddress.split("//")[1]}
+                </Text>
+              </View>
+            </Pressable>
+
+            <View className="flex flex-row items-center mt-2">
+              <Icon name="time-outline" size={25} color="black" />
+              <Text className="ml-1 text-gray-500 text-lg">
+                Đăng {formatRelativeTime(itemDetail?.approvedTime)}
+              </Text>
+            </View>
+          </View>
+
+          <View className="border-2 py-2 border-gray-300 rounded-xl mt-5 flex-row justify-between">
+            <Pressable
+              className="flex-row items-center"
+              onPress={() =>
+                navigation.navigate("OwnerItem", {
+                  userId: itemDetail?.owner.id!,
+                })
+              }
+            >
+              <Icon name="person-circle-outline" size={75} color="gray" />
+              <View className="ml-1">
+                <Text className="text-lg font-bold">
+                  {itemDetail?.owner.fullName}
+                </Text>
+                <Text className="text-gray-500 my-1">
+                  Sản phẩm:{" "}
+                  <Text className="underline text-black">
+                    {itemDetail?.owner.numOfExchangedItems} đã bán
+                  </Text>
+                </Text>
+                <View className="flex-row items-center">
+                  <View className="w-3 h-3 bg-[#738aa0] rounded-full mr-1" />
+                  <Text className="text-gray-500">Hoạt động 2 giờ trước</Text>
+                </View>
+              </View>
+            </Pressable>
+            <Pressable
+              className="flex-col justify-center items-center px-5 border-l-2 border-gray-300"
+              onPress={() =>
+                navigation.navigate("OwnerFeedback", {
+                  userId: itemDetail?.owner.id!,
+                })
+              }
+            >
+              <View className="flex-row items-center">
+                <Text className="mr-1 text-xl font-bold">
+                  {itemDetail?.owner.numOfRatings !== undefined
+                    ? Number.isInteger(itemDetail?.owner.numOfRatings)
+                      ? `${itemDetail?.owner.numOfRatings}.0`
+                      : itemDetail?.owner.numOfRatings
+                    : "0.0"}
+                </Text>
+                <Icon name="star" size={20} color="yellow" />
+              </View>
+              <Text className="underline">
+                {itemDetail?.owner.numOfFeedbacks} đánh giá
+              </Text>
             </Pressable>
           </View>
-        )}
-      />
+        </View>
 
-      <View className="p-5 bg-white">
-        <Text className="text-2xl font-bold text-gray-900">
-          {itemDetail?.itemName}
-        </Text>
-        <Text className="text-2xl font-semibold text-[#00B0B9] mt-1">
-          {itemDetail?.price === 0
-            ? "Free"
-            : formatPrice(itemDetail?.price) + " VND"}
-        </Text>
-        {itemDetail?.moneyAccepted && (
-          <Text
-            className="text-gray-500 font-bold text-base mt-1"
-            style={{ fontStyle: "italic" }}
-          >
-            *Có nhận trao đổi bằng tiền
+        <View className="p-5 my-5 bg-white">
+          <Text className="text-xl font-bold mb-3">Mô tả chi tiết</Text>
+          <View className="mb-3">
+            {itemDetail?.description.split("\\n").map((line, index) => (
+              <Text className="text-lg font-normal mb-1" key={index}>
+                {line}
+              </Text>
+            ))}
+          </View>
+
+          <Text className="text-xl font-bold mt-4 mb-3">
+            Thông tin chi tiết
           </Text>
-        )}
-
-        <View className="mt-3">
-          <Pressable onPress={() => setLocationVisible(true)}>
-            <View className="flex flex-row items-center">
-              <Icon name="location-outline" size={25} color="black" />
-              <Text
-                className="ml-1 text-gray-500 text-lg underline w-10/12"
-                numberOfLines={1}
-              >
-                {itemDetail?.userLocation.specificAddress.split("//")[1]}
-              </Text>
-            </View>
-          </Pressable>
-
-          <View className="flex flex-row items-center mt-2">
-            <Icon name="time-outline" size={25} color="black" />
-            <Text className="ml-1 text-gray-500 text-lg">
-              Đăng {formatRelativeTime(itemDetail?.approvedTime)}
-            </Text>
+          <View className="border border-gray-300 rounded-md overflow-hidden">
+            {data.map((info, index) => (
+              <View key={index} className="flex-row border-b border-gray-300">
+                <View className="w-[40%] px-2 py-4 bg-gray-200">
+                  <Text className="text-base font-semibold text-gray-500">
+                    {info.label}
+                  </Text>
+                </View>
+                <View className="px-2 py-4">
+                  <Text className="text-base">{info.value}</Text>
+                </View>
+              </View>
+            ))}
           </View>
-        </View>
 
-        <View className="border-2 py-2 border-gray-300 rounded-xl mt-5 flex-row justify-between">
-          <Pressable
-            className="flex-row items-center"
-            onPress={() =>
-              navigation.navigate("OwnerItem", {
-                userId: itemDetail?.owner.id!,
-              })
-            }
-          >
-            <Icon name="person-circle-outline" size={75} color="gray" />
-            <View className="ml-1">
-              <Text className="text-lg font-bold">
-                {itemDetail?.owner.fullName}
+          {itemDetail?.termsAndConditionsExchange && (
+            <View className="mt-5">
+              <Text className="text-xl font-semibold mb-1">
+                Điều khoản và điều kiện trao đổi:
               </Text>
-              <Text className="text-gray-500 my-1">
-                Sản phẩm:{" "}
-                <Text className="underline text-black">
-                  {itemDetail?.owner.numOfExchangedItems} đã bán
-                </Text>
-              </Text>
-              <View className="flex-row items-center">
-                <View className="w-3 h-3 bg-[#738aa0] rounded-full mr-1" />
-                <Text className="text-gray-500">Hoạt động 2 giờ trước</Text>
-              </View>
+              {itemDetail?.termsAndConditionsExchange
+                .split("\\n")
+                .map((line, index) => (
+                  <Text className="text-base mb-0.5" key={index}>
+                    {line}
+                  </Text>
+                ))}
             </View>
-          </Pressable>
-          <Pressable
-            className="flex-col justify-center items-center px-5 border-l-2 border-gray-300"
-            onPress={() =>
-              navigation.navigate("OwnerFeedback", {
-                userId: itemDetail?.owner.id!,
-              })
-            }
-          >
-            <View className="flex-row items-center">
-              <Text className="mr-1 text-xl font-bold">
-                {itemDetail?.owner.numOfRatings !== undefined
-                  ? Number.isInteger(itemDetail?.owner.numOfRatings)
-                    ? `${itemDetail?.owner.numOfRatings}.0`
-                    : itemDetail?.owner.numOfRatings
-                  : "0.0"}
-              </Text>
-              <Icon name="star" size={20} color="yellow" />
-            </View>
-            <Text className="underline">
-              {itemDetail?.owner.numOfFeedbacks} đánh giá
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-
-      <View className="p-5 my-5 bg-white">
-        <Text className="text-xl font-bold mb-3">Mô tả chi tiết</Text>
-        <View className="mb-3">
-          {itemDetail?.description.split("\\n").map((line, index) => (
-            <Text className="text-lg font-normal mb-1" key={index}>
-              {line}
-            </Text>
-          ))}
+          )}
         </View>
 
-        <Text className="text-xl font-bold mt-4 mb-3">Thông tin chi tiết</Text>
-        <View className="border border-gray-300 rounded-md overflow-hidden">
-          {data.map((info, index) => (
-            <View key={index} className="flex-row border-b border-gray-300">
-              <View className="w-[40%] px-2 py-4 bg-gray-200">
-                <Text className="text-base font-semibold text-gray-500">
-                  {info.label}
-                </Text>
-              </View>
-              <View className="px-2 py-4">
-                <Text className="text-base">{info.value}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-
-        {itemDetail?.termsAndConditionsExchange && (
-          <View className="mt-5">
-            <Text className="text-xl font-semibold mb-1">
-              Điều khoản và điều kiện trao đổi:
-            </Text>
-            {itemDetail?.termsAndConditionsExchange
-              .split("\\n")
-              .map((line, index) => (
-                <Text className="text-base mb-0.5" key={index}>
-                  {line}
-                </Text>
-              ))}
-          </View>
-        )}
-      </View>
-
-      {!loading ? (
-        <>
-          {otherItemOfUser.length !== 0 && (
-            <>
-              {/* map item others of owner */}
+        {!loading ? (
+          <>
+            {otherItemOfUser.length !== 0 && (
               <HorizontalSection
                 title={`Bài đăng khác của ${itemDetail?.owner.fullName}`}
                 data={otherItemOfUser}
                 navigation={navigation}
               />
-            </>
-          )}
+            )}
 
-          {itemSimilar.length !== 0 && (
-            <>
-              {/* map item suggested */}
+            {itemSimilar.length !== 0 && (
               <HorizontalSection
                 title="Bài đăng tương tự"
                 data={itemSimilar}
                 navigation={navigation}
               />
-            </>
-          )}
-        </>
-      ) : (
-        <>
+            )}
+          </>
+        ) : (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#00b0b9" />
           </View>
-        </>
-      )}
-    </View>
+        )}
+      </View>
+    ),
+    [
+      imageArray,
+      renderImageItem,
+      itemDetail,
+      data,
+      otherItemOfUser,
+      itemSimilar,
+      loading,
+      navigation,
+    ]
   );
 
   return (
@@ -372,20 +409,7 @@ const ItemDetails: React.FC = () => {
       ) : (
         <>
           <SafeAreaView className="flex-1 bg-gray-100" edges={["top"]}>
-            <Header
-              title=""
-              onBackPress={() =>
-                navigation.reset({
-                  index: 0,
-                  routes: [
-                    {
-                      name: "MainTabs",
-                      state: { routes: [{ name: "Home" }] },
-                    },
-                  ],
-                })
-              }
-            />
+            <Header title="" />
             <FlatList
               data={[{}]}
               keyExtractor={(_, index) => index.toString()}

@@ -8,7 +8,6 @@ interface SortModalProps {
 }
 
 const options = [
-  { label: "Tin liên quan trước", value: "relevant" },
   { label: "Tin mới trước", value: "new" },
   { label: "Tin gần tôi trước", value: "near" },
   { label: "Giá thấp trước", value: "lowPrice" },

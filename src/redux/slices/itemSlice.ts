@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
-  getAllAvailableItemOfUserThunk,
+  getAllItemOfUserByStatusThunk,
   getAllItemAvailableThunk,
   getAllItemOfCurrentUserByStatusThunk,
   getItemCountsOfUserThunk,
@@ -10,6 +10,8 @@ import {
   getRecommendedItemsThunk,
   getSimilarItemsThunk,
   uploadItemThunk,
+  searchItemPaginationThunk,
+  getItemCountsOfCurrentUserThunk,
 } from "../thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
@@ -18,6 +20,7 @@ import { StatusItem } from "../../common/enums/StatusItem";
 interface ItemState {
   itemDetail: ItemResponse | null;
   itemAvailable: ResponseEntityPagination<ItemResponse>;
+  itemSearch: ResponseEntityPagination<ItemResponse>;
   itemByStatus: ResponseEntityPagination<ItemResponse>;
   itemByStatusOfUser: ResponseEntityPagination<ItemResponse>;
   itemRecommnand: ItemResponse[];
@@ -26,6 +29,7 @@ interface ItemState {
   itemSuggested: ItemResponse[];
   itemUpload: ItemResponse | null;
   countsOfUser: { [key in StatusItem]?: number };
+  countsOfCurrentUser: { [key in StatusItem]?: number };
   loading: boolean;
   error: string | null;
 }
@@ -33,6 +37,14 @@ interface ItemState {
 const initialState: ItemState = {
   itemDetail: null,
   itemAvailable: {
+    pageNo: 0,
+    pageSize: 10,
+    totalPages: 0,
+    totalRecords: 0,
+    last: false,
+    content: [],
+  },
+  itemSearch: {
     pageNo: 0,
     pageSize: 10,
     totalPages: 0,
@@ -62,6 +74,7 @@ const initialState: ItemState = {
   itemSuggested: [],
   itemUpload: null,
   countsOfUser: {},
+  countsOfCurrentUser: {},
   loading: false,
   error: null,
 };
@@ -77,6 +90,14 @@ const itemSlice = createSlice({
       state.itemSimilar = [];
       state.otherItemOfUser = [];
       state.itemSuggested = [];
+      state.itemSearch = {
+        pageNo: 0,
+        pageSize: 10,
+        totalPages: 0,
+        totalRecords: 0,
+        last: false,
+        content: [],
+      };
     },
   },
   extraReducers: (builder) => {
@@ -134,6 +155,36 @@ const itemSlice = createSlice({
       );
 
     builder
+      .addCase(searchItemPaginationThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        searchItemPaginationThunk.fulfilled,
+        (
+          state,
+          action: PayloadAction<ResponseEntityPagination<ItemResponse>>
+        ) => {
+          state.loading = false;
+          if (action.payload.pageNo === 0) {
+            state.itemSearch = action.payload;
+          } else {
+            state.itemSearch = {
+              ...action.payload,
+              content: [...state.itemSearch.content, ...action.payload.content],
+            };
+          }
+        }
+      )
+      .addCase(
+        searchItemPaginationThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Search item failed";
+        }
+      );
+
+    builder
       .addCase(getItemDetailThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -178,12 +229,12 @@ const itemSlice = createSlice({
       );
 
     builder
-      .addCase(getAllAvailableItemOfUserThunk.pending, (state) => {
+      .addCase(getAllItemOfUserByStatusThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(
-        getAllAvailableItemOfUserThunk.fulfilled,
+        getAllItemOfUserByStatusThunk.fulfilled,
         (
           state,
           action: PayloadAction<ResponseEntityPagination<ItemResponse>>
@@ -193,7 +244,7 @@ const itemSlice = createSlice({
         }
       )
       .addCase(
-        getAllAvailableItemOfUserThunk.rejected,
+        getAllItemOfUserByStatusThunk.rejected,
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error =
@@ -300,6 +351,27 @@ const itemSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Get item counts of user failed";
+        }
+      );
+
+    builder
+      .addCase(getItemCountsOfCurrentUserThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getItemCountsOfCurrentUserThunk.fulfilled,
+        (state, action: PayloadAction<{ [key in StatusItem]?: number }>) => {
+          state.loading = false;
+          state.countsOfCurrentUser = action.payload;
+        }
+      )
+      .addCase(
+        getItemCountsOfCurrentUserThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error =
+            action.payload || "Get item counts of current user failed";
         }
       );
   },

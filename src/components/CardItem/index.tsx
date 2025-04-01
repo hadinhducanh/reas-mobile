@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useMemo } from "react";
 import { TouchableOpacity, View, Text, Image } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import dayjs from "dayjs";
 import { ItemResponse } from "../../common/models/item";
 
 interface CardItemProps {
@@ -20,7 +21,7 @@ const CardItem: React.FC<CardItemProps> = ({
   onSelect,
   mode = "default",
 }) => {
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     if (mode === "selectable" && onSelect) {
       onSelect(item.id);
     } else if (mode === "default") {
@@ -28,21 +29,50 @@ const CardItem: React.FC<CardItemProps> = ({
     } else {
       navigation.navigate("ItemPreview", { itemId: item.id });
     }
-  };
+  }, [mode, onSelect, item.id, navigation]);
 
-  const handleIconPress = () => {
+  const handleIconPress = useCallback(() => {
     if (mode === "default" && toggleLike) {
       toggleLike(item.id);
     } else if (mode === "selectable" && onSelect) {
       onSelect(item.id);
     }
-  };
+  }, [mode, onSelect, item.id, toggleLike]);
 
-  const formatPrice = (price: number): string => {
+  const formatPrice = useCallback((price: number): string => {
     return price.toLocaleString("vi-VN");
-  };
+  }, []);
 
-  const imageArray = item?.imageUrl ? item.imageUrl.split(", ") : [];
+  const imageArray = useMemo(() => {
+    return item?.imageUrl ? item.imageUrl.split(", ") : [];
+  }, [item.imageUrl]);
+
+  const formatRelativeTime = useCallback(
+    (timeStr: Date | undefined): string => {
+      const givenTime = dayjs(timeStr);
+      const now = dayjs();
+      const diffInSeconds = now.diff(givenTime, "second");
+      if (diffInSeconds < 60) {
+        return `${diffInSeconds} seconds ago`;
+      } else if (diffInSeconds < 3600) {
+        const minutes = now.diff(givenTime, "minute");
+        return `${minutes} minutes ago`;
+      } else if (diffInSeconds < 86400) {
+        const hours = now.diff(givenTime, "hour");
+        return `${hours} hours ago`;
+      } else if (diffInSeconds < 86400 * 30) {
+        const days = now.diff(givenTime, "day");
+        return `${days} days ago`;
+      } else if (diffInSeconds < 86400 * 30 * 12) {
+        const months = now.diff(givenTime, "month");
+        return `${months} months ago`;
+      } else {
+        const years = now.diff(givenTime, "year");
+        return `${years} years ago`;
+      }
+    },
+    []
+  );
 
   return (
     <TouchableOpacity
@@ -66,7 +96,11 @@ const CardItem: React.FC<CardItemProps> = ({
           className="absolute bottom-2 right-2"
         >
           {mode === "default" ? (
-            <Icon name={"heart-outline"} size={24} color="#ff0000" />
+            <Icon
+              name={item?.favorite ? "heart" : "heart-outline"}
+              size={24}
+              color="#ff0000"
+            />
           ) : mode === "selectable" ? (
             <Icon
               name={
@@ -90,7 +124,7 @@ const CardItem: React.FC<CardItemProps> = ({
         </Text>
         {mode === "default" && (
           <Text className="text-gray-400 text-sm" numberOfLines={1}>
-            14 mins ago | {item.owner.fullName}
+            {formatRelativeTime(item.approvedTime)} | {item.owner.fullName}
           </Text>
         )}
       </View>
@@ -98,4 +132,4 @@ const CardItem: React.FC<CardItemProps> = ({
   );
 };
 
-export default CardItem;
+export default React.memo(CardItem);

@@ -52,7 +52,8 @@ import ItemManagement from "../screens/ItemManagement";
 import UploadItemFlow from "./UploadItemFlow";
 import UploadItem from "../screens/PostItemScreen";
 import { StatusExchange } from "../common/enums/StatusExchange";
-import { resetItemUpload } from "../redux/slices/itemSlice";
+import { resetItemDetailState } from "../redux/slices/itemSlice";
+import { TypeItem } from "../common/enums/TypeItem";
 
 export type ItemType = {
   id: number;
@@ -100,7 +101,7 @@ export type RootStackParamList = {
   ConfirmExchange: undefined;
   AccpectRejectExchange: { exchangeId: number };
   FeedbackItem: { exchangeId: number };
-  SearchResult: undefined;
+  SearchResult: { searchTextParam?: string; itemType?: TypeItem };
   OwnerItem: { userId: number };
   OwnerFeedback: { userId: number };
   Favorite: undefined;
@@ -160,7 +161,7 @@ function BottomTabs() {
 
   const handleConfirm = async () => {
     setConfirmVisible(false);
-    dispatch(resetItemUpload());
+    dispatch(resetItemDetailState());
     setUploadItem(defaultUploadItem);
 
     if (pendingTabName) {

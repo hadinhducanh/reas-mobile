@@ -79,10 +79,12 @@ const getOtherItemsOfUser = async (
 
 const getAllItemAvailable = async (
   pageNo: number,
-  request: SearchItemRequest
+  request: SearchItemRequest,
+  sortBy?: string,
+  sortDir?: string
 ): Promise<ResponseEntityPagination<ItemResponse>> => {
   const response = await axios.post<ResponseEntityPagination<ItemResponse>>(
-    `${API_BASE_URL}/item/search?pageNo=${pageNo}&pageSize=5&sortBy=id&sortDir=asc`,
+    `${API_BASE_URL}/item/search?pageNo=${pageNo}&pageSize=5&sortBy=${sortBy}&sortDir=${sortDir}`,
     request
   );
   return response.data;
@@ -94,7 +96,7 @@ const getAllItemOfCurrentUserByStatus = async (
   accessToken: string
 ): Promise<ResponseEntityPagination<ItemResponse>> => {
   const response = await axios.get<ResponseEntityPagination<ItemResponse>>(
-    `${API_BASE_URL}/item/current-user?pageNo=${pageNo}&pageSize=5&sortBy=id&sortDir=asc&statusItem=${statusItem}`,
+    `${API_BASE_URL}/item/current-user?pageNo=${pageNo}&pageSize=5&sortBy=approvedTime&sortDir=asc&statusItem=${statusItem}`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -104,7 +106,7 @@ const getAllItemOfCurrentUserByStatus = async (
   return response.data;
 };
 
-const getAllAvailableItemOfUser = async (
+const getAllItemOfUserByStatus = async (
   pageNo: number,
   userId: number,
   statusItem: StatusItem
@@ -129,5 +131,5 @@ export default {
   getRecommendedItemsInExchange,
   getSimilarItems,
   getOtherItemsOfUser,
-  getAllAvailableItemOfUser,
+  getAllItemOfUserByStatus,
 };
