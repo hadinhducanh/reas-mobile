@@ -117,8 +117,15 @@ const getAllItemOfUserByStatus = async (
   return response.data;
 };
 
-const getItemDetail = async (id: number): Promise<ItemResponse> => {
-  const response = await axios.get<ItemResponse>(`${API_BASE_URL}/item/${id}`);
+const getItemDetail = async (
+  id: number,
+  accessToken?: string
+): Promise<ItemResponse> => {
+  const response = await axios.get<ItemResponse>(`${API_BASE_URL}/item/${id}`, {
+    headers: {
+      Authorization: accessToken ? `Bearer ${accessToken}` : null,
+    },
+  });
   return response.data;
 };
 

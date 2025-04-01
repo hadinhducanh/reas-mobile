@@ -31,7 +31,7 @@ import FeedbackItem from "../screens/AccountScreen/FeedbackItem";
 import SearchResult from "../screens/SearchResult";
 import OwnerItem from "../screens/Owner/OwnerItem";
 import OwnerFeedback from "../screens/Owner/OwnerFeedback";
-import Favorite from "../screens/AccountScreen/Favortie";
+import Favorite from "../screens/AccountScreen/Favorite";
 import Notifications from "../screens/Notification";
 import ItemExpire from "../screens/ItemManagement/ItemExpire";
 import Premium from "../screens/AccountScreen/Premium";

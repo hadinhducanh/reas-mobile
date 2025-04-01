@@ -16,6 +16,12 @@ import {
 import { ItemResponse } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
 import { StatusItem } from "../../common/enums/StatusItem";
+import {
+  addToFavoriteThunk,
+  deleteFromFavoriteThunk,
+  getAllFavoriteItemsThunk,
+} from "../thunk/favoriteThunk";
+import { FavoriteResponse } from "../../common/models/favorite";
 
 interface ItemState {
   itemDetail: ItemResponse | null;
@@ -23,6 +29,7 @@ interface ItemState {
   itemSearch: ResponseEntityPagination<ItemResponse>;
   itemByStatus: ResponseEntityPagination<ItemResponse>;
   itemByStatusOfUser: ResponseEntityPagination<ItemResponse>;
+  itemFavorite: ResponseEntityPagination<FavoriteResponse>;
   itemRecommnand: ItemResponse[];
   itemSimilar: ItemResponse[];
   otherItemOfUser: ItemResponse[];
@@ -37,6 +44,14 @@ interface ItemState {
 const initialState: ItemState = {
   itemDetail: null,
   itemAvailable: {
+    pageNo: 0,
+    pageSize: 10,
+    totalPages: 0,
+    totalRecords: 0,
+    last: false,
+    content: [],
+  },
+  itemFavorite: {
     pageNo: 0,
     pageSize: 10,
     totalPages: 0,
@@ -115,6 +130,29 @@ const itemSlice = createSlice({
       )
       .addCase(
         uploadItemThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Upload item failed";
+        }
+      );
+
+    builder
+      .addCase(getAllFavoriteItemsThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getAllFavoriteItemsThunk.fulfilled,
+        (
+          state,
+          action: PayloadAction<ResponseEntityPagination<FavoriteResponse>>
+        ) => {
+          state.loading = false;
+          state.itemFavorite = action.payload;
+        }
+      )
+      .addCase(
+        getAllFavoriteItemsThunk.rejected,
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Upload item failed";
@@ -201,6 +239,48 @@ const itemSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Get item detail failed";
+        }
+      );
+
+    builder
+      .addCase(addToFavoriteThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        addToFavoriteThunk.fulfilled,
+        (state, action: PayloadAction<FavoriteResponse>) => {
+          state.loading = false;
+          state.itemDetail = action.payload.item;
+        }
+      )
+      .addCase(
+        addToFavoriteThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Add item to favorite failed";
+        }
+      );
+
+    builder
+      .addCase(deleteFromFavoriteThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        deleteFromFavoriteThunk.fulfilled,
+        (state, action: PayloadAction<Boolean>) => {
+          state.loading = false;
+          if (state.itemDetail) {
+            state.itemDetail.favorite = !action.payload;
+          }
+        }
+      )
+      .addCase(
+        deleteFromFavoriteThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Add item to favorite failed";
         }
       );
 

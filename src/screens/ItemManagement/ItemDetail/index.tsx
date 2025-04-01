@@ -180,15 +180,13 @@ const ItemDetails: React.FC = () => {
       navigation.navigate("SignIn");
       return;
     }
-    setIsFavorite((prev) => !prev);
-    if (isFavorite) {
-      dispatch(deleteFromFavoriteThunk(itemId))
-        .unwrap()
-        .catch(() => setIsFavorite(true));
-    } else {
-      dispatch(addToFavoriteThunk(itemId))
-        .unwrap()
-        .catch(() => setIsFavorite(false));
+    if (itemDetail) {
+      setIsFavorite((prev) => !prev);
+      if (isFavorite) {
+        dispatch(deleteFromFavoriteThunk(itemDetail?.id));
+      } else {
+        dispatch(addToFavoriteThunk(itemDetail?.id));
+      }
     }
   }, [accessToken, dispatch, itemId, isFavorite, navigation]);
 
@@ -202,16 +200,18 @@ const ItemDetails: React.FC = () => {
             resizeMode="contain"
           />
         </View>
-        <TouchableOpacity
-          className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
-          onPress={handleFavoritePress}
-        >
-          <Icon
-            name={isFavorite ? "heart" : "heart-outline"}
-            size={24}
-            color="#ff0000"
-          />
-        </TouchableOpacity>
+        {accessToken && (
+          <TouchableOpacity
+            className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
+            onPress={handleFavoritePress}
+          >
+            <Icon
+              name={isFavorite ? "heart" : "heart-outline"}
+              size={24}
+              color="#ff0000"
+            />
+          </TouchableOpacity>
+        )}
       </View>
     ),
     [handleFavoritePress, isFavorite]

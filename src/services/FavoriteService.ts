@@ -38,8 +38,8 @@ const deleteFromFavorite = async (
 const getAllFavoriteItems = async (
   pageNo: number,
   accessToken: string
-): Promise<ResponseEntityPagination<FeedbackResponse>> => {
-  const response = await axios.get<ResponseEntityPagination<FeedbackResponse>>(
+): Promise<ResponseEntityPagination<FavoriteResponse>> => {
+  const response = await axios.get<ResponseEntityPagination<FavoriteResponse>>(
     `${API_BASE_URL}/favorite`,
     {
       params: {

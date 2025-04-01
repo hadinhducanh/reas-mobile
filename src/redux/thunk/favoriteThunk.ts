@@ -1,7 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { FeedbackResponse } from "../../common/models/feedback";
 import { RootState } from "../store";
-import FeedbackService from "../../services/FeedbackService";
 import { ResponseEntityPagination } from "../../common/models/pagination";
 import { FavoriteResponse } from "../../common/models/favorite";
 import FavoriteService from "../../services/FavoriteService";
@@ -31,7 +30,7 @@ export const deleteFromFavoriteThunk = createAsyncThunk<
   Boolean,
   number,
   { state: RootState }
->("favorite/deleteFromFavorite", async (id, thunkAPI) => {
+>("favorite/deleteFromFavorite", async (itemId, thunkAPI) => {
   const state = thunkAPI.getState();
   const accessToken = state.auth.accessToken;
   if (!accessToken) {
@@ -39,7 +38,7 @@ export const deleteFromFavoriteThunk = createAsyncThunk<
   }
 
   try {
-    const data = await FavoriteService.deleteFromFavorite(id, accessToken);
+    const data = await FavoriteService.deleteFromFavorite(itemId, accessToken);
     return data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
@@ -49,7 +48,7 @@ export const deleteFromFavoriteThunk = createAsyncThunk<
 });
 
 export const getAllFavoriteItemsThunk = createAsyncThunk<
-  ResponseEntityPagination<FeedbackResponse>,
+  ResponseEntityPagination<FavoriteResponse>,
   number,
   { state: RootState }
 >("favorite/getAllFavoriteItems", async (pageNo, thunkAPI) => {
@@ -63,7 +62,7 @@ export const getAllFavoriteItemsThunk = createAsyncThunk<
     return data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
-      error.response?.data || "Get all feedback of user failed"
+      error.response?.data || "Get all favorite of user failed"
     );
   }
 });

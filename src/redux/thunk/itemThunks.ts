@@ -224,19 +224,22 @@ export const getAllItemOfUserByStatusThunk = createAsyncThunk<
   }
 );
 
-export const getItemDetailThunk = createAsyncThunk<ItemResponse, number>(
-  "item/getItemDetail",
-  async (id, thunkAPI) => {
-    try {
-      const data = await ItemService.getItemDetail(id);
-      return data;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error.response.data || "Get item detail failed"
-      );
-    }
+export const getItemDetailThunk = createAsyncThunk<
+  ItemResponse,
+  number,
+  { state: RootState }
+>("item/getItemDetail", async (id, thunkAPI) => {
+  const state = thunkAPI.getState();
+  const accessToken = state.auth.accessToken;
+  try {
+    const data = await ItemService.getItemDetail(id, accessToken!);
+    return data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response.data || "Get item detail failed"
+    );
   }
-);
+});
 
 export const getItemCountsOfUserThunk = createAsyncThunk<
   { [key in StatusItem]?: number },

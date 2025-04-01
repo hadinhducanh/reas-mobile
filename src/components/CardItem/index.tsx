@@ -1,8 +1,10 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { TouchableOpacity, View, Text, Image } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import dayjs from "dayjs";
 import { ItemResponse } from "../../common/models/item";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 interface CardItemProps {
   item: ItemResponse;
@@ -21,11 +23,17 @@ const CardItem: React.FC<CardItemProps> = ({
   onSelect,
   mode = "default",
 }) => {
+  const { user } = useSelector((state: RootState) => state.auth);
+
   const handlePress = useCallback(() => {
     if (mode === "selectable" && onSelect) {
       onSelect(item.id);
     } else if (mode === "default") {
-      navigation.navigate("ItemDetails", { itemId: item.id });
+      if (user?.id === item.owner.id) {
+        navigation.navigate("ItemPreview", { itemId: item.id });
+      } else {
+        navigation.navigate("ItemDetails", { itemId: item.id });
+      }
     } else {
       navigation.navigate("ItemPreview", { itemId: item.id });
     }
@@ -95,13 +103,7 @@ const CardItem: React.FC<CardItemProps> = ({
           activeOpacity={0.7}
           className="absolute bottom-2 right-2"
         >
-          {mode === "default" ? (
-            <Icon
-              name={item?.favorite ? "heart" : "heart-outline"}
-              size={24}
-              color="#ff0000"
-            />
-          ) : mode === "selectable" ? (
+          {mode === "selectable" && (
             <Icon
               name={
                 isSelected ? "checkmark-circle" : "checkmark-circle-outline"
@@ -109,8 +111,6 @@ const CardItem: React.FC<CardItemProps> = ({
               size={24}
               color={isSelected ? "#00B0B9" : "#cccccc"}
             />
-          ) : (
-            ""
           )}
         </TouchableOpacity>
       </View>

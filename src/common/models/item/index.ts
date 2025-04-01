@@ -50,7 +50,7 @@ export interface ItemResponse {
   owner: UserResponse;
   desiredItem: DesiredItemResponse;
   userLocation: UserLocationDto;
-  favorite: boolean;
+  favorite: Boolean;
 }
 
 export interface DesiredItemResponse {
