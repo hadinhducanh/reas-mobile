@@ -25,9 +25,9 @@ const HorizontalSection: React.FC<HorizontalSectionProps> = ({
     <View className="p-5">
       <View className="flex-row justify-between items-center mb-2">
         <Text className="font-semibold text-xl">{title}</Text>
-        <Text className="font-bold underline text-lg text-[#00B0B9]">
+        {/* <Text className="font-bold underline text-lg text-[#00B0B9]">
           Tất cả
-        </Text>
+        </Text> */}
       </View>
       {loading && (
         <ActivityIndicator size="large" color="#00b0b9" className="mb-5" />

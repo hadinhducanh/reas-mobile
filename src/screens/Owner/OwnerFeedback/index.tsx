@@ -1,53 +1,160 @@
-import React, { useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  FlatList,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../../components/Header";
 import Icon from "react-native-vector-icons/Ionicons";
-import TabHeader from "../../../components/TabHeader";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import {
+  NavigationProp,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
-
-interface FeedbackTabData {
-  id: number;
-  status: string;
-}
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../redux/store";
+import { getUserThunk } from "../../../redux/thunk/userThunk";
+import LocationModal from "../../../components/LocationModal";
+import dayjs from "dayjs";
+import {
+  getAllFeedbackOfUserThunk,
+  getFeedbackCountsThunk,
+} from "../../../redux/thunk/feedbackThunk";
+import { FeedbackResponse } from "../../../common/models/feedback";
+import FeedbackCard from "../../../components/FeedbackCard";
+import { resetFeedback } from "../../../redux/slices/feedbackSlice";
+import TabHeader from "../../../components/TabHeader";
 
 const OwnerFeedback: React.FC = () => {
-  const [selectedStatus, setSelectedStatus] = useState<string>("Tất cả");
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, "OwnerFeedback">>();
+  const { userId } = route.params;
+  const dispatch = useDispatch<AppDispatch>();
 
-  // const data: FeedbackTabData[] = [
-  //   { id: 1, status: "Tất cả" },
-  //   { id: 2, status: "Tất cả" },
-  //   { id: 3, status: "Tất cả" },
-  //   { id: 4, status: "1" },
-  //   { id: 5, status: "3" },
-  //   { id: 6, status: "5" },
-  // ];
+  const { userDetail, loading } = useSelector((state: RootState) => state.user);
+  const { feedbackByUser, countsOfFeedback } = useSelector(
+    (state: RootState) => state.feeback
+  );
+
+  const { content, pageNo, last } = feedbackByUser;
+
+  const [locationVisible, setLocationVisible] = useState<boolean>(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("All");
+
+  useEffect(() => {
+    dispatch(resetFeedback());
+    dispatch(getUserThunk(userId));
+
+    dispatch(getAllFeedbackOfUserThunk({ pageNo: 0, userId: userId }));
+    dispatch(getFeedbackCountsThunk(userId));
+  }, [dispatch, userId]);
+
+  useEffect(() => {
+    if (selectedStatus === "All") {
+      dispatch(getAllFeedbackOfUserThunk({ pageNo: 0, userId }));
+    } else {
+      const rating = Number(selectedStatus);
+      dispatch(getAllFeedbackOfUserThunk({ pageNo: 0, userId, rating }));
+    }
+  }, [dispatch, selectedStatus]);
+
+  function formatRelativeTime(timeStr: Date | undefined): string {
+    const givenTime = dayjs(timeStr);
+    const now = dayjs();
+
+    const diffInSeconds = now.diff(givenTime, "second");
+
+    if (diffInSeconds < 60) {
+      return `${diffInSeconds} seconds ago`;
+    } else if (diffInSeconds < 3600) {
+      const minutes = now.diff(givenTime, "minute");
+      return `${minutes} minutes ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = now.diff(givenTime, "hour");
+      return `${hours} hours ago`;
+    } else if (diffInSeconds < 86400 * 30) {
+      const days = now.diff(givenTime, "day");
+      return `${days} days ago`;
+    } else if (diffInSeconds < 86400 * 30 * 12) {
+      const months = now.diff(givenTime, "month");
+      return `${months} months ago`;
+    } else {
+      const years = now.diff(givenTime, "year");
+      return `${years} years ago`;
+    }
+  }
 
   const tabs = [
     {
-      label: "Tất cả",
+      label: "All",
+      count: countsOfFeedback[0]!,
     },
     {
       label: "5",
+      count: countsOfFeedback[5]!,
     },
     {
       label: "4",
+      count: countsOfFeedback[4]!,
     },
     {
       label: "3",
+      count: countsOfFeedback[3]!,
     },
     {
       label: "2",
+      count: countsOfFeedback[2]!,
     },
     {
       label: "1",
-    },
-    {
-      label: "0",
+      count: countsOfFeedback[1]!,
     },
   ];
+
+  const renderFeedbackCard = ({ item }: { item: FeedbackResponse }) => (
+    <>
+      <FeedbackCard feedback={item} />
+    </>
+  );
+
+  const isCloseToBottom = ({
+    layoutMeasurement,
+    contentOffset,
+    contentSize,
+  }: any) => {
+    const paddingToBottom = 80;
+    return (
+      layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom
+    );
+  };
+
+  const handleLoadMore = () => {
+    if (!loading && !last) {
+      if (selectedStatus === "All") {
+        dispatch(
+          getAllFeedbackOfUserThunk({
+            pageNo: pageNo + 1,
+            userId: userDetail?.id!,
+          })
+        );
+      } else {
+        const rating = Number(selectedStatus);
+
+        dispatch(
+          getAllFeedbackOfUserThunk({
+            pageNo: pageNo + 1,
+            userId: userDetail?.id!,
+            rating: rating,
+          })
+        );
+      }
+    }
+  };
 
   return (
     <SafeAreaView className="bg-[#00B0B9] flex-1" edges={["top"]}>
@@ -59,136 +166,123 @@ const OwnerFeedback: React.FC = () => {
         optionIconColor="white"
         owner={false}
       />
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="bg-white">
-          <View className="bg-gray-200 h-[120px]" />
+
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#00b0b9" />
+        </View>
+      ) : (
+        <>
+          <View className="bg-gray-200 h-[140px]" />
 
           <View className="bg-white -mt-[50px] px-5 pt-5">
-            <View className="w-[100px] h-[100px] bg-[#00B0B9] rounded-full border-[4px] border-white -mt-[50px]" />
+            <View className="w-[100px] h-[100px] rounded-full -mt-[60px] items-center justify-center overflow-hidden bg-white">
+              <Icon name="person-circle" size={100} color="gray" />
+            </View>
+
             <View className="mt-2 pb-5">
-              <Text className="text-lg font-bold">Ngọc Cường</Text>
+              <Text className="text-2xl font-bold">{userDetail?.fullName}</Text>
               <View className="flex-row items-center mt-1">
-                <Text className="text-sm mr-1">5.0</Text>
-                {[...Array(5)].map((_, idx) => (
-                  <Icon key={idx} name="star" size={14} color="#FFA43D" />
+                <Text className="text-base mr-1">
+                  {userDetail?.numOfRatings !== undefined
+                    ? Number.isInteger(userDetail.numOfRatings)
+                      ? `${userDetail.numOfRatings}.0`
+                      : userDetail.numOfRatings
+                    : ""}
+                </Text>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <Icon
+                    key={`star-${num}`}
+                    name="star"
+                    size={16}
+                    color={
+                      num <= userDetail?.numOfRatings! ? "#FFD700" : "#dfecec"
+                    }
+                  />
                 ))}
-                <Text className="ml-1 text-sm font-semibold text-[#00B0B9]">
-                  (5 đánh giá)
+                <Text className="ml-1 text-base font-semibold text-[#00B0B9]">
+                  ({userDetail?.numOfFeedbacks} đánh giá)
                 </Text>
               </View>
-              {/* Địa chỉ */}
-              <View className="flex-row items-center mt-2">
+              <View className="flex-row items-center mt-2 w-3/4">
                 <Icon name="location-outline" size={20} color="#738AA0" />
-                <Text className="text-base text-gray-500 ml-1">
-                  Địa chỉ:
-                  <Text className="text-black"> VinHome Grand Park, HCM</Text>
+                <Text
+                  className="text-base text-gray-500 ml-1"
+                  numberOfLines={1}
+                >
+                  Địa chỉ:{" "}
+                  <Text
+                    className="text-black underline "
+                    onPress={() => setLocationVisible(true)}
+                  >
+                    {
+                      userDetail?.userLocations[0].specificAddress.split(
+                        "//"
+                      )[1]
+                    }
+                  </Text>
                 </Text>
               </View>
-              {/* Thời gian tham gia */}
               <View className="flex-row items-center mt-1">
                 <Icon name="time-outline" size={20} color="#738AA0" />
                 <Text className="text-base text-gray-600 ml-1">
-                  Đã tham gia:
-                  <Text className="text-black"> 2 tuần trước</Text>
+                  Đã tham gia:{" "}
+                  <Text className="text-black">
+                    {formatRelativeTime(userDetail?.creationDate)}
+                  </Text>
                 </Text>
               </View>
             </View>
           </View>
 
-          <TabHeader
-            ownerFeedback={true}
-            tabs={tabs}
-            selectedTab={selectedStatus}
-            onSelectTab={setSelectedStatus}
-          />
-
-          <View className="w-full px-3">
-            <View className="p-4 bg-white rounded-lg shadow-sm mt-3">
-              <View className="flex-row items-center">
-                <View className="w-10 h-10 bg-[#00B0B9] rounded-full mr-3" />
-                <Text className="text-lg font-bold">Ngọc Cường</Text>
-              </View>
-              <Text className="text-gray-700 mt-1">
-                Sản phẩm tốt, người bán uy tín, giá hợp lí
-              </Text>
-              <View className="flex-row items-center mt-1">
-                {[...Array(5)].map((_, idx) => (
-                  <Icon key={idx} name="star" size={14} color="#FFA43D" />
-                ))}
-                <Text className="ml-2 text-gray-500 text-sm">
-                  | 2 năm trước
-                </Text>
-              </View>
-              <View className="flex-row items-center bg-[#D6F2F4] rounded-lg mt-3 p-3">
-                <View className="w-12 h-12 bg-gray-300 rounded-md mr-3" />
-                <View>
-                  <Text className="text-gray-700 font-medium">
-                    Suncook Rice Cooker
-                  </Text>
-                  <Text className="text-[#00B0B9] font-bold">500.000 đ</Text>
-                </View>
-              </View>
-              <View className="border-b border-gray-300 my-4" />
-            </View>
-
-            <View className="p-4 bg-white rounded-lg shadow-sm mt-3">
-              <View className="flex-row items-center">
-                <View className="w-10 h-10 bg-[#00B0B9] rounded-full mr-3" />
-                <Text className="text-lg font-bold">Ngọc Cường</Text>
-              </View>
-              <Text className="text-gray-700 mt-1">
-                Sản phẩm tốt, người bán uy tín, giá hợp lí
-              </Text>
-              <View className="flex-row items-center mt-1">
-                {[...Array(5)].map((_, idx) => (
-                  <Icon key={idx} name="star" size={14} color="#FFA43D" />
-                ))}
-                <Text className="ml-2 text-gray-500 text-sm">
-                  | 2 năm trước
-                </Text>
-              </View>
-              <View className="flex-row items-center bg-[#D6F2F4] rounded-lg mt-3 p-3">
-                <View className="w-12 h-12 bg-gray-300 rounded-md mr-3" />
-                <View>
-                  <Text className="text-gray-700 font-medium">
-                    Suncook Rice Cooker
-                  </Text>
-                  <Text className="text-[#00B0B9] font-bold">500.000 đ</Text>
-                </View>
-              </View>
-              <View className="border-b border-gray-300 my-4" />
-            </View>
-
-            <View className="p-4 bg-white rounded-lg shadow-sm mt-3">
-              <View className="flex-row items-center">
-                <View className="w-10 h-10 bg-[#00B0B9] rounded-full mr-3" />
-                <Text className="text-lg font-bold">Ngọc Cường</Text>
-              </View>
-              <Text className="text-gray-700 mt-1">
-                Sản phẩm tốt, người bán uy tín, giá hợp lí
-              </Text>
-              <View className="flex-row items-center mt-1">
-                {[...Array(5)].map((_, idx) => (
-                  <Icon key={idx} name="star" size={14} color="#FFA43D" />
-                ))}
-                <Text className="ml-2 text-gray-500 text-sm">
-                  | 2 năm trước
-                </Text>
-              </View>
-              <View className="flex-row items-center bg-[#D6F2F4] rounded-lg mt-3 p-3">
-                <View className="w-12 h-12 bg-gray-300 rounded-md mr-3" />
-                <View>
-                  <Text className="text-gray-700 font-medium">
-                    Suncook Rice Cooker
-                  </Text>
-                  <Text className="text-[#00B0B9] font-bold">500.000 đ</Text>
-                </View>
-              </View>
-              <View className="border-b border-gray-300 my-4" />
-            </View>
+          <View className="bg-white">
+            <TabHeader
+              ownerFeedback={true}
+              tabs={tabs}
+              selectedTab={selectedStatus}
+              onSelectTab={(value) => setSelectedStatus(value as string)}
+            />
           </View>
-        </View>
-      </ScrollView>
+
+          {feedbackByUser.content.length === 0 ? (
+            <View className="bg-white flex-1 justify-center items-center">
+              <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
+              <Text className="text-gray-500">No feedback</Text>
+            </View>
+          ) : (
+            <View className="bg-white flex-1">
+              <FlatList
+                data={content}
+                keyExtractor={(item, index) => `feedback-${item.id ?? index}`}
+                renderItem={renderFeedbackCard}
+                onEndReached={handleLoadMore}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={
+                  loading && pageNo !== 0 ? (
+                    <View className="flex-1 justify-center items-center">
+                      <ActivityIndicator
+                        size="large"
+                        color="#00b0b9"
+                        className="mb-5"
+                      />
+                    </View>
+                  ) : null
+                }
+              />
+            </View>
+          )}
+        </>
+      )}
+
+      {userDetail?.userLocations[0].specificAddress && (
+        <LocationModal
+          visible={locationVisible}
+          onClose={() => setLocationVisible(false)}
+          place_id={userDetail?.userLocations[0].specificAddress
+            .split("//")[0]
+            .trim()}
+        />
+      )}
     </SafeAreaView>
   );
 };

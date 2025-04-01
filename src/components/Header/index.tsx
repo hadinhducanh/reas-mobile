@@ -125,7 +125,7 @@ const Header: React.FC<HeaderProps> = ({
               {owner ? (
                 <Text className="ml-2 text-base">Báo cáo tin đăng này</Text>
               ) : (
-                <Text className="ml-2 text-base">Báo cáo người dùng này</Text>
+                <Text className="ml-2 text-base">Báo cáo người dùng</Text>
               )}
             </Pressable>
             {owner && (
@@ -143,8 +143,11 @@ const Header: React.FC<HeaderProps> = ({
               onPress={() => {}}
             >
               <Icon name="share-social-outline" size={24} color="black" />
-
-              <Text className="ml-2 text-base">Chia sẻ tin</Text>
+              {owner ? (
+                <Text className="ml-2 text-base">Chia sẻ tin</Text>
+              ) : (
+                <Text className="ml-2 text-base">Chia sẻ người dùng</Text>
+              )}
             </Pressable>
           </View>
         </Pressable>

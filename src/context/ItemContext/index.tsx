@@ -26,12 +26,12 @@ export const defaultUploadItem: ExtendedUploadItem = {
   categoryId: 0,
   brandId: 0,
   desiredItem: {
-    typeItem: TypeItem.NO_TYPE,
-    categoryId: 0,
-    conditionItem: ConditionItem.NO_CONDITION,
-    brandId: 0,
+    categoryId: null,
+    conditionItem: null,
+    brandId: null,
     minPrice: 0,
-    maxPrice: 0,
+    maxPrice: null,
+    description: "",
   },
 
   isCheckedFree: false,

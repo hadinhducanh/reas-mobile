@@ -39,7 +39,10 @@ import ConfirmModal from "../../components/DeleteConfirmModal";
 import { resetPlaceDetail } from "../../redux/slices/locationSlice";
 import LocationModal from "../../components/LocationModal";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { getAllItemOfCurrentUserByStatusThunk } from "../../redux/thunk/itemThunks";
+import {
+  getAllItemOfCurrentUserByStatusThunk,
+  getRecommendedItemsInExchangeThunk,
+} from "../../redux/thunk/itemThunks";
 import { StatusItem } from "../../common/enums/StatusItem";
 
 const CreateExchange: React.FC = () => {
@@ -57,7 +60,7 @@ const CreateExchange: React.FC = () => {
   const { exchangeItem, setExchangeItem } = useExchangeItem();
   const [warningVisible, setWarningVisible] = useState(false);
 
-  const [items, setItems] = useState<ItemResponse[]>(itemSuggested.content);
+  const [items, setItems] = useState<ItemResponse[]>(itemSuggested);
   const item = items.find((item) => item.id === itemId);
 
   const [selectedItem, setSelectedItem] = useState<ItemResponse | null>(
@@ -120,7 +123,7 @@ const CreateExchange: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleProposeExchange = () => {
-    const isRecommended = itemSuggested.content.some(
+    const isRecommended = itemSuggested.some(
       (recItem) => recItem.id === exchangeItem.selectedItem?.id
     );
 
@@ -201,12 +204,14 @@ const CreateExchange: React.FC = () => {
   };
 
   useEffect(() => {
-    dispatch(
-      getAllItemOfCurrentUserByStatusThunk({
-        pageNo: 0,
-        statusItem: StatusItem.AVAILABLE,
-      })
-    );
+    if (itemDetail !== null && itemDetail.desiredItem !== null) {
+      dispatch(
+        getRecommendedItemsInExchangeThunk({
+          sellerItemId: itemDetail?.id,
+          limit: 4,
+        })
+      );
+    }
   }, [itemId]);
 
   const formatPrice = (price: number | undefined): string => {
