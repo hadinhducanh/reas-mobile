@@ -21,17 +21,18 @@ const addToFavorite = async (
 };
 
 const deleteFromFavorite = async (
-  id: number,
+  itemId: number,
   accessToken: string
 ): Promise<Boolean> => {
   const response = await axios.delete<Boolean>(
-    `${API_BASE_URL}/favorite?id=${id}`,
+    `${API_BASE_URL}/favorite?itemId=${itemId}`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     }
   );
+
   return response.data;
 };
 
