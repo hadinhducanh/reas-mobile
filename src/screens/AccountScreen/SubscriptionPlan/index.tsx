@@ -11,16 +11,16 @@ import { RootState } from "../../../redux/store";
 
 const Premium: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const {  accessToken } = useSelector((state: RootState) => state.auth);
+  const { accessToken } = useSelector((state: RootState) => state.auth);
 
   const handleSubscribe = () => {
     if (!accessToken) {
-      navigation.navigate("SignIn"); 
+      navigation.navigate("SignIn");
       return;
     }
-    navigation.navigate("ExtendPremium"); 
+    navigation.navigate("ExtendPremium");
   };
-  
+
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
       <Header

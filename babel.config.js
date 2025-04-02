@@ -4,6 +4,8 @@ module.exports = function (api) {
     presets: [
       ["babel-preset-expo", { jsxImportSource: "nativewind" }],
       "nativewind/babel",
+      "@babel/preset-typescript",
     ],
+    plugins: ["@babel/plugin-syntax-typescript"],
   };
 };

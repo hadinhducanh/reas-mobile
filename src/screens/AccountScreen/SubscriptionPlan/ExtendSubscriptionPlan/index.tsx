@@ -12,15 +12,20 @@ import {
   CheckoutResponseData,
   CreatePaymentLinkRequest,
 } from "../../../../common/models/payment";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "../../../../navigation/AppNavigator";
 
 const ExtendPremium: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { plans, loading, error } = useSelector(
     (state: RootState) => state.subscription
   );
-  // const { checkoutUrl, loadingPayment, errorPayment } = useSelector((state: RootState) => state.payment);
+  const { checkoutUrl, loadingPayment, errorPayment } = useSelector(
+    (state: RootState) => state.payment
+  );
   const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
-  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  // const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(getSubscriptionThunk());
@@ -38,15 +43,22 @@ const ExtendPremium: React.FC = () => {
           cancelUrl:
             "https://img.freepik.com/premium-vector/transaction-is-cancelled-red-stamp_545399-2577.jpg",
         };
-        const response = await dispatch(
-          createPaymentLinkThunk(createPaymentLinkRequest)
-        );
-        if (response.payload) {
-          setCheckoutUrl(
-            (response.payload as CheckoutResponseData).checkoutUrl
-          );
+        await dispatch(createPaymentLinkThunk(createPaymentLinkRequest));
+        // console.log(response);
+
+        // if (response.payload) {
+        //   setCheckoutUrl(
+        //     (response.payload as CheckoutResponseData).checkoutUrl
+        //   );
+        // }
+        if (checkoutUrl) {
+          navigation.navigate("Payment", {
+            payOSURL: checkoutUrl,
+            returnUrl: createPaymentLinkRequest.returnUrl,
+            cancelUrl: createPaymentLinkRequest.cancelUrl,
+          });
+          console.log("Payment link created:", checkoutUrl);
         }
-        console.log("Payment link created:", checkoutUrl);
       }
     } catch (error) {
       console.error("Error creating payment link:", error);

@@ -54,6 +54,9 @@ import UploadItem from "../screens/PostItemScreen";
 import { StatusExchange } from "../common/enums/StatusExchange";
 import { resetItemDetailState } from "../redux/slices/itemSlice";
 import { TypeItem } from "../common/enums/TypeItem";
+import Payment from "../screens/Payment";
+import OrderFailed from "../screens/OrderScreen/OrderFailed";
+import OrderSuccess from "../screens/OrderScreen/OrderSuccess";
 
 export type ItemType = {
   id: number;
@@ -113,7 +116,9 @@ export type RootStackParamList = {
   UploadItemSuccess: undefined;
   UploadScreen: undefined;
   Account: undefined;
-  Payment: undefined;
+  Payment: { payOSURL: string; returnUrl: string; cancelUrl: string };
+  OrderFailed: undefined;
+  OrderSuccess: undefined;
 };
 
 const TabArr = [
@@ -306,6 +311,8 @@ export default function RootNavigator() {
           component={AccpectRejectExchange}
         />
         <Stack.Screen name="Payment" component={Payment} />
+        <Stack.Screen name="OrderFailed" component={OrderFailed} />
+        <Stack.Screen name="OrderSuccess" component={OrderSuccess} />
       </Stack.Navigator>
     </NavigationContainer>
   );

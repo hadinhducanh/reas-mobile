@@ -14,7 +14,6 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigation/AppNavigator";
-import { SafeAreaView } from "react-native-safe-area-context";
 import ItemCard from "../../components/CardItem";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux/store";
@@ -32,6 +31,7 @@ import {
 } from "../../common/constant";
 import { StatusItem } from "../../common/enums/StatusItem";
 import { TypeItem } from "../../common/enums/TypeItem";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type HomeScreenNavigationProp = StackNavigationProp<
   RootStackParamList,

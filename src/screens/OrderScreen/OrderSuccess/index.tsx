@@ -3,11 +3,17 @@ import { View, Text } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
 
 const OrderSuccess: React.FC = () => {
-  const handleSend = async () => {
-    // Test Loading: delay 3 giây
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const handleGoBack = async () => {
+    navigation.reset({
+      index: 1,
+      routes: [{ name: "Premium" }, { name: "ExtendPremium" }],
+    });
   };
 
   return (
@@ -37,16 +43,11 @@ const OrderSuccess: React.FC = () => {
       </View>
       <View className="py-4">
         <LoadingButton
-          title="Continue"
-          onPress={handleSend}
-          buttonClassName="py-4"
-        />
-        <LoadingButton
-          buttonClassName="mt-3 border-[1px] border-[#00b0b9] bg-white py-4"
+          buttonClassName="mt-3 border-2 border-[#00b0b9] bg-white py-4"
           textColor="text-[#00b0b9]"
           loadingColor="#00b0b9"
-          title="View orders"
-          onPress={handleSend}
+          title="Go back"
+          onPress={handleGoBack}
         />
       </View>
     </SafeAreaView>
