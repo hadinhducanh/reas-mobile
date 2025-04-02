@@ -15,12 +15,11 @@ const authenticateUser = async (
     `${API_BASE_URL}/auth/login`,
     credentials
   );
-  
+
   return response.data;
 };
 
 const signupUser = async (credentials: SignupDto): Promise<JWTAuthResponse> => {
-  
   const response = await axios.post<JWTAuthResponse>(
     `${API_BASE_URL}/auth/register/user`,
     credentials
@@ -74,7 +73,6 @@ const changePassword = async (
   );
   return response.data;
 };
-
 
 export default {
   authenticateUser,

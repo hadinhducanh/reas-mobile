@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "682475272307",
+    "project_id": "reas-app-f46cc",
+    "storage_bucket": "reas-app-f46cc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:682475272307:android:c4ae333854226584165206",
+        "android_client_info": {
+          "package_name": "com.anonymous.REAS"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPP32dQU45BrEajd7AlzwRCENj1166uYM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

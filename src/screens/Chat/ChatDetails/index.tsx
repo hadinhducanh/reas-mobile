@@ -28,6 +28,9 @@ import { uploadImageToCloudinary } from "../../../utils/CloudinaryImageUploader"
 import { WEB_SOCKET_ENDPOINT } from "../../../common/constant";
 import { ChatMessage } from "../../../common/models/chat";
 import Message from "../../../components/ChatMessage";
+import { formatTimestamp } from "../../../utils/TimestampFormatter";
+import moment from "moment-timezone";
+import { set } from "zod";
 
 const ChatDetails: React.FC = () => {
   const navigation = useNavigation();
@@ -48,9 +51,6 @@ const ChatDetails: React.FC = () => {
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    console.log("senderUsername", senderUsername);
-    console.log("receiverUsername", receiverUsername);
-
     const client = Stomp.over(() => new SockJS(WEB_SOCKET_ENDPOINT));
     stompClientRef.current = client;
     client.connect(
@@ -68,15 +68,7 @@ const ChatDetails: React.FC = () => {
 
   const onMessageReceived = (payload: any) => {
     const receivedMessage = JSON.parse(payload.body);
-    
-    // if contentType is missing and content starts with "http", set it to "image".
-    if (
-      !receivedMessage.contentType &&
-      receivedMessage.content &&
-      receivedMessage.content.startsWith("http")
-    ) {
-      receivedMessage.contentType = "image";
-    }
+
     if (
       receivedMessage.senderId === receiverUsername ||
       receivedMessage.senderId === senderUsername
@@ -100,6 +92,8 @@ const ChatDetails: React.FC = () => {
 
       if (response.payload) {
         setMessages(response.payload as ChatMessage[]);
+      } else {
+        setMessages([]);
       }
     };
     fetchChat();
@@ -130,6 +124,8 @@ const ChatDetails: React.FC = () => {
       contentType: string;
     };
     try {
+      const vietnamTime = moment().tz("Asia/Ho_Chi_Minh").format();
+      console.log("Vietnam time:", vietnamTime);
       if (selectedImage) {
         const imageUrl = await uploadImageToCloudinary(selectedImage);
         chatMessage = {
@@ -138,7 +134,7 @@ const ChatDetails: React.FC = () => {
           senderName: user?.fullName,
           recipientName: receiverFullName,
           content: imageUrl,
-          timestamp: new Date().toISOString(),
+          timestamp: vietnamTime,
           contentType: "image",
         };
       } else {
@@ -148,7 +144,7 @@ const ChatDetails: React.FC = () => {
           senderName: user?.fullName,
           recipientName: receiverFullName,
           content: message,
-          timestamp: new Date().toISOString(),
+          timestamp: vietnamTime,
           contentType: "text",
         };
       }
@@ -160,23 +156,6 @@ const ChatDetails: React.FC = () => {
       console.error("Error sending message:", error);
     }
     setIsSending(false);
-  };
-
-  const formatTimestamp = (timestamp?: string): string => {
-    if (!timestamp) return "";
-    try {
-      const normalized = timestamp.replace(/:(?=\d\d$)/, "");
-      const date = new Date(normalized);
-      if (isNaN(date.getTime())) return "";
-      return date.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "Asia/Ho_Chi_Minh",
-      });
-    } catch (err) {
-      console.error("Error formatting timestamp:", err);
-      return "";
-    }
   };
 
   const scrollToBottom = () => {
@@ -209,7 +188,7 @@ const ChatDetails: React.FC = () => {
           <View className="flex-1 bg-white">
             <ScrollView
               ref={scrollViewRef}
-              onContentSizeChange={scrollToBottom} // NEW: auto-scroll on content change
+              onContentSizeChange={scrollToBottom} // auto-scroll on content change
               className="bg-white"
             >
               {messages.map((msg, index) => (
@@ -218,7 +197,7 @@ const ChatDetails: React.FC = () => {
                   isSender={msg.senderId === senderUsername}
                   type={msg.contentType === "image" ? "image" : "text"}
                   time={formatTimestamp(msg.timestamp)}
-                  text={msg.content}
+                  text={msg.contentType === "text" ? msg.content : undefined}
                   imageUrl={
                     msg.contentType === "image" ? msg.content : undefined
                   }

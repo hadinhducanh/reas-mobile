@@ -13,15 +13,24 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "We need access to your camera to take photos.",
         "NSPhotoLibraryUsageDescription": "We need access to your photo library to upload images.",
         "NSPhotoLibraryAddUsageDescription": "We need permission to add images to your library.",
-        "NSMicrophoneUsageDescription": "We need access to your microphone to record videos."
+        "NSMicrophoneUsageDescription": "We need access to your microphone to record videos.",
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
+      },
+      "bundleIdentifier": "com.anonymous.REAS",
+      "entitlements": {
+        "aps-environment": "production"
       }
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -29,9 +38,16 @@
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
-      ]
+      ],
+      "package": "com.anonymous.REAS"
     },
+    "plugins": [
+      "@react-native-firebase/app"
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     },

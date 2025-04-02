@@ -13,7 +13,9 @@ import { getSubscriptionThunk } from "../../../redux/thunk/subscriptionThunks";
 const Premium: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { accessToken } = useSelector((state: RootState) => state.auth);
-  const { plans, loading, error } = useSelector((state: RootState) => state.subscription);
+  const { plans, loading, error } = useSelector(
+    (state: RootState) => state.subscription
+  );
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
@@ -28,9 +30,9 @@ const Premium: React.FC = () => {
     navigation.navigate("ExtendPremium");
   };
 
-
-  const planName = plans.length > 0 ? plans[0].name : "Annual Plan"; 
-  const planPrice = plans.length > 0 ? `${plans[0].price.toLocaleString()}` : "$49.99"; 
+  const planName = plans.length > 0 ? plans[0].name : "Annual Plan";
+  const planPrice =
+    plans.length > 0 ? `${plans[0].price.toLocaleString()}` : "$49.99";
 
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
@@ -98,8 +100,14 @@ const Premium: React.FC = () => {
         </View>
 
         <View className="bg-white my-8 p-5 rounded-lg flex-row justify-between items-center">
-           {loading && <Text className="text-center text-lg text-gray-500">Loading...</Text>}
-          {error && <Text className="text-center text-lg text-red-500">{error}</Text>}
+          {loading && (
+            <Text className="text-center text-lg text-gray-500">
+              Loading...
+            </Text>
+          )}
+          {error && (
+            <Text className="text-center text-lg text-red-500">{error}</Text>
+          )}
           <View>
             <Text className="text-xl font-bold text-black">{planName}</Text>
             <Text className="text-base text-gray-500 mt-2">
@@ -108,7 +116,9 @@ const Premium: React.FC = () => {
           </View>
 
           <View>
-            <Text className="text-3xl font-bold text-[#00b0b9]">{planPrice}</Text>
+            <Text className="text-3xl font-bold text-[#00b0b9]">
+              {planPrice}
+            </Text>
             <Text className="text-sm text-gray-500 ml-auto">per month</Text>
           </View>
         </View>
@@ -124,6 +134,3 @@ const Premium: React.FC = () => {
 };
 
 export default Premium;
-
-
-
