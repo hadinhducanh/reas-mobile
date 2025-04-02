@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../../components/Header";
@@ -6,21 +6,32 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import LoadingButton from "../../../components/LoadingButton";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../redux/store";
+import { getSubscriptionThunk } from "../../../redux/thunk/subscriptionThunks";
 
 const Premium: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const {  accessToken } = useSelector((state: RootState) => state.auth);
+  const { accessToken } = useSelector((state: RootState) => state.auth);
+  const { plans, loading, error } = useSelector((state: RootState) => state.subscription);
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(getSubscriptionThunk());
+  }, [dispatch]);
 
   const handleSubscribe = () => {
     if (!accessToken) {
-      navigation.navigate("SignIn"); 
+      navigation.navigate("SignIn");
       return;
     }
-    navigation.navigate("ExtendPremium"); 
+    navigation.navigate("ExtendPremium");
   };
-  
+
+
+  const planName = plans.length > 0 ? plans[0].name : "Annual Plan"; 
+  const planPrice = plans.length > 0 ? `${plans[0].price.toLocaleString()}` : "$49.99"; 
+
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
       <Header
@@ -37,7 +48,6 @@ const Premium: React.FC = () => {
 
       <View className="flex-1 bg-gray-100 px-4 py-6 flex-col justify-center">
         <View className="items-center">
-          {/* Icon vương miện (có thể thay bằng Ionicons, FontAwesome, vv.) */}
           <Icon name="sparkles" size={40} color="#FBBF24" />
           <Text className="text-2xl font-bold mt-5">Upgrade to Premium</Text>
           <Text className="text-base text-gray-500 mt-1 text-center">
@@ -87,23 +97,24 @@ const Premium: React.FC = () => {
           </View>
         </View>
 
-        {/* Khối "Annual Plan" */}
         <View className="bg-white my-8 p-5 rounded-lg flex-row justify-between items-center">
+           {loading && <Text className="text-center text-lg text-gray-500">Loading...</Text>}
+          {error && <Text className="text-center text-lg text-red-500">{error}</Text>}
           <View>
-            <Text className="text-xl font-bold text-black">Annual Plan</Text>
+            <Text className="text-xl font-bold text-black">{planName}</Text>
             <Text className="text-base text-gray-500 mt-2">
-              12 months of premium features
+              1 month of premium features
             </Text>
           </View>
 
-          <View className="">
-            <Text className="text-3xl font-bold text-[#00b0b9]">$49.99</Text>
-            <Text className="text-sm text-gray-500 ml-auto">per year</Text>
+          <View>
+            <Text className="text-3xl font-bold text-[#00b0b9]">{planPrice}</Text>
+            <Text className="text-sm text-gray-500 ml-auto">per month</Text>
           </View>
         </View>
 
         <LoadingButton
-          title="Subscribe now"
+          title="Choose your plan"
           onPress={handleSubscribe}
           buttonClassName="p-4"
         />
@@ -113,3 +124,6 @@ const Premium: React.FC = () => {
 };
 
 export default Premium;
+
+
+
