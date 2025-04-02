@@ -26,7 +26,7 @@ const ExtendPremium: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
       <Header
-        title="Extend subscription"
+        title="Choose your plan"
         backgroundColor="bg-[#00B0B9]"
         backIconColor="white"
         textColor="text-white"
@@ -35,8 +35,25 @@ const ExtendPremium: React.FC = () => {
       />
 
       <View className="flex-1 bg-gray-100 px-4 py-6 flex-col">
+
         {loading && <Text className="text-center text-lg text-gray-500">Loading...</Text>}
         {error && <Text className="text-center text-lg text-red-500">{error}</Text>}
+
+       <View className="bg-white p-5 rounded-lg shadow-md mb-4 border-2 border-gray-200">
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-lg font-semibold text-gray-900">Current Plan</Text>
+            <View className="bg-green-100 px-3 py-1 rounded-full">
+              <Text className="text-green-600 text-xs font-semibold">Active</Text>
+            </View>
+          </View>
+          
+          <View className="flex-row justify-between items-center">
+            <Text className="text-base text-gray-900 font-semibold">Annual Premium</Text>
+            <Text className="text-lg font-bold text-gray-900">$99</Text>
+          </View>
+
+          <Text className="text-sm text-gray-500 mt-1">Next billing date: March 15, 2025</Text>
+        </View>
 
         <View className="my-4">
           {plans.length > 0 ? (
@@ -60,7 +77,7 @@ const ExtendPremium: React.FC = () => {
           )}
         </View>
 
-        <LoadingButton title="Extend now" onPress={handleSubscribe} buttonClassName="p-4" />
+        <LoadingButton title="Check out" onPress={handleSubscribe} buttonClassName="p-4" />
       </View>
     </SafeAreaView>
   );
