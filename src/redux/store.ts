@@ -10,6 +10,7 @@ import subscriptionReducer from "./slices/subscriptionSlice";
 import feebackReducer from "./slices/feedbackSlice";
 import notificationReducer from "./slices/notificationSlice";
 import userReducer from "./slices/userSlice";
+import paymentReducer from "./slices/paymentSlice";
 
 const store = configureStore({
   reducer: {
@@ -24,6 +25,7 @@ const store = configureStore({
     feeback: feebackReducer,
     notification: notificationReducer,
     user: userReducer,
+    payment: paymentReducer,
   },
 });
 

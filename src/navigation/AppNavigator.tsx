@@ -52,7 +52,8 @@ import ItemManagement from "../screens/ItemManagement";
 import UploadItemFlow from "./UploadItemFlow";
 import UploadItem from "../screens/PostItemScreen";
 import { StatusExchange } from "../common/enums/StatusExchange";
-import { resetItemUpload } from "../redux/slices/itemSlice";
+import { resetItemDetailState } from "../redux/slices/itemSlice";
+import Payment from "../screens/Payment";
 
 export type ItemType = {
   id: number;
@@ -112,6 +113,7 @@ export type RootStackParamList = {
   UploadItemSuccess: undefined;
   UploadScreen: undefined;
   Account: undefined;
+  Payment: undefined;
 };
 
 const TabArr = [
@@ -160,7 +162,7 @@ function BottomTabs() {
 
   const handleConfirm = async () => {
     setConfirmVisible(false);
-    dispatch(resetItemUpload());
+    dispatch(resetItemDetailState());
     setUploadItem(defaultUploadItem);
 
     if (pendingTabName) {
@@ -303,6 +305,7 @@ export default function RootNavigator() {
           name="AccpectRejectExchange"
           component={AccpectRejectExchange}
         />
+        <Stack.Screen name="Payment" component={Payment} />
       </Stack.Navigator>
     </NavigationContainer>
   );
