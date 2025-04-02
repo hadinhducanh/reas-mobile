@@ -131,7 +131,10 @@ export const getOtherItemsOfUserThunk = createAsyncThunk<
 
 export const getAllItemAvailableThunk = createAsyncThunk<
   ResponseEntityPagination<ItemResponse>,
-  { pageNo: number; request: SearchItemRequest }
+  {
+    pageNo: number;
+    request: SearchItemRequest;
+  }
 >("item/getAllItemAvailable", async ({ pageNo, request }, thunkAPI) => {
   try {
     const data = await ItemService.getAllItemAvailable(pageNo, request);
@@ -142,6 +145,35 @@ export const getAllItemAvailableThunk = createAsyncThunk<
     );
   }
 });
+
+export const searchItemPaginationThunk = createAsyncThunk<
+  ResponseEntityPagination<ItemResponse>,
+  {
+    pageNo: number;
+    sortBy?: string;
+    sortDir?: string;
+    request: SearchItemRequest;
+  }
+>(
+  "item/searchItemPagination",
+  async ({ pageNo, sortBy, sortDir, request }, thunkAPI) => {
+    console.log(request);
+
+    try {
+      const data = await ItemService.getAllItemAvailable(
+        pageNo,
+        request,
+        sortBy,
+        sortDir
+      );
+      return data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Search item failed"
+      );
+    }
+  }
+);
 
 export const getAllItemOfCurrentUserByStatusThunk = createAsyncThunk<
   ResponseEntityPagination<ItemResponse>,
@@ -170,15 +202,15 @@ export const getAllItemOfCurrentUserByStatusThunk = createAsyncThunk<
   }
 );
 
-export const getAllAvailableItemOfUserThunk = createAsyncThunk<
+export const getAllItemOfUserByStatusThunk = createAsyncThunk<
   ResponseEntityPagination<ItemResponse>,
   { pageNo: number; userId: number; statusItem: StatusItem },
   { state: RootState }
 >(
-  "item/getAllAvailableItemOfUser",
+  "item/getAllItemOfUserByStatus",
   async ({ pageNo, userId, statusItem }, thunkAPI) => {
     try {
-      const data = await ItemService.getAllAvailableItemOfUser(
+      const data = await ItemService.getAllItemOfUserByStatus(
         pageNo,
         userId,
         statusItem
@@ -192,19 +224,22 @@ export const getAllAvailableItemOfUserThunk = createAsyncThunk<
   }
 );
 
-export const getItemDetailThunk = createAsyncThunk<ItemResponse, number>(
-  "item/getItemDetail",
-  async (id, thunkAPI) => {
-    try {
-      const data = await ItemService.getItemDetail(id);
-      return data;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error.response.data || "Get item detail failed"
-      );
-    }
+export const getItemDetailThunk = createAsyncThunk<
+  ItemResponse,
+  number,
+  { state: RootState }
+>("item/getItemDetail", async (id, thunkAPI) => {
+  const state = thunkAPI.getState();
+  const accessToken = state.auth.accessToken;
+  try {
+    const data = await ItemService.getItemDetail(id, accessToken!);
+    return data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response.data || "Get item detail failed"
+    );
   }
-);
+});
 
 export const getItemCountsOfUserThunk = createAsyncThunk<
   { [key in StatusItem]?: number },
@@ -214,7 +249,7 @@ export const getItemCountsOfUserThunk = createAsyncThunk<
     const statuses = [StatusItem.AVAILABLE, StatusItem.SOLD];
 
     const requests = statuses.map((status) => {
-      return ItemService.getAllAvailableItemOfUser(0, userId, status);
+      return ItemService.getAllItemOfUserByStatus(0, userId, status);
     });
 
     const responses = await Promise.all(requests);
@@ -228,6 +263,50 @@ export const getItemCountsOfUserThunk = createAsyncThunk<
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
       error.response?.data || "Get item counts of user failed"
+    );
+  }
+});
+
+export const getItemCountsOfCurrentUserThunk = createAsyncThunk<
+  { [key in StatusItem]?: number },
+  void,
+  { state: RootState }
+>("item/getItemCountsOfCurrentUser", async (_, thunkAPI) => {
+  try {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+    if (!accessToken) {
+      return thunkAPI.rejectWithValue("No access token available");
+    }
+    const statuses = [
+      StatusItem.AVAILABLE,
+      StatusItem.EXPIRED,
+      StatusItem.PENDING,
+      StatusItem.REJECTED,
+      StatusItem.NO_LONGER_FOR_EXCHANGE,
+      StatusItem.SOLD,
+      StatusItem.UNAVAILABLE,
+    ];
+
+    const requests = statuses.map((status) => {
+      return ItemService.getAllItemOfCurrentUserByStatus(
+        0,
+        status,
+        accessToken
+      );
+    });
+
+    const responses = await Promise.all(requests);
+
+    const counts: { [key in StatusItem]?: number } = {};
+    statuses.forEach((status, index) => {
+      counts[status] = responses[index].totalRecords;
+    });
+
+    return counts;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Get item counts of current user failed"
     );
   }
 });

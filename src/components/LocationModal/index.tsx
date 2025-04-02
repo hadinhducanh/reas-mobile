@@ -10,10 +10,12 @@ import {
 import MapView, { Marker, Region, UrlTile } from "react-native-maps";
 import Icon from "react-native-vector-icons/Ionicons";
 import { GOONG_MAP_KEY } from "../../common/constant";
-import { PlaceDetail } from "../../common/models/location";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux/store";
-import { getPlaceDetailsThunk } from "../../redux/thunk/locationThunks";
+import {
+  getPlaceDetailsByReverseGeocodeThunk,
+  getPlaceDetailsThunk,
+} from "../../redux/thunk/locationThunks";
 import { resetPlaceDetail } from "../../redux/slices/locationSlice";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -46,7 +48,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
 
   useEffect(() => {
     if (visible) {
-      dispatch(getPlaceDetailsThunk(place_id));
+      dispatch(getPlaceDetailsByReverseGeocodeThunk(place_id));
     }
   }, [visible, place_id, dispatch]);
 

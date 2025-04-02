@@ -23,7 +23,7 @@ import { AppDispatch, RootState } from "../../../redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserThunk } from "../../../redux/thunk/userThunk";
 import {
-  getAllAvailableItemOfUserThunk,
+  getAllItemOfUserByStatusThunk,
   getAllItemAvailableThunk,
   getItemCountsOfUserThunk,
 } from "../../../redux/thunk/itemThunks";
@@ -51,7 +51,7 @@ const OwnerItem: React.FC = () => {
   useEffect(() => {
     dispatch(getUserThunk(userId));
     dispatch(
-      getAllAvailableItemOfUserThunk({
+      getAllItemOfUserByStatusThunk({
         pageNo: 0,
         userId: userId,
         statusItem: StatusItem.AVAILABLE,
@@ -62,7 +62,7 @@ const OwnerItem: React.FC = () => {
 
   useEffect(() => {
     dispatch(
-      getAllAvailableItemOfUserThunk({
+      getAllItemOfUserByStatusThunk({
         pageNo: 0,
         userId: userId,
         statusItem: selectedStatus,
@@ -130,7 +130,7 @@ const OwnerItem: React.FC = () => {
   const handleLoadMore = () => {
     if (!loading && !last) {
       dispatch(
-        getAllAvailableItemOfUserThunk({
+        getAllItemOfUserByStatusThunk({
           pageNo: pageNo + 1,
           userId: userId,
           statusItem: selectedStatus,

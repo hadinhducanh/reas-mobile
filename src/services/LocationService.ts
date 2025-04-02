@@ -20,6 +20,8 @@ const getSuggestions = async (
 };
 
 const getPlaceDetails = async (place_id: string): Promise<PlaceDetail> => {
+  console.log(place_id);
+
   const response = await axios.get(
     `https://rsapi.goong.io/place/detail?place_id=${place_id}&api_key=${GOONG_API_KEY}`,
     { timeout: 3000 }
@@ -28,7 +30,19 @@ const getPlaceDetails = async (place_id: string): Promise<PlaceDetail> => {
   return response.data.result;
 };
 
+const getPlaceDetailsByReverseGeocode = async (
+  geocode: string
+): Promise<PlaceDetail> => {
+  const response = await axios.get(
+    `https://rsapi.goong.io/geocode?latlng=${geocode}&api_key=${GOONG_API_KEY}`,
+    { timeout: 3000 }
+  );
+
+  return response.data.results[0];
+};
+
 export default {
   getSuggestions,
   getPlaceDetails,
+  getPlaceDetailsByReverseGeocode,
 };

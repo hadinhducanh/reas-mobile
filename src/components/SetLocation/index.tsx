@@ -117,7 +117,9 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
     setExchangeItem({
       ...exchangeItem,
       exchangeLocation:
-        selectedPlaceDetail?.place_id +
+        selectedPlaceDetail?.geometry.location.lat +
+        "," +
+        selectedPlaceDetail?.geometry.location.lng +
         "//" +
         selectedPlaceDetail?.formatted_address,
     });

@@ -27,13 +27,13 @@ import LoadingButton from "../../components/LoadingButton";
 import { defaultUploadItem, useUploadItem } from "../../context/ItemContext";
 import { TypeExchange } from "../../common/enums/TypeExchange";
 import { uploadItemThunk } from "../../redux/thunk/itemThunks";
-import { resetItemUpload } from "../../redux/slices/itemSlice";
 import NavigationListItem from "../../components/NavigationListItem";
 import Toggle from "../../components/Toggle";
 import ConfirmModal from "../../components/DeleteConfirmModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { uploadToCloudinary } from "../../utils/CloudinaryImageUploader";
 import { ConditionItem } from "../../common/enums/ConditionItem";
+import { resetItemDetailState } from "../../redux/slices/itemSlice";
 
 export default function UploadItem() {
   const navigation =
@@ -183,7 +183,7 @@ export default function UploadItem() {
   useEffect(() => {
     if (itemUpload !== null) {
       setUploadItem(defaultUploadItem);
-      dispatch(resetItemUpload());
+      dispatch(resetItemDetailState());
       navigation.navigate("UploadItemSuccess");
     }
   }, [itemUpload, dispatch]);

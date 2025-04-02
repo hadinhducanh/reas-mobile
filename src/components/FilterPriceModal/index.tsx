@@ -4,9 +4,9 @@ import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../LoadingButton";
 
 interface FilterPriceModalProps {
-  initialMinPrice: number;
-  initialMaxPrice: number;
-  onApply: (min: number, max: number) => void;
+  initialMinPrice: string;
+  initialMaxPrice: string;
+  onApply: (min: string, max: string) => void;
   onClear?: () => void;
 }
 
@@ -16,24 +16,42 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
   onApply,
   onClear,
 }) => {
-  const [minValue, setMinValue] = useState<number>(initialMinPrice);
-  const [maxValue, setMaxValue] = useState<number>(initialMaxPrice);
+  const [minValue, setMinValue] = useState<string>(initialMinPrice);
+  const [maxValue, setMaxValue] = useState<string>(initialMaxPrice);
+  const [error, setError] = useState<string>("");
+  const [isInvalid, setIsInvalid] = useState<boolean>(false);
 
   useEffect(() => {
     setMinValue(initialMinPrice);
     setMaxValue(initialMaxPrice);
   }, [initialMinPrice, initialMaxPrice]);
 
+  useEffect(() => {
+    if (parseInt(minValue, 10) > parseInt(maxValue, 10)) {
+      setError("Min price cannot be greater than Max price");
+      setIsInvalid(true);
+    } else {
+      setError("");
+      setIsInvalid(false);
+    }
+  }, [minValue, maxValue]);
+
   const handleApply = () => {
     onApply(minValue, maxValue);
   };
 
   const handleClear = () => {
-    setMinValue(0);
-    setMaxValue(0);
+    setMinValue("0");
+    setMaxValue("0");
     onClear?.();
   };
 
+  const formatPrice = (value: string): string => {
+    const numericValue = value.replace(/\D/g, "");
+    return numericValue
+      ? parseInt(numericValue, 10).toLocaleString("en-US")
+      : "";
+  };
   return (
     <View className="bg-white rounded-t-2xl mt-auto px-5 pb-6">
       <View className="items-center mt-2 mb-3">
@@ -56,13 +74,12 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
             <TextInput
               className="flex-1 text-base text-black"
               keyboardType="numeric"
-              value={String(minValue)}
-              onChangeText={(val) => {
-                const numVal = parseInt(val, 10);
-                setMinValue(isNaN(numVal) ? 0 : numVal);
+              value={formatPrice(minValue)}
+              onChangeText={(value) => {
+                setMinValue(value);
               }}
             />
-            <Text className="text-gray-500 text-base ml-1">đ</Text>
+            <Text className="text-gray-500 text-base ml-1">VND</Text>
           </View>
         </View>
 
@@ -78,22 +95,26 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
             <TextInput
               className="flex-1 text-base text-black"
               keyboardType="numeric"
-              value={String(maxValue)}
-              onChangeText={(val) => {
-                const numVal = parseInt(val, 10);
-                setMaxValue(isNaN(numVal) ? 0 : numVal);
+              value={formatPrice(maxValue)}
+              onChangeText={(value) => {
+                setMaxValue(value);
               }}
             />
-            <Text className="text-gray-500 text-base ml-1">đ</Text>
+            <Text className="text-gray-500 text-base ml-1">VND</Text>
           </View>
         </View>
       </View>
+
+      {error ? (
+        <Text className="text-red-500 text-sm mt-2">{error}</Text>
+      ) : null}
 
       <View className="mt-5">
         <LoadingButton
           title="Apply"
           onPress={handleApply}
-          buttonClassName="py-4"
+          buttonClassName={`py-4 ${isInvalid ? "bg-gray-200" : ""}`}
+          disable={isInvalid}
         />
       </View>
     </View>

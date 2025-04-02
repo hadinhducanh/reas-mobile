@@ -31,7 +31,7 @@ import FeedbackItem from "../screens/AccountScreen/FeedbackItem";
 import SearchResult from "../screens/SearchResult";
 import OwnerItem from "../screens/Owner/OwnerItem";
 import OwnerFeedback from "../screens/Owner/OwnerFeedback";
-import Favorite from "../screens/AccountScreen/Favortie";
+import Favorite from "../screens/AccountScreen/Favorite";
 import Notifications from "../screens/Notification";
 import ItemExpire from "../screens/ItemManagement/ItemExpire";
 import Premium from "../screens/AccountScreen/SubscriptionPlan";
@@ -53,7 +53,7 @@ import UploadItemFlow from "./UploadItemFlow";
 import UploadItem from "../screens/PostItemScreen";
 import { StatusExchange } from "../common/enums/StatusExchange";
 import { resetItemDetailState } from "../redux/slices/itemSlice";
-import Payment from "../screens/Payment";
+import { TypeItem } from "../common/enums/TypeItem";
 
 export type ItemType = {
   id: number;
@@ -101,7 +101,7 @@ export type RootStackParamList = {
   ConfirmExchange: undefined;
   AccpectRejectExchange: { exchangeId: number };
   FeedbackItem: { exchangeId: number };
-  SearchResult: undefined;
+  SearchResult: { searchTextParam?: string; itemType?: TypeItem };
   OwnerItem: { userId: number };
   OwnerFeedback: { userId: number };
   Favorite: undefined;

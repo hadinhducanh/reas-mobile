@@ -16,3 +16,20 @@ export const getPlaceDetailsThunk = createAsyncThunk<PlaceDetail, string>(
     }
   }
 );
+
+export const getPlaceDetailsByReverseGeocodeThunk = createAsyncThunk<
+  PlaceDetail,
+  string
+>("location/getPlaceDetailsByReverseGeocode", async (geocode, thunkAPI) => {
+  try {
+    const placeDetail = await LocationService.getPlaceDetailsByReverseGeocode(
+      geocode
+    );
+
+    return placeDetail;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Get detail location failed"
+    );
+  }
+});
