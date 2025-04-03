@@ -157,8 +157,6 @@ export const searchItemPaginationThunk = createAsyncThunk<
 >(
   "item/searchItemPagination",
   async ({ pageNo, sortBy, sortDir, request }, thunkAPI) => {
-    console.log(request);
-
     try {
       const data = await ItemService.getAllItemAvailable(
         pageNo,
@@ -170,6 +168,33 @@ export const searchItemPaginationThunk = createAsyncThunk<
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response?.data || "Search item failed"
+      );
+    }
+  }
+);
+
+export const findNearbyItemsThunk = createAsyncThunk<
+  ResponseEntityPagination<ItemResponse>,
+  {
+    pageNo: number;
+    latitude: number;
+    longitude: number;
+    distance: number;
+  }
+>(
+  "item/findNearbyItems",
+  async ({ pageNo, latitude, longitude, distance }, thunkAPI) => {
+    try {
+      const data = await ItemService.findNearbyItems(
+        pageNo,
+        latitude,
+        longitude,
+        distance
+      );
+      return data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Find item near by failed"
       );
     }
   }

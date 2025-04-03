@@ -51,6 +51,7 @@ export interface ItemResponse {
   desiredItem: DesiredItemResponse;
   userLocation: UserLocationDto;
   favorite: Boolean;
+  distance: string;
 }
 
 export interface DesiredItemResponse {

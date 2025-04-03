@@ -20,8 +20,6 @@ const getSuggestions = async (
 };
 
 const getPlaceDetails = async (place_id: string): Promise<PlaceDetail> => {
-  console.log(place_id);
-
   const response = await axios.get(
     `https://rsapi.goong.io/place/detail?place_id=${place_id}&api_key=${GOONG_API_KEY}`,
     { timeout: 3000 }

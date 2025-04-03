@@ -207,6 +207,15 @@ const AccpectRejectExchange: React.FC = () => {
     return found ? found.label : "";
   };
 
+  const isBuyer = user?.id === exchangeDetail?.buyerItem.owner.id; // Kiểm tra vai trò của user
+  const isSeller = user?.id === exchangeDetail?.sellerItem.owner.id;
+
+  const canNegotiate =
+    ((!exchangeDetail?.buyerConfirmation && isBuyer) ||
+      (!exchangeDetail?.sellerConfirmation && isSeller)) &&
+    exchangeDetail?.numberOfOffer !== 0 &&
+    exchangeDetail?.estimatePrice !== 0;
+
   return (
     <>
       <SafeAreaView className="flex-1 bg-[#f6f9f9]" edges={["top"]}>
@@ -508,16 +517,11 @@ const AccpectRejectExchange: React.FC = () => {
                 <Text className="font-bold text-lg text-gray-500">
                   Price of item
                 </Text>
-                {exchangeDetail?.numberOfOffer !== 0 &&
-                  exchangeDetail?.estimatePrice !== 0 &&
-                  ((!exchangeDetail?.buyerConfirmation &&
-                    !exchangeDetail?.sellerConfirmation) ||
-                    !exchangeDetail?.buyerConfirmation ||
-                    !exchangeDetail?.sellerConfirmation) && (
-                    <Pressable onPress={handleNegotiatePrice}>
-                      <Icon name="create-outline" size={24} color="#00b0b9" />
-                    </Pressable>
-                  )}
+                {canNegotiate && (
+                  <Pressable onPress={handleNegotiatePrice}>
+                    <Icon name="create-outline" size={24} color="#00b0b9" />
+                  </Pressable>
+                )}
               </View>
 
               <View className="bg-white mt-2 rounded-lg p-4 flex-col justify-center h-fit">

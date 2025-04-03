@@ -12,6 +12,7 @@ import {
   uploadItemThunk,
   searchItemPaginationThunk,
   getItemCountsOfCurrentUserThunk,
+  findNearbyItemsThunk,
 } from "../thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
@@ -219,6 +220,36 @@ const itemSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Search item failed";
+        }
+      );
+
+    builder
+      .addCase(findNearbyItemsThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        findNearbyItemsThunk.fulfilled,
+        (
+          state,
+          action: PayloadAction<ResponseEntityPagination<ItemResponse>>
+        ) => {
+          state.loading = false;
+          if (action.payload.pageNo === 0) {
+            state.itemSearch = action.payload;
+          } else {
+            state.itemSearch = {
+              ...action.payload,
+              content: [...state.itemSearch.content, ...action.payload.content],
+            };
+          }
+        }
+      )
+      .addCase(
+        findNearbyItemsThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Find item near by failed";
         }
       );
 

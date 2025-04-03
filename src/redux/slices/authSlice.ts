@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
+  authenticateGoogleUserkThunk,
   authenticateUserThunk,
   changePasswordThunk,
   fetchUserInfoThunk,
@@ -20,6 +21,7 @@ export interface AuthState {
   user: UserResponse | null;
   changePasswordSuccess: boolean | null;
   loading: boolean;
+  loadingGoogle: boolean;
   error: string | null;
 }
 
@@ -29,6 +31,7 @@ const initialState: AuthState = {
   otp: null,
   user: null,
   loading: false,
+  loadingGoogle: false,
   error: null,
   changePasswordSuccess: null,
 };
@@ -66,6 +69,28 @@ const authSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload.message || "Sign in failed";
+        }
+      );
+
+    builder
+      .addCase(authenticateGoogleUserkThunk.pending, (state) => {
+        state.loadingGoogle = true;
+        state.error = null;
+      })
+      .addCase(
+        authenticateGoogleUserkThunk.fulfilled,
+        (state, action: PayloadAction<JWTAuthResponse>) => {
+          state.loadingGoogle = false;
+          state.accessToken = action.payload.accessToken || null;
+          state.refreshToken = action.payload.refreshToken || null;
+        }
+      )
+      .addCase(
+        authenticateGoogleUserkThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loadingGoogle = false;
+          state.error =
+            action.payload.message || "Authenticate by google failed";
         }
       );
 
@@ -146,7 +171,7 @@ const authSlice = createSlice({
         state.error = action.payload || "Send OTP failed";
       });
 
-      builder
+    builder
       .addCase(changePasswordThunk.pending, (state) => {
         state.loading = true;
         state.error = null;

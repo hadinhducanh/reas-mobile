@@ -34,7 +34,7 @@ const ExtendPremium: React.FC = () => {
   const handleSubscribe = async () => {
     try {
       if (selectedPlan !== null) {
-        console.log("Subscribing to plan:", selectedPlan);
+        // console.log("Subscribing to plan:", selectedPlan);
         const createPaymentLinkRequest: CreatePaymentLinkRequest = {
           description: "Extend subscription",
           subscriptionPlanId: selectedPlan,
@@ -57,7 +57,7 @@ const ExtendPremium: React.FC = () => {
             returnUrl: createPaymentLinkRequest.returnUrl,
             cancelUrl: createPaymentLinkRequest.cancelUrl,
           });
-          console.log("Payment link created:", checkoutUrl);
+          // console.log("Payment link created:", checkoutUrl);
         }
       }
     } catch (error) {

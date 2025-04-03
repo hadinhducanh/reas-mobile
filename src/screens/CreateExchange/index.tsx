@@ -302,10 +302,7 @@ const CreateExchange: React.FC = () => {
 
     switch (exchangeItem.methodExchange) {
       case MethodExchange.PICK_UP_IN_PERSON:
-        return (
-          itemDetail?.userLocation.specificAddress.split("//")[1] ||
-          "Set location"
-        );
+        return exchangeItem.exchangeLocation.split("//")[1] || "Set location";
       case MethodExchange.DELIVERY:
       case MethodExchange.MEET_AT_GIVEN_LOCATION:
         return exchangeItem.exchangeLocation.length !== 0
@@ -598,9 +595,11 @@ const CreateExchange: React.FC = () => {
         <LocationModal
           visible={locationShowVisible}
           onClose={() => setLocationShowVisible(false)}
-          place_id={itemDetail.userLocation.specificAddress
-            .split("//")[0]
-            .trim()}
+          place_id={
+            itemDetail.userLocation.latitude +
+            "," +
+            itemDetail.userLocation.longitude
+          }
         />
       )}
 

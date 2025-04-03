@@ -178,8 +178,6 @@ export default function UploadItem() {
     }
   }, [setUploadItem, uploadItem, dispatch]);
 
-  console.log(uploadItem.desiredItem);
-
   useEffect(() => {
     if (itemUpload !== null) {
       setUploadItem(defaultUploadItem);

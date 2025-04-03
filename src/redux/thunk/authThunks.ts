@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
+  GoogleSignUpDto,
   JWTAuthResponse,
   LoginDto,
   PasswordChangeRequest,
@@ -21,6 +22,24 @@ export const authenticateUserThunk = createAsyncThunk<
       return data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data || "Sign in failed");
+    }
+  }
+);
+
+export const authenticateGoogleUserkThunk = createAsyncThunk<
+  JWTAuthResponse,
+  GoogleSignUpDto
+>(
+  "auth/authenticateGoogleUser",
+
+  async (signupDto, thunkAPI) => {
+    try {
+      const data = await AuthService.authenticateGoogleUser(signupDto);
+      return data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response.data || "Authenticate by google failed"
+      );
     }
   }
 );
@@ -92,24 +111,21 @@ export const changePasswordThunk = createAsyncThunk<
   boolean, // Trả về boolean
   PasswordChangeRequest,
   { state: RootState }
->(
-  "auth/changePassword",
-  async (payload, thunkAPI) => {
-    const state = thunkAPI.getState();
-    const accessToken = state.auth.accessToken;
-    if (!accessToken) {
-      return thunkAPI.rejectWithValue("No access token available");
-    }
-    try {
-      const success: boolean = await AuthService.changePassword(
-        accessToken,
-        payload
-      );
-      return success;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || "Change password failed"
-      );
-    }
+>("auth/changePassword", async (payload, thunkAPI) => {
+  const state = thunkAPI.getState();
+  const accessToken = state.auth.accessToken;
+  if (!accessToken) {
+    return thunkAPI.rejectWithValue("No access token available");
   }
-);
+  try {
+    const success: boolean = await AuthService.changePassword(
+      accessToken,
+      payload
+    );
+    return success;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Change password failed"
+    );
+  }
+});

@@ -63,7 +63,11 @@ const ChooseMethodExchangeModal: React.FC<ChooseMethodExchangeModalProps> = ({
         exchangeLocation:
           method === MethodExchange.PICK_UP_IN_PERSON &&
           itemDetail?.userLocation.specificAddress
-            ? itemDetail.userLocation.specificAddress
+            ? itemDetail.userLocation.latitude +
+              "," +
+              itemDetail.userLocation.longitude +
+              "//" +
+              itemDetail.userLocation.specificAddress
             : "",
       }));
 

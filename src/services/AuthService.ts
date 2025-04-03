@@ -5,6 +5,7 @@ import {
   UserResponse,
   SignupDto,
   PasswordChangeRequest,
+  GoogleSignUpDto,
 } from "../common/models/auth";
 import { API_BASE_URL, API_BASE_URL_LOG_OUT } from "../common/constant";
 
@@ -74,6 +75,17 @@ const changePassword = async (
   return response.data;
 };
 
+const authenticateGoogleUser = async (
+  signupDto: GoogleSignUpDto
+): Promise<JWTAuthResponse> => {
+  const response = await axios.post<JWTAuthResponse>(
+    `${API_BASE_URL}/auth/oauth2/authenticate`,
+    signupDto
+  );
+
+  return response.data;
+};
+
 export default {
   authenticateUser,
   signupUser,
@@ -81,4 +93,5 @@ export default {
   getInfo,
   logout,
   changePassword,
+  authenticateGoogleUser,
 };

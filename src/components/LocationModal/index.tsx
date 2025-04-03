@@ -12,10 +12,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { GOONG_MAP_KEY } from "../../common/constant";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux/store";
-import {
-  getPlaceDetailsByReverseGeocodeThunk,
-  getPlaceDetailsThunk,
-} from "../../redux/thunk/locationThunks";
+import { getPlaceDetailsByReverseGeocodeThunk } from "../../redux/thunk/locationThunks";
 import { resetPlaceDetail } from "../../redux/slices/locationSlice";
 import { SafeAreaView } from "react-native-safe-area-context";
 

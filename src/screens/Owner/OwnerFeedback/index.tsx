@@ -215,11 +215,7 @@ const OwnerFeedback: React.FC = () => {
                     className="text-black underline "
                     onPress={() => setLocationVisible(true)}
                   >
-                    {
-                      userDetail?.userLocations[0].specificAddress.split(
-                        "//"
-                      )[1]
-                    }
+                    {userDetail?.userLocations[0].specificAddress}
                   </Text>
                 </Text>
               </View>

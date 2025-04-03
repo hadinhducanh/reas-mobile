@@ -12,7 +12,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import {
+  NavigationProp,
+  useNavigation,
+  useNavigationState,
+} from "@react-navigation/native";
 import { z } from "zod";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
@@ -23,6 +27,7 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Header from "../../../components/Header";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
+import Auth from "../../../components/Auth";
 
 const emailRegex =
   /^[^\.][a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
@@ -50,13 +55,14 @@ const signUpSchema = z
 
 const SignUp: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { accessToken, loading, otp } = useSelector(
+  const { accessToken, loading, loadingGoogle, user } = useSelector(
     (state: RootState) => state.auth
   );
   const registrationToken = useSelector(
     (state: RootState) => state.notification.token
   );
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const state = useNavigationState((state) => state);
 
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -149,15 +155,41 @@ const SignUp: React.FC = () => {
   }, []);
 
   const handleNavigateToSignIn = useCallback(() => {
-    navigation.navigate("SignIn");
+    const targetIndex = state.index - 1;
+
+    if (targetIndex > 0 && state.routes[targetIndex].name === "SignIn") {
+      navigation.goBack();
+    } else {
+      navigation.navigate("SignIn");
+    }
   }, [navigation]);
 
   useEffect(() => {
     if (accessToken) {
       dispatch(fetchUserInfoThunk());
-      navigation.navigate("MainTabs", { screen: "Account" });
     }
   }, [accessToken, dispatch, navigation]);
+
+  useEffect(() => {
+    if (user) {
+      if (user.firstLogin) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Profile" }],
+        });
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: "MainTabs",
+              state: { routes: [{ name: "Account" }] },
+            },
+          ],
+        });
+      }
+    }
+  }, [user, navigation]);
 
   useEffect(() => {
     setIsLengthValid(password.length >= 8 && password.length <= 20);
@@ -166,6 +198,24 @@ const SignUp: React.FC = () => {
     setHasDigit(/[0-9]/.test(password));
     setHasSpecialChar(specialCharsRegex.test(password));
   }, [password]);
+
+  const handleBackPress = () => {
+    const targetIndex = state.index - 1;
+
+    if (targetIndex > 0 && state.routes[targetIndex].name === "MainTabs") {
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: "MainTabs",
+            state: { routes: [{ name: "Account" }] },
+          },
+        ],
+      });
+    } else {
+      navigation.goBack();
+    }
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -176,21 +226,7 @@ const SignUp: React.FC = () => {
           enableOnAndroid={true}
           keyboardShouldPersistTaps="handled"
         >
-          <Header
-            title=""
-            showOption={false}
-            onBackPress={() =>
-              navigation.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: "MainTabs",
-                    state: { routes: [{ name: "Account" }] },
-                  },
-                ],
-              })
-            }
-          />
+          <Header title="" showOption={false} onBackPress={handleBackPress} />
 
           {/* Content Container */}
           <View className="flex-1 justify-between">
@@ -377,12 +413,14 @@ const SignUp: React.FC = () => {
               </View>
 
               <View className="items-center">
-                <Pressable
+                {/* <Pressable
                   className="w-3/12 py-3 bg-red-400 rounded-full justify-center items-center active:bg-red-300"
                   // onPress={handleGoogleSignIn}
                 >
                   <Icon name="logo-google" size={25} color="white" />
-                </Pressable>
+                </Pressable> */}
+
+                <Auth />
               </View>
 
               {/* Sign In Link */}
@@ -395,6 +433,13 @@ const SignUp: React.FC = () => {
             </View>
           </View>
         </KeyboardAwareScrollView>
+
+        {(loading || loadingGoogle) && (
+          <View
+            className="absolute inset-0 bg-black opacity-50 justify-center items-center"
+            pointerEvents="auto"
+          ></View>
+        )}
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
