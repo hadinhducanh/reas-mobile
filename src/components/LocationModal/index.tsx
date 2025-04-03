@@ -1,20 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
-import MapView, { Marker, Region, UrlTile } from "react-native-maps";
+import React, { useEffect } from "react";
+import { View, Text, Modal, TouchableOpacity, Dimensions } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { GOONG_MAP_KEY } from "../../common/constant";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux/store";
-import { getPlaceDetailsByReverseGeocodeThunk } from "../../redux/thunk/locationThunks";
 import { resetPlaceDetail } from "../../redux/slices/locationSlice";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { WebView } from "react-native-webview";
+import { getPlaceDetailsByReverseGeocodeThunk } from "../../redux/thunk/locationThunks";
 
 interface LocationModalProps {
   visible: boolean;
@@ -27,21 +20,10 @@ const LocationModal: React.FC<LocationModalProps> = ({
   onClose,
   place_id,
 }) => {
-  const tileUrlTemplate = `https://tiles.goong.io/assets/goong_map_web.json?api_key=${GOONG_MAP_KEY}`;
-  const { width, height } = Dimensions.get("window");
-  const ASPECT_RATIO = width / height;
-  const LATITUDE_DELTA = 0.005;
-  const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
-
   const dispatch = useDispatch<AppDispatch>();
   const { selectedPlaceDetail } = useSelector(
     (state: RootState) => state.location
   );
-  const mapRef = useRef<MapView>(null);
-  const [location] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -54,27 +36,16 @@ const LocationModal: React.FC<LocationModalProps> = ({
         latitude: selectedPlaceDetail.geometry.location.lat,
         longitude: selectedPlaceDetail.geometry.location.lng,
       }
-    : location;
-
-  const region: Region | undefined = coordinate
-    ? {
-        latitude: coordinate.latitude,
-        longitude: coordinate.longitude,
-        latitudeDelta: LATITUDE_DELTA,
-        longitudeDelta: LONGITUDE_DELTA,
-      }
-    : undefined;
-
-  useEffect(() => {
-    if (region && mapRef.current) {
-      mapRef.current.animateToRegion(region, 1000);
-    }
-  }, [region]);
+    : null;
 
   const handleClose = () => {
     dispatch(resetPlaceDetail());
     onClose();
   };
+
+  // URL hiển thị bản đồ Goong với marker
+  const goongMapUrl = `https://maps.goong.io/`;
+
   return (
     <Modal visible={visible} animationType="fade" onRequestClose={handleClose}>
       <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
@@ -102,19 +73,9 @@ const LocationModal: React.FC<LocationModalProps> = ({
             </View>
           </View>
 
+          {/* WebView hiển thị bản đồ Goong */}
           <View className="flex-1">
-            <MapView
-              ref={mapRef}
-              style={StyleSheet.absoluteFillObject}
-              initialRegion={region}
-            >
-              <UrlTile
-                urlTemplate={tileUrlTemplate}
-                maximumZ={19}
-                flipY={false}
-              />
-              {coordinate && <Marker coordinate={coordinate} />}
-            </MapView>
+            <WebView source={{ uri: goongMapUrl }} style={{ flex: 1 }} />
           </View>
         </View>
       </SafeAreaView>
