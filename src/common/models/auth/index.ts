@@ -1,4 +1,4 @@
-import { number } from "zod";
+import { boolean, number } from "zod";
 import { Gender } from "../../enums/Gender";
 import { RoleName } from "../../enums/RoleName";
 import { StatusEntity } from "../../enums/StatusEntity";
@@ -37,6 +37,7 @@ export interface UserResponse {
   roleName: RoleName;
   creationDate: Date;
   userLocations: UserLocationDto[];
+  firstLogin: boolean;
 }
 
 export interface PasswordChangeRequest {
@@ -48,6 +49,16 @@ export interface UserLocationDto {
   id: number;
   userId: number;
   specificAddress: string;
+  latitude: number;
+  longitude: number;
   isPrimary: boolean;
   location: LocationDto;
+}
+
+export interface GoogleSignUpDto {
+  email: string;
+  fullName: string;
+  googleId: string;
+  photoUrl: string;
+  registrationTokens: string[];
 }

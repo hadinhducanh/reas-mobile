@@ -129,6 +129,19 @@ const getItemDetail = async (
   return response.data;
 };
 
+const findNearbyItems = async (
+  pageNo: number,
+  latitude: number,
+  longitude: number,
+  distance: number
+): Promise<ResponseEntityPagination<ItemResponse>> => {
+  const response = await axios.get<ResponseEntityPagination<ItemResponse>>(
+    `${API_BASE_URL}/item/nearby?pageNo=${pageNo}&pageSize=20&latitude=${latitude}&longitude=${longitude}&distance=${distance}`
+  );
+
+  return response.data;
+};
+
 export default {
   uploadItem,
   getAllItemAvailable,
@@ -139,4 +152,5 @@ export default {
   getSimilarItems,
   getOtherItemsOfUser,
   getAllItemOfUserByStatus,
+  findNearbyItems,
 };

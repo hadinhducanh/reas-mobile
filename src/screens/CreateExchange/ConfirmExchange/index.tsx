@@ -50,8 +50,6 @@ const ConfirmExchange: React.FC = () => {
       additionalNotes: exchangeItem.additionalNotes,
     };
 
-    // console.log(exchangeRequestRequest);
-
     await dispatch(makeAnExchangeThunk(exchangeRequestRequest));
   };
 

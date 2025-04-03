@@ -125,7 +125,6 @@ const ChatDetails: React.FC = () => {
     };
     try {
       const vietnamTime = moment().tz("Asia/Ho_Chi_Minh").format();
-      console.log("Vietnam time:", vietnamTime);
       if (selectedImage) {
         const imageUrl = await uploadImageToCloudinary(selectedImage);
         chatMessage = {

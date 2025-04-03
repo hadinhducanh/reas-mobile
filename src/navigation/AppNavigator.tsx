@@ -104,7 +104,11 @@ export type RootStackParamList = {
   ConfirmExchange: undefined;
   AccpectRejectExchange: { exchangeId: number };
   FeedbackItem: { exchangeId: number };
-  SearchResult: { searchTextParam?: string; itemType?: TypeItem };
+  SearchResult: {
+    searchTextParam?: string;
+    itemType?: TypeItem;
+    range?: number;
+  };
   OwnerItem: { userId: number };
   OwnerFeedback: { userId: number };
   Favorite: undefined;

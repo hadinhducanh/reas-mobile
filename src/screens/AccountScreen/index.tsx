@@ -1,5 +1,5 @@
 import React, { useCallback, memo, useState, useMemo } from "react";
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useDispatch, useSelector } from "react-redux";
@@ -128,16 +128,38 @@ const Account: React.FC = () => {
 
         {isLoggedIn ? (
           <View className="mx-5 h-[100px] flex-row items-center">
-            <Icon name="person-circle-outline" size={85} color="gray" />
+            {user.image ? (
+              <View className="w-24 h-24 rounded-full items-center justify-center">
+                <Image
+                  source={{
+                    uri: user.image,
+                  }}
+                  className="w-full h-full rounded-full"
+                />
+              </View>
+            ) : (
+              <Icon name="person-circle-outline" size={85} color="gray" />
+            )}
             <View className="ml-3">
               <Text className="text-[18px] font-bold">{user?.fullName}</Text>
               <View className="flex-row items-center justify-center mt-[6px]">
-                <Text className="text-[13px] mr-1">5.0</Text>
-                {[...Array(5)].map((_, idx) => (
-                  <Icon key={idx} name="star" size={14} color="#FFA43D" />
+                <Text className="text-[13px] mr-1">
+                  {user.numOfRatings !== undefined
+                    ? Number.isInteger(user.numOfRatings)
+                      ? `${user.numOfRatings}.0`
+                      : user.numOfRatings
+                    : ""}
+                </Text>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <Icon
+                    key={`star-${num}`}
+                    name="star"
+                    size={16}
+                    color={num <= user.numOfRatings! ? "#FFD700" : "#dfecec"}
+                  />
                 ))}
                 <Text className="ml-1 text-[13px] font-semibold text-[#00B0B9]">
-                  (5 đánh giá)
+                  ({user.numOfFeedbacks} đánh giá)
                 </Text>
               </View>
             </View>

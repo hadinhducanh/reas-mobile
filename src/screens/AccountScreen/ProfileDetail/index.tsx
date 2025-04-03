@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Image,
+  TouchableOpacity,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
@@ -7,21 +14,50 @@ import { useNavigation } from "@react-navigation/native";
 import Header from "../../../components/Header";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../redux/store";
+import ChooseImage from "../../../components/ChooseImage";
+import { boolean } from "zod";
 
 const ProfileDetail: React.FC = () => {
-  // State quản lý chế độ chỉnh sửa
   const [isEditing, setIsEditing] = useState(false);
 
-  // Các state chứa giá trị mặc định của form
-  const [fullName, setFullName] = useState("John Doe");
-  const [email, setEmail] = useState("johndoe@example.com");
-  const [phoneNumber, setPhoneNumber] = useState("123-456-7890");
-  const [address, setAddress] = useState("123 Main St");
+  const { user } = useSelector((state: RootState) => state.auth);
 
-  // Các state khác (ví dụ như mã quốc gia)
+  const [fullName, setFullName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [address, setAddress] = useState<string>("");
+  const [enable, setEnable] = useState<boolean>(false);
+
+  const [transferReceiptImage, setTransferReceiptImage] = useState<string>("");
+
   const [countryCode, setCountryCode] = useState("+84");
 
-  // Hàm định dạng số điện thoại theo mẫu "123-456-6789"
+  useEffect(() => {
+    if (user) {
+      setFullName(user?.fullName);
+      setEmail(user.email);
+      if (user.phone) {
+        setPhoneNumber(user.phone);
+      }
+      if (user.userLocations.length !== 0) {
+        setAddress(user.userLocations[0].specificAddress);
+      }
+      if (user.image) {
+        setTransferReceiptImage(user.image);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (fullName && email && phoneNumber && address) {
+      setEnable(true);
+    } else {
+      setEnable(false);
+    }
+  }, [fullName, email, phoneNumber, address]);
+
   const formatPhoneNumber = (digits: string) => {
     if (digits.length <= 3) {
       return digits;
@@ -45,13 +81,11 @@ const ProfileDetail: React.FC = () => {
     setPhoneNumber(formatted);
   };
 
-  // Kiểm tra email hợp lệ
   const isValidEmail = (email: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   };
 
-  // Hiển thị icon kiểm tra email (checkmark nếu hợp lệ, close nếu không)
   const renderValidationIcon = () => {
     if (email.trim().length === 0) {
       return null;
@@ -77,17 +111,13 @@ const ProfileDetail: React.FC = () => {
     }
   };
 
-  // Hàm xử lý khi ấn nút Edit/Save
   const handleEditSave = async () => {
-    if (!isEditing) {
-      // Chuyển sang chế độ chỉnh sửa
-      setIsEditing(true);
-    } else {
-      // Thực hiện lưu dữ liệu (giả lập loading 3 giây)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setIsEditing(false);
-      // Ở đây bạn có thể gọi API để lưu dữ liệu thay đổi nếu cần
-    }
+    // if (!isEditing) {
+    setIsEditing(!isEditing);
+    // } else {
+    //   await new Promise((resolve) => setTimeout(resolve, 1500));
+    //   setIsEditing(false);
+    // }
   };
 
   const textInputStyle = () =>
@@ -102,21 +132,28 @@ const ProfileDetail: React.FC = () => {
       <Header
         title="Profile"
         showOption={false}
-        onBackPress={() =>
-          navigation.navigate("MainTabs", { screen: "Account" })
-        }
+        showBackButton={user?.firstLogin ? false : true}
       />
 
-      {/* Content Container */}
       <View className="flex-1 mb-5">
-        {/* Form Container */}
         <View className="flex-1 flex-col justify-center bg-white rounded-[10px] mx-[20px] px-[20px] mb-[10px] items-center">
-          {/* Avatar */}
-          <View className="bg-[#a9b4bd] w-[100px] h-[100px] flex items-center justify-center rounded-full mb-10">
-            <Icon name="camera-outline" size={40} color="white" />
-          </View>
+          {isEditing ? (
+            <ChooseImage
+              transferReceiptImage={transferReceiptImage}
+              setTransferReceiptImage={setTransferReceiptImage}
+              isProfile={true}
+            />
+          ) : (
+            <View className="bg-[#a9b4bd] w-[180px] h-[180px] flex items-center justify-center rounded-full mb-10 relative">
+              <View className="w-full h-full rounded-full overflow-hidden">
+                <Image
+                  source={{ uri: user?.image }}
+                  className="w-full h-full rounded-full"
+                />
+              </View>
+            </View>
+          )}
 
-          {/* Full Name Input */}
           <View className="w-full h-[50px] mb-[20px]">
             <View className="flex-row h-[50px] px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
               <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
@@ -133,7 +170,6 @@ const ProfileDetail: React.FC = () => {
             </View>
           </View>
 
-          {/* Email Input */}
           <View className="w-full h-[50px] mb-[20px]">
             <View className="flex-row h-[50px] px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
               <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
@@ -151,13 +187,11 @@ const ProfileDetail: React.FC = () => {
             </View>
           </View>
 
-          {/* Phone Input */}
           <View className="w-full h-[50px] mb-[30px]">
             <View className="flex-row h-full px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
               <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
                 <Icon name="phone-portrait-outline" size={20} color="#ffffff" />
               </View>
-              {/* Country Code */}
               <View className="px-[10px] justify-center items-center border-r border-r-[#738aa0] mr-[10px]">
                 <Text className="text-[16px] text-[#0b1d2d]">
                   {countryCode}
@@ -172,18 +206,16 @@ const ProfileDetail: React.FC = () => {
                 className={textInputStyle()}
                 editable={isEditing}
               />
-              {renderValidationIcon()}
             </View>
           </View>
 
-          {/* Address Input */}
           <View className="w-full h-[50px] mb-[20px]">
             <View className="flex-row h-[50px] px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
               <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
                 <Icon name="home-outline" size={20} color="#ffffff" />
               </View>
               <TextInput
-                placeholder="Address"
+                placeholder="Choose location"
                 placeholderTextColor="#738aa0"
                 className={textInputStyle()}
                 value={address}
@@ -197,7 +229,9 @@ const ProfileDetail: React.FC = () => {
           <LoadingButton
             title={isEditing ? "Save change" : "Edit profile"}
             onPress={handleEditSave}
-            buttonClassName="py-4"
+            disable={isEditing ? !enable : false}
+            buttonClassName={`py-4 ${!enable ? "bg-gray-300" : ""}`}
+            textColor={!enable ? "text-[#00b0b9]" : "text-white"}
           />
         </View>
       </View>

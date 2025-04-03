@@ -12,7 +12,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import {
+  NavigationProp,
+  useNavigation,
+  useNavigationState,
+} from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
 import {
@@ -24,6 +28,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import Header from "../../../components/Header";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Auth from "../../../components/Auth";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const signInSchema = z.object({
@@ -33,7 +38,7 @@ const signInSchema = z.object({
 
 const SignIn: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { accessToken, loading } = useSelector(
+  const { accessToken, loading, loadingGoogle, user } = useSelector(
     (state: RootState) => state.auth
   );
   const registrationToken = useSelector(
@@ -46,6 +51,7 @@ const SignIn: React.FC = () => {
   const [remember, setRemember] = useState(false);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const state = useNavigationState((state) => state);
 
   const isValidEmail = useCallback(
     (email: string) => emailRegex.test(email),
@@ -71,8 +77,6 @@ const SignIn: React.FC = () => {
       />
     );
   }, [email, isValidEmail]);
-
-  const handleGoogleSignIn = useCallback(() => {}, [dispatch]);
 
   const handleSignIn = useCallback(async () => {
     const trimmedEmail = email.trim();
@@ -114,7 +118,15 @@ const SignIn: React.FC = () => {
           await AsyncStorage.removeItem("CREDENTIALS");
         }
         dispatch(fetchUserInfoThunk());
-        navigation.navigate("MainTabs", { screen: "Account" });
+        navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: "MainTabs",
+              state: { routes: [{ name: "Account" }] },
+            },
+          ],
+        });
       }
     } catch (err: any) {
       Alert.alert("Sign in Failed", err.message || "Sign in failed");
@@ -148,40 +160,69 @@ const SignIn: React.FC = () => {
   }, []);
 
   const handleNavigateToSignUp = useCallback(() => {
-    navigation.navigate("SignUp");
+    const targetIndex = state.index - 1;
+
+    if (targetIndex > 0 && state.routes[targetIndex].name === "SignUp") {
+      navigation.goBack();
+    } else {
+      navigation.navigate("SignUp");
+    }
   }, [navigation]);
 
   useEffect(() => {
     if (accessToken) {
       dispatch(fetchUserInfoThunk());
-      navigation.navigate("MainTabs", { screen: "Account" });
     }
-  }, [accessToken, dispatch, navigation]);
+  }, [accessToken, dispatch]);
 
+  useEffect(() => {
+    if (user) {
+      if (user.firstLogin) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Profile" }],
+        });
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: "MainTabs",
+              state: { routes: [{ name: "Account" }] },
+            },
+          ],
+        });
+      }
+    }
+  }, [user, navigation]);
+
+  const handleBackPress = () => {
+    const targetIndex = state.index - 1;
+
+    if (targetIndex > 0 && state.routes[targetIndex].name === "SignUp") {
+      navigation.goBack();
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: "MainTabs",
+            state: { routes: [{ name: "Account" }] },
+          },
+        ],
+      });
+    }
+  };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView className="flex-1 bg-[#F6F9F9]">
+      <SafeAreaView className="flex-1 bg-[#F6F9F9] relative">
         <KeyboardAwareScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           extraScrollHeight={20}
           enableOnAndroid={true}
           keyboardShouldPersistTaps="handled"
         >
-          <Header
-            title=""
-            showOption={false}
-            onBackPress={() =>
-              navigation.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: "MainTabs",
-                    state: { routes: [{ name: "Account" }] },
-                  },
-                ],
-              })
-            }
-          />
+          <Header title="" showOption={false} onBackPress={handleBackPress} />
 
           <View className="flex-1 justify-between">
             <View className="flex-1 flex-col justify-center bg-white rounded-tl-[10px] rounded-tr-[10px] mx-[20px] px-[20px] mb-[10px]">
@@ -251,7 +292,6 @@ const SignIn: React.FC = () => {
                 </View>
               </View>
 
-              {/* Remember Me */}
               <View className="w-full flex-row justify-between my-3">
                 <TouchableOpacity
                   className="flex-row items-center"
@@ -289,12 +329,7 @@ const SignIn: React.FC = () => {
               </View>
 
               <View className="items-center">
-                <Pressable
-                  className="w-3/12 py-3 bg-red-400 rounded-full justify-center items-center active:bg-red-300"
-                  onPress={handleGoogleSignIn}
-                >
-                  <Icon name="logo-google" size={25} color="white" />
-                </Pressable>
+                <Auth />
               </View>
 
               <Pressable onPress={handleNavigateToSignUp}>
@@ -306,6 +341,12 @@ const SignIn: React.FC = () => {
             </View>
           </View>
         </KeyboardAwareScrollView>
+        {(loading || loadingGoogle) && (
+          <View
+            className="absolute inset-0 bg-black opacity-50 justify-center items-center"
+            pointerEvents="auto"
+          ></View>
+        )}
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );

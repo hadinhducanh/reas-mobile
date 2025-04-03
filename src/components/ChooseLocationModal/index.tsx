@@ -38,7 +38,7 @@ const ChooseLocationModal: React.FC<ChooseLocationModalProps> = ({
       Promise.all(
         locations.map((loc) =>
           LocationService.getPlaceDetailsByReverseGeocode(
-            loc.specificAddress.split("//")[0].trim()
+            loc.latitude + "," + loc.longitude
           )
         )
       )
@@ -52,11 +52,15 @@ const ChooseLocationModal: React.FC<ChooseLocationModalProps> = ({
     }
   }, [visible, locations]);
 
-  const handleSelectLocation = (place_id: string, address: string) => {
+  const handleSelectLocation = (
+    geocode: string,
+    place_id: string,
+    address: string
+  ) => {
     setSelectedLocationId(place_id);
     setExchangeItem({
       ...exchangeItem,
-      exchangeLocation: place_id + "//" + address,
+      exchangeLocation: geocode + "//" + address,
     });
   };
 
@@ -91,6 +95,9 @@ const ChooseLocationModal: React.FC<ChooseLocationModalProps> = ({
                     <TouchableOpacity
                       onPress={() =>
                         handleSelectLocation(
+                          item.geometry.location.lat +
+                            "," +
+                            item.geometry.location.lng,
                           item.place_id,
                           item.formatted_address
                         )

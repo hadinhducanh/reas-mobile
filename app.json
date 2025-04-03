@@ -39,14 +39,20 @@
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "INTERNET",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
       ],
-      "package": "com.anonymous.REAS"
+      "package": "com.anonymous.REAS",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCPL40kyihTR3fWoSSz6VaIa2qcVvryw-8"
+        }
+      }
     },
     "plugins": [
-      "@react-native-firebase/app"
+      "@react-native-firebase/app",
+      "@react-native-google-signin/google-signin"
     ],
     "web": {
       "favicon": "./assets/favicon.png"

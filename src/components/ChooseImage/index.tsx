@@ -21,8 +21,9 @@ interface ImagePickerProps {
   setReceivedItemImage?: React.Dispatch<React.SetStateAction<string>>;
   transferReceiptImage?: string | null;
   setTransferReceiptImage?: React.Dispatch<React.SetStateAction<string>>;
-  isUploadEvidence: boolean;
+  isUploadEvidence?: boolean;
   isFeedback?: boolean;
+  isProfile?: boolean;
 }
 
 const MAX_IMAGES = 4;
@@ -40,6 +41,7 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
     setTransferReceiptImage = () => {},
     isUploadEvidence,
     isFeedback,
+    isProfile,
   } = props;
 
   const parseImages = useCallback((imageStr: string | null): string[] => {
@@ -327,6 +329,72 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
             )}
           </TouchableOpacity>
         </View>
+      ) : isProfile ? (
+        <>
+          <TouchableOpacity
+            onPress={() => showPickerOptions(setTransferReceiptImage)}
+            className="bg-[#a9b4bd] w-[180px] h-[180px] flex items-center justify-center rounded-full mb-10 relative"
+          >
+            {transferReceiptImage ? (
+              <>
+                <View className="w-full h-full rounded-full overflow-hidden p-2">
+                  <Image
+                    source={{ uri: transferReceiptImage }}
+                    className="w-full h-full rounded-full"
+                  />
+                </View>
+                <View className="absolute w-full h-full rounded-full bg-gray-100/5">
+                  <Icon
+                    name="photo-camera"
+                    size={40}
+                    color="white"
+                    style={{
+                      top: "50%",
+                      left: "50%",
+                      transform: [{ translateX: -20 }, { translateY: -20 }],
+                    }}
+                  />
+                </View>
+              </>
+            ) : (
+              <>
+                <View className="absolute w-full h-full rounded-full bg-gray-100/5">
+                  <Icon
+                    name="photo-camera"
+                    size={40}
+                    color="white"
+                    style={{
+                      top: "50%",
+                      left: "50%",
+                      transform: [{ translateX: -20 }, { translateY: -20 }],
+                    }}
+                  />
+                </View>
+              </>
+            )}
+          </TouchableOpacity>
+
+          {/* <TouchableOpacity
+            onPress={() => showPickerOptions(setTransferReceiptImage)}
+            className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2"
+          >
+            {transferReceiptImage ? (
+              <Image
+                source={{ uri: transferReceiptImage }}
+                className="w-full h-full rounded-lg"
+              />
+            ) : (
+              <>
+                <Icon name="photo-camera" size={30} color="#00b0b9" />
+                <Text className="text-gray-500 text-center text-xs mt-2 w-32">
+                  {isFeedback
+                    ? "(Optional)"
+                    : "Please add your transfer receipt (optional)"}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity> */}
+        </>
       ) : (
         // MULTI-IMAGE UI
         <View className="flex-row mt-2">

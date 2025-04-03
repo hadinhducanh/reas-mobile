@@ -255,7 +255,7 @@ const ItemDetails: React.FC = () => {
                   className="ml-1 text-gray-500 text-lg underline w-10/12"
                   numberOfLines={1}
                 >
-                  {itemDetail?.userLocation.specificAddress.split("//")[1]}
+                  {itemDetail?.userLocation.specificAddress}
                 </Text>
               </View>
             </Pressable>
@@ -473,9 +473,11 @@ const ItemDetails: React.FC = () => {
         <LocationModal
           visible={locationVisible}
           onClose={() => setLocationVisible(false)}
-          place_id={itemDetail.userLocation.specificAddress
-            .split("//")[0]
-            .trim()}
+          place_id={
+            itemDetail.userLocation.latitude +
+            "," +
+            itemDetail.userLocation.longitude
+          }
         />
       )}
     </>

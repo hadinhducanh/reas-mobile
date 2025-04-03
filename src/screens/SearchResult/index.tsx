@@ -51,7 +51,7 @@ const SearchResult: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const dispatch = useDispatch<AppDispatch>();
   const route = useRoute<RouteProp<RootStackParamList, "SearchResult">>();
-  const { searchTextParam, itemType } = route.params;
+  const { searchTextParam, itemType, range } = route.params;
 
   const [isSortModalVisible, setIsSortModalVisible] = useState<boolean>(false);
   const [isFilterPriceModalVisible, setIsFilterPriceModalVisible] =
@@ -129,7 +129,7 @@ const SearchResult: React.FC = () => {
         })
       );
     } else if (itemType !== undefined) {
-      setTypeItem(typeItem);
+      setTypeItem([itemType]);
       dispatch(
         searchItemPaginationThunk({
           pageNo: 0,
@@ -328,8 +328,10 @@ const SearchResult: React.FC = () => {
               className="mr-2"
             />
             <Text className="ml-2 text-base text-gray-500">
-              VinHome Grand Park:
-              <Text className="text-[#00B0B9] font-semibold"> 10km</Text>
+              Distance:
+              <Text className="text-[#00B0B9] font-semibold">
+                {range !== undefined ? range + "km" : " Choose"}
+              </Text>
             </Text>
             <Icon
               name="chevron-down-outline"
