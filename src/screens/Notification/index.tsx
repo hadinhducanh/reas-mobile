@@ -1,10 +1,7 @@
 import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "../../navigation/AppNavigator";
+import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../components/Header";
-import Icon from "react-native-vector-icons/Ionicons";
 import NotificationItem from "../../components/NotificationItem";
 
 const Notifications: React.FC = () => {
