@@ -5,6 +5,7 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../../components/Header";
@@ -24,7 +25,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUserThunk } from "../../../redux/thunk/userThunk";
 import {
   getAllItemOfUserByStatusThunk,
-  getAllItemAvailableThunk,
   getItemCountsOfUserThunk,
 } from "../../../redux/thunk/itemThunks";
 import { StatusItem } from "../../../common/enums/StatusItem";
@@ -102,6 +102,7 @@ const OwnerItem: React.FC = () => {
       count: countsOfUser.AVAILABLE!,
     },
     {
+      header: "EXCHANGE",
       label: "SOLD",
       count: countsOfUser.SOLD!,
     },
@@ -139,14 +140,6 @@ const OwnerItem: React.FC = () => {
     }
   };
 
-  // const toggleLike = (itemId: number) => {
-  //   setItemList((prevList) =>
-  //     prevList.map((item) =>
-  //       item.id === itemId ? { ...item, isFavorited: !item.isFavorited } : item
-  //     )
-  //   );
-  // };
-
   const rows = chunkArray(content, 2);
 
   return (
@@ -169,7 +162,18 @@ const OwnerItem: React.FC = () => {
 
           <View className="bg-white -mt-[50px] px-5 pt-5">
             <View className="w-[100px] h-[100px] rounded-full -mt-[60px] items-center justify-center overflow-hidden bg-white">
-              <Icon name="person-circle" size={100} color="gray" />
+              {userDetail?.image ? (
+                <View className="w-24 h-24 rounded-full items-center justify-center">
+                  <Image
+                    source={{
+                      uri: userDetail?.image,
+                    }}
+                    className="w-full h-full rounded-full"
+                  />
+                </View>
+              ) : (
+                <Icon name="person-circle" size={100} color="gray" />
+              )}
             </View>
             <View className="mt-2 pb-5">
               <Text className="text-2xl font-bold">{userDetail?.fullName}</Text>
@@ -258,13 +262,12 @@ const OwnerItem: React.FC = () => {
               >
                 <View className="mt-3 mx-3">
                   {rows.map((row, rowIndex) => (
-                    <View key={rowIndex} className="flex flex-row mb-2 gap-x-2">
+                    <View key={rowIndex} className="flex flex-row gap-x-2">
                       {row.map((item) => (
                         <View key={item.id} className="flex-1">
                           <ItemCard
                             item={item}
                             navigation={navigation}
-                            // toggleLike={toggleLike}
                             mode="default"
                           />
                         </View>

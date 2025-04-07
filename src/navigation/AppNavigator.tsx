@@ -57,6 +57,8 @@ import { TypeItem } from "../common/enums/TypeItem";
 import Payment from "../screens/Payment";
 import OrderFailed from "../screens/OrderScreen/OrderFailed";
 import OrderSuccess from "../screens/OrderScreen/OrderSuccess";
+import ExtendItemPlan from "../screens/AccountScreen/SubscriptionPlan/ExtendItemPlan";
+import ExtendPremiumSucess from "../screens/AccountScreen/SubscriptionPlan/ExtendSubscriptionPlanSucess";
 
 export type ItemType = {
   id: number;
@@ -116,6 +118,8 @@ export type RootStackParamList = {
   FilterMap: undefined;
   Premium: undefined;
   ExtendPremium: undefined;
+  ExtendItemPlan: undefined;
+  ExtendPremiumSucess: undefined;
   About: undefined;
   UploadItemSuccess: undefined;
   UploadScreen: undefined;
@@ -304,6 +308,11 @@ export default function RootNavigator() {
         <Stack.Screen name="ItemPreview" component={ItemExpire} />
         <Stack.Screen name="Premium" component={Premium} />
         <Stack.Screen name="ExtendPremium" component={ExtendPremium} />
+        <Stack.Screen
+          name="ExtendPremiumSucess"
+          component={ExtendPremiumSucess}
+        />
+        <Stack.Screen name="ExtendItemPlan" component={ExtendItemPlan} />
         <Stack.Screen name="About" component={About} />
         <Stack.Screen name="UploadItemSuccess" component={UploadItemSuccess} />
         <Stack.Screen name="BrowseItems" component={BrowseItems} />

@@ -5,6 +5,7 @@ import {
   ScrollView,
   ActivityIndicator,
   FlatList,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../../components/Header";
@@ -177,7 +178,18 @@ const OwnerFeedback: React.FC = () => {
 
           <View className="bg-white -mt-[50px] px-5 pt-5">
             <View className="w-[100px] h-[100px] rounded-full -mt-[60px] items-center justify-center overflow-hidden bg-white">
-              <Icon name="person-circle" size={100} color="gray" />
+              {userDetail?.image ? (
+                <View className="w-24 h-24 rounded-full items-center justify-center">
+                  <Image
+                    source={{
+                      uri: userDetail?.image,
+                    }}
+                    className="w-full h-full rounded-full"
+                  />
+                </View>
+              ) : (
+                <Icon name="person-circle" size={100} color="gray" />
+              )}
             </View>
 
             <View className="mt-2 pb-5">

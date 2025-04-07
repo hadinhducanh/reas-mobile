@@ -132,7 +132,17 @@ const ProfileDetail: React.FC = () => {
       <Header
         title="Profile"
         showOption={false}
-        showBackButton={user?.firstLogin ? false : true}
+        onBackPress={() =>
+          navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: "MainTabs",
+                state: { routes: [{ name: "Account" }] },
+              },
+            ],
+          })
+        }
       />
 
       <View className="flex-1 mb-5">

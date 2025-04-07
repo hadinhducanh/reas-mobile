@@ -37,7 +37,6 @@ const ChatDetails: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const route = useRoute<RouteProp<RootStackParamList, "ChatDetails">>();
   const { receiverUsername, receiverFullName } = route.params;
-  const { chatMessages } = useSelector((state: RootState) => state.chat);
   const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState<PickedImageFile | null>(
@@ -90,7 +89,7 @@ const ChatDetails: React.FC = () => {
         })
       );
 
-      if (response.payload) {
+      if (Array.isArray(response.payload)) {
         setMessages(response.payload as ChatMessage[]);
       } else {
         setMessages([]);
@@ -177,7 +176,9 @@ const ChatDetails: React.FC = () => {
             <Pressable onPress={() => navigation.goBack()}>
               <Icon name="chevron-back-outline" size={24} color="#fff" />
             </Pressable>
-            <View className="mx-3 w-12 h-12 rounded-full bg-[#738aa0]" />
+            <View className="mx-3 w-12 h-12 rounded-full items-center justify-center">
+              <Icon name="person-circle-outline" size={45} color="white" />
+            </View>
             <Text className="text-[18px] font-bold text-white">
               {receiverFullName}
             </Text>
@@ -185,24 +186,39 @@ const ChatDetails: React.FC = () => {
 
           {/* Chat Messages */}
           <View className="flex-1 bg-white">
-            <ScrollView
-              ref={scrollViewRef}
-              onContentSizeChange={scrollToBottom} // auto-scroll on content change
-              className="bg-white"
-            >
-              {messages.map((msg, index) => (
-                <Message
-                  key={index}
-                  isSender={msg.senderId === senderUsername}
-                  type={msg.contentType === "image" ? "image" : "text"}
-                  time={formatTimestamp(msg.timestamp)}
-                  text={msg.contentType === "text" ? msg.content : undefined}
-                  imageUrl={
-                    msg.contentType === "image" ? msg.content : undefined
-                  }
+            {/* {messages.length === 0
+                ? ""
+                : } */}
+
+            {Array.isArray(messages) && messages.length > 0 ? (
+              <ScrollView
+                ref={scrollViewRef}
+                onContentSizeChange={scrollToBottom} // auto-scroll on content change
+                className="bg-white"
+              >
+                {messages.map((msg, index) => (
+                  <Message
+                    key={index}
+                    isSender={msg.senderId === senderUsername}
+                    type={msg.contentType === "image" ? "image" : "text"}
+                    time={formatTimestamp(msg.timestamp)}
+                    text={msg.contentType === "text" ? msg.content : undefined}
+                    imageUrl={
+                      msg.contentType === "image" ? msg.content : undefined
+                    }
+                  />
+                ))}
+              </ScrollView>
+            ) : (
+              <View className="flex-1 justify-center items-center">
+                <Icon
+                  name="remove-circle-outline"
+                  size={70}
+                  color={"#00b0b9"}
                 />
-              ))}
-            </ScrollView>
+                <Text className="text-gray-500">No history chat</Text>
+              </View>
+            )}
           </View>
 
           {/* Selected image preview with remove option */}

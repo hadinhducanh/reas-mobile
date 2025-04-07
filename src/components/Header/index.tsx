@@ -128,7 +128,7 @@ const Header: React.FC<HeaderProps> = ({
                 <Text className="ml-2 text-base">Báo cáo người dùng</Text>
               )}
             </Pressable>
-            {owner && (
+            {/* {owner && (
               <Pressable
                 className="flex-row items-center bg-white p-5 active:bg-gray-100 border-t-[1px] border-b-[1px] border-gray-200"
                 onPress={setFavorites}
@@ -136,7 +136,7 @@ const Header: React.FC<HeaderProps> = ({
                 <Icon name="heart-outline" size={24} color="black" />
                 <Text className="text-base ml-2">Lưu tin</Text>
               </Pressable>
-            )}
+            )} */}
 
             <Pressable
               className="flex-row items-center bg-white p-5 active:bg-gray-100"

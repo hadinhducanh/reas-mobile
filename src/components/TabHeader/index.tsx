@@ -5,6 +5,7 @@ import { StatusExchange } from "../../common/enums/StatusExchange";
 import { StatusItem } from "../../common/enums/StatusItem";
 
 interface Tab {
+  header?: string;
   label: StatusExchange | StatusItem | string | number;
   count: number;
 }
@@ -98,7 +99,7 @@ const TabHeader: FC<TabHeaderProps> = ({
                 }`}
                 numberOfLines={1}
               >
-                {`${tab.label} (${tab.count})`}
+                {`${tab.header ? tab.header : tab.label} (${tab.count})`}
               </Text>
             </View>
           </TouchableOpacity>

@@ -7,17 +7,30 @@ import {
   NavigationProp,
   StackActions,
   useNavigation,
+  useNavigationState,
 } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 
 const OrderFailed: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const state = useNavigationState((state) => state);
+  const targetIndex = state.index - 2;
 
   const handleGoBack = async () => {
-    navigation.reset({
-      index: 1,
-      routes: [{ name: "Premium" }, { name: "ExtendPremium" }],
-    });
+    if (
+      targetIndex > 0 &&
+      state.routes[targetIndex].name === "ExtendItemPlan"
+    ) {
+      navigation.reset({
+        index: 1,
+        routes: [{ name: "ItemPreview" }, { name: "ExtendItemPlan" }],
+      });
+    } else {
+      navigation.reset({
+        index: 1,
+        routes: [{ name: "Premium" }, { name: "ExtendPremium" }],
+      });
+    }
   };
 
   return (

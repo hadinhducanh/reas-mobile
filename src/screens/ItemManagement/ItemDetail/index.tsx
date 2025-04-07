@@ -39,6 +39,7 @@ import {
   addToFavoriteThunk,
   deleteFromFavoriteThunk,
 } from "../../../redux/thunk/favoriteThunk";
+import { StatusItem } from "../../../common/enums/StatusItem";
 
 const { width } = Dimensions.get("window");
 
@@ -277,7 +278,20 @@ const ItemDetails: React.FC = () => {
                 })
               }
             >
-              <Icon name="person-circle-outline" size={75} color="gray" />
+              {itemDetail?.owner.image ? (
+                <View className="w-24 h-24 rounded-full items-center justify-center p-2">
+                  <Image
+                    source={{
+                      uri: itemDetail?.owner.image,
+                    }}
+                    className="w-full h-full rounded-full"
+                  />
+                </View>
+              ) : (
+                <View className="w-24 h-24 rounded-full items-center justify-center">
+                  <Icon name="person-circle-outline" size={80} color="gray" />
+                </View>
+              )}
               <View className="ml-1">
                 <Text className="text-lg font-bold">
                   {itemDetail?.owner.fullName}
@@ -402,14 +416,14 @@ const ItemDetails: React.FC = () => {
 
   return (
     <>
-      {loading ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#00b0b9" />
-        </View>
-      ) : (
-        <>
-          <SafeAreaView className="flex-1 bg-gray-100" edges={["top"]}>
-            <Header title="" />
+      <SafeAreaView className="flex-1 bg-gray-100" edges={["top"]}>
+        <Header title="" />
+        {loading ? (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#00b0b9" />
+          </View>
+        ) : (
+          <>
             <FlatList
               data={[{}]}
               keyExtractor={(_, index) => index.toString()}
@@ -418,56 +432,58 @@ const ItemDetails: React.FC = () => {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ flexGrow: 1 }}
             />
-          </SafeAreaView>
-          <View
-            className={`${
-              Platform.OS === "ios" ? "pt-4 pb-7" : "py-5"
-            } px-5 bg-white rounded-t-xl flex-row items-center`}
-          >
-            <View className="flex-1">
-              <LoadingButton
-                title="Call"
-                onPress={() => {}}
-                buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
-                iconName="call-outline"
-                iconSize={25}
-                iconColor="#00B0B9"
-                showIcon={true}
-                textColor="text-[#00B0B9]"
-              />
-            </View>
-            <View className="flex-1 mx-2">
-              <LoadingButton
-                title="Chat"
-                onPress={() =>
-                  navigation.navigate("ChatDetails", {
-                    receiverUsername: itemDetail!.owner.userName,
-                    receiverFullName: itemDetail!.owner.fullName,
-                  })
-                }
-                buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
-                iconName="chatbubble-outline"
-                iconSize={25}
-                iconColor="#00B0B9"
-                showIcon={true}
-                textColor="text-[#00B0B9]"
-              />
-            </View>
-            <View className="flex-1">
-              <LoadingButton
-                title="Exchange"
-                onPress={handleCreateExchange}
-                buttonClassName="p-3 border-transparent border-2 bg-[#00B0B9]"
-                iconName="swap-horizontal"
-                iconSize={25}
-                iconColor="white"
-                showIcon={true}
-                textColor="text-white"
-              />
-            </View>
-          </View>
-        </>
-      )}
+            {itemDetail?.statusItem !== StatusItem.SOLD && (
+              <View
+                className={`${
+                  Platform.OS === "ios" ? "pt-4 pb-7" : "py-5"
+                } px-5 bg-white rounded-t-xl flex-row items-center`}
+              >
+                <View className="flex-1">
+                  <LoadingButton
+                    title="Call"
+                    onPress={() => {}}
+                    buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
+                    iconName="call-outline"
+                    iconSize={25}
+                    iconColor="#00B0B9"
+                    showIcon={true}
+                    textColor="text-[#00B0B9]"
+                  />
+                </View>
+                <View className="flex-1 mx-2">
+                  <LoadingButton
+                    title="Chat"
+                    onPress={() =>
+                      navigation.navigate("ChatDetails", {
+                        receiverUsername: itemDetail!.owner.userName,
+                        receiverFullName: itemDetail!.owner.fullName,
+                      })
+                    }
+                    buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
+                    iconName="chatbubble-outline"
+                    iconSize={25}
+                    iconColor="#00B0B9"
+                    showIcon={true}
+                    textColor="text-[#00B0B9]"
+                  />
+                </View>
+                <View className="flex-1">
+                  <LoadingButton
+                    title="Exchange"
+                    onPress={handleCreateExchange}
+                    buttonClassName="p-3 border-transparent border-2 bg-[#00B0B9]"
+                    iconName="swap-horizontal"
+                    iconSize={25}
+                    iconColor="white"
+                    showIcon={true}
+                    textColor="text-white"
+                  />
+                </View>
+              </View>
+            )}
+          </>
+        )}
+      </SafeAreaView>
 
       {itemDetail?.userLocation.specificAddress && (
         <LocationModal

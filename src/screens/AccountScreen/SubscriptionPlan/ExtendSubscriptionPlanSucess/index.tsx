@@ -15,7 +15,7 @@ import {
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../../../navigation/AppNavigator";
 
-const ExtendPremium: React.FC = () => {
+const ExtendPremiumSucess: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { plans, loading, error } = useSelector(
@@ -84,49 +84,31 @@ const ExtendPremium: React.FC = () => {
           <Text className="text-center text-lg text-red-500">{error}</Text>
         )}
 
-        <View className="my-4">
-          {plans.length > 0 ? (
-            plans
-              .filter((_, index) => index !== 3)
-              .map((plan) => (
-                <TouchableOpacity
-                  key={plan.id}
-                  onPress={() => setSelectedPlan(plan.id)}
-                  className={`flex-row justify-between items-center p-5 mb-2 rounded-lg border-2 bg-white ${
-                    selectedPlan === plan.id
-                      ? "border-[#00b0b9]"
-                      : "border-gray-200"
-                  }`}
-                >
-                  <View>
-                    <Text className="text-base font-semibold text-gray-900">
-                      {plan.name}
-                    </Text>
-                    <Text className="text-sm text-gray-400">
-                      {plan.description}
-                    </Text>
-                  </View>
-                  <Text className="text-lg font-bold text-gray-900">
-                    {Number(plan.price).toLocaleString() + " VND"}
-                  </Text>
-                </TouchableOpacity>
-              ))
-          ) : (
-            <Text className="text-center text-lg text-gray-500">
-              No plans available
+        <View className="bg-white p-5 rounded-lg shadow-md mb-4 border-2 border-gray-200">
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-lg font-semibold text-gray-900">
+              Current Plan
             </Text>
-          )}
-        </View>
+            <View className="bg-[rgba(22,163,74,0.2)] px-3 py-1 rounded-full">
+              <Text className="text-[#16A34A] text-base font-semibold">
+                Active
+              </Text>
+            </View>
+          </View>
 
-        <LoadingButton
-          title="Extend now"
-          onPress={handleSubscribe}
-          buttonClassName="p-4"
-          loading={loadingPayment}
-        />
+          <View className="flex-row justify-between items-center">
+            <Text className="text-base text-gray-900 font-semibold">
+              Annual Premium
+            </Text>
+          </View>
+
+          <Text className="text-sm text-gray-500 mt-1">
+            Next billing date: June 04, 2025
+          </Text>
+        </View>
       </View>
     </SafeAreaView>
   );
 };
 
-export default ExtendPremium;
+export default ExtendPremiumSucess;

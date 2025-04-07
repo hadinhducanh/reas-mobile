@@ -125,7 +125,7 @@ const ItemManagement: React.FC = () => {
             <View className="mx-5">
               <View className="mt-3">
                 {rows.map((row, rowIndex) => (
-                  <View key={rowIndex} className="flex flex-row mb-2 gap-x-2">
+                  <View key={rowIndex} className="flex flex-row gap-x-2">
                     {row.map((item) => (
                       <View key={item.id} className="flex-1">
                         <CardItem

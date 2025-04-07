@@ -181,7 +181,6 @@ export default function UploadItem() {
   useEffect(() => {
     if (itemUpload !== null) {
       setUploadItem(defaultUploadItem);
-      dispatch(resetItemDetailState());
       navigation.navigate("UploadItemSuccess");
     }
   }, [itemUpload, dispatch]);

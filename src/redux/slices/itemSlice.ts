@@ -38,6 +38,7 @@ interface ItemState {
   itemUpload: ItemResponse | null;
   countsOfUser: { [key in StatusItem]?: number };
   countsOfCurrentUser: { [key in StatusItem]?: number };
+  range: number;
   loading: boolean;
   error: string | null;
 }
@@ -91,6 +92,7 @@ const initialState: ItemState = {
   itemUpload: null,
   countsOfUser: {},
   countsOfCurrentUser: {},
+  range: 0,
   loading: false,
   error: null,
 };
@@ -99,6 +101,9 @@ const itemSlice = createSlice({
   name: "item",
   initialState,
   reducers: {
+    setRangeState: (state, action: PayloadAction<number>) => {
+      state.range = action.payload;
+    },
     resetItemDetailState: (state) => {
       state.itemUpload = null;
       state.itemDetail = null;
@@ -488,5 +493,5 @@ const itemSlice = createSlice({
   },
 });
 
-export const { resetItemDetailState } = itemSlice.actions;
+export const { resetItemDetailState, setRangeState } = itemSlice.actions;
 export default itemSlice.reducer;

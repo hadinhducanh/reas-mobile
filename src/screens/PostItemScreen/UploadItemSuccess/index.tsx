@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
-import { ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
@@ -10,79 +16,98 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
 import { getRecommendedItemsThunk } from "../../../redux/thunk/itemThunks";
+import { resetItemDetailState } from "../../../redux/slices/itemSlice";
 
 const UploadItemSuccess: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { itemRecommnand, itemUpload } = useSelector(
+  const { itemRecommnand, itemUpload, loading } = useSelector(
     (state: RootState) => state.item
   );
 
+  // Chỉ dispatch getRecommendedItemsThunk khi itemUpload đã có phản hồi
   useEffect(() => {
-    if (itemUpload && itemUpload?.desiredItem !== null) {
-      dispatch(
-        getRecommendedItemsThunk({
-          id: itemUpload?.id,
-        })
-      );
+    if (itemUpload && itemUpload.desiredItem !== null) {
+      // Giả sử bạn muốn dùng id của itemUpload để lấy gợi ý
+      dispatch(getRecommendedItemsThunk({ id: itemUpload.id, limit: 4 }));
     }
-  }, [dispatch, itemUpload?.id]);
+  }, [dispatch, itemUpload]);
+
+  // UI sẽ hiển thị sau khi loading hoàn thành (tức là khi getRecommendedItemsThunk đã phản hồi)
+  const hanleBackPress = () => {
+    dispatch(resetItemDetailState());
+    navigation.navigate("MainTabs", { screen: "Items" });
+  };
 
   return (
-    <SafeAreaView className="flex-1" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-[#f6f9f9]">
       <Header
         title="Upload successfully"
         showOption={false}
-        onBackPress={() => navigation.navigate("MainTabs", { screen: "Items" })}
+        onBackPress={hanleBackPress}
       />
-
-      <View className="flex-1 bg-[#F6F9F9]">
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
-        >
-          <View className="flex-1 px-5 justify-center items-center">
-            <View className="w-full bg-white rounded-md items-center">
-              <View className="w-[266px] h-[266px] relative overflow-hidden my-[20px] rounded-[10px]">
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#00b0b9" />
+        </View>
+      ) : (
+        <>
+          <View className="flex-1 justify-center p-5">
+            <View
+              className={`bg-white rounded-xl p-6 items-center justify-center shadow-lg ${
+                itemRecommnand.length === 0 ? "h-full" : ""
+              }`}
+            >
+              <View
+                className={`${
+                  itemRecommnand.length === 0 ? "w-60 h-60" : "w-20 h-20"
+                } relative overflow-hidden mb-6 rounded-xl`}
+              >
                 <View className="absolute inset-0 bg-[#dfecec]" />
                 <Icon
-                  name="checkmark-circle-outline"
-                  size={130}
+                  name="checkmark-outline"
+                  size={itemRecommnand.length === 0 ? 120 : 50}
                   color="#ffffff"
-                  className="absolute top-1/4 left-1/4"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
                 />
               </View>
-              <Text className="text-xl font-bold text-[#0B1D2D] mb-2">
-                Upload item successfully !
+              <Text
+                className={`text-2xl font-bold text-[#0b1d2d] text-center ${
+                  itemRecommnand.length === 0 ? "" : "my-5"
+                } `}
+              >
+                Upload item successfully!
               </Text>
-              <Text className="text-base text-center text-gray-500">
-                Your item is in review queue right now. Please wait for approval
-                before the item is available to exchange
+              <Text className="text-lg font-medium text-[#738aa0] text-center">
+                Your item is in review queue right now.{"\n"}Please wait for
+                approval before the item{"\n"}is available to exchange.
               </Text>
             </View>
+
+            {itemRecommnand.length !== 0 && (
+              <View className="mt-6">
+                <HorizontalSection
+                  title="Bài đăng tương tự"
+                  data={itemRecommnand}
+                  navigation={navigation}
+                />
+              </View>
+            )}
           </View>
 
-          <View className="mt-8">
-            <HorizontalSection
-              title="Bài đăng tương tự"
-              data={itemRecommnand}
-              navigation={navigation}
-            />
-          </View>
-
-          <View className="py-5 mx-5">
+          <View
+            className={`mt-6 px-5 bg-white rounded-t-xl flex-row items-center justify-center ${
+              Platform.OS === "ios" ? "pt-4 pb-7" : "py-3"
+            } shadow-inner`}
+          >
             <LoadingButton
               title="Back to items"
-              buttonClassName="p-4"
-              onPress={() =>
-                navigation.navigate("MainTabs", { screen: "Items" })
-              }
+              buttonClassName="w-full p-4"
+              onPress={hanleBackPress}
             />
           </View>
-        </ScrollView>
-      </View>
+        </>
+      )}
     </SafeAreaView>
   );
 };

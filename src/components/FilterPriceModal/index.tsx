@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, TextInput } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../LoadingButton";
 
 interface FilterPriceModalProps {

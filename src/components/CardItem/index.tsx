@@ -115,7 +115,7 @@ const CardItem: React.FC<CardItemProps> = ({
         </TouchableOpacity>
       </View>
 
-      <View className="mt-3 py-3">
+      <View className="mt-3">
         <Text className="text-gray-500 text-base font-medium" numberOfLines={1}>
           {item.itemName}
         </Text>
@@ -123,9 +123,16 @@ const CardItem: React.FC<CardItemProps> = ({
           {item.price === 0 ? "Free" : formatPrice(item.price) + " VND"}
         </Text>
         {mode === "default" && (
-          <Text className="text-gray-400 text-sm" numberOfLines={1}>
-            {formatRelativeTime(item.approvedTime)} | {item.owner.fullName}
-          </Text>
+          <View className={`${item.distance ? "py-3" : "py-1"}`}>
+            <Text className="text-gray-400 text-sm" numberOfLines={1}>
+              {formatRelativeTime(item.approvedTime)} | {item.owner.fullName}
+            </Text>
+            {item.distance ? (
+              <Text className="text-[#00B0B9] text-sm" numberOfLines={1}>
+                {item.distance}
+              </Text>
+            ) : null}
+          </View>
         )}
       </View>
     </TouchableOpacity>

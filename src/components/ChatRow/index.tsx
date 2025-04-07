@@ -1,7 +1,8 @@
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import Icon from "react-native-vector-icons/Ionicons";
 
 interface ChatRowProps {
   name: string;
@@ -9,21 +10,44 @@ interface ChatRowProps {
   message: string;
   receiverUsername: string;
   receiverFullName: string;
+  imageUrl?: string;
 }
 
-const ChatRow: React.FC<ChatRowProps> = ({ name, time, message, receiverUsername, receiverFullName}) => {
+const ChatRow: React.FC<ChatRowProps> = ({
+  name,
+  time,
+  message,
+  receiverUsername,
+  receiverFullName,
+  imageUrl,
+}) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
     <Pressable
       className="flex-row items-center p-4 bg-white border-b border-gray-100 active:bg-gray-100"
       onPress={() => {
-        navigation.navigate("ChatDetails", { receiverUsername, receiverFullName });
+        navigation.navigate("ChatDetails", {
+          receiverUsername,
+          receiverFullName,
+        });
       }}
     >
       {/* Avatar (có thể thay thế bằng Image nếu có URL) */}
-      <View className="w-16 h-16 rounded-full bg-gray-300 mr-3" />
-
+      {imageUrl ? (
+        <View className="w-20 h-20 rounded-full items-center justify-center p-2">
+          <Image
+            source={{
+              uri: imageUrl,
+            }}
+            className="w-full h-full rounded-full"
+          />
+        </View>
+      ) : (
+        <View className="w-20 h-20 rounded-full items-center justify-center">
+          <Icon name="person-circle-outline" size={70} color="gray" />
+        </View>
+      )}
       {/* Nội dung chat */}
       <View className="flex-1">
         <View className="flex-row justify-between items-center">

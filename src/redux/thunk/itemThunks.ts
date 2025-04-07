@@ -134,10 +134,11 @@ export const getAllItemAvailableThunk = createAsyncThunk<
   {
     pageNo: number;
     request: SearchItemRequest;
+    sortBy?: string;
   }
->("item/getAllItemAvailable", async ({ pageNo, request }, thunkAPI) => {
+>("item/getAllItemAvailable", async ({ pageNo, request, sortBy }, thunkAPI) => {
   try {
-    const data = await ItemService.getAllItemAvailable(pageNo, request);
+    const data = await ItemService.getAllItemAvailable(pageNo, request, sortBy);
     return data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
