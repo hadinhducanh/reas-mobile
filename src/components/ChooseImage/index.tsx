@@ -270,6 +270,7 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
           <Image
             source={{ uri: base64 }}
             className="w-full h-full rounded-lg"
+            resizeMode="contain"
           />
           <TouchableOpacity
             onPress={() => deleteImage(index)}
@@ -295,6 +296,7 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
               <Image
                 source={{ uri: receivedItemImage }}
                 className="w-full h-full rounded-lg"
+                resizeMode="contain"
               />
             ) : (
               <>
@@ -316,6 +318,7 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
               <Image
                 source={{ uri: transferReceiptImage }}
                 className="w-full h-full rounded-lg"
+                resizeMode="contain"
               />
             ) : (
               <>
@@ -341,6 +344,7 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
                   <Image
                     source={{ uri: transferReceiptImage }}
                     className="w-full h-full rounded-full"
+                    resizeMode="contain"
                   />
                 </View>
                 <View className="absolute w-full h-full rounded-full bg-gray-100/5">
@@ -373,27 +377,6 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
               </>
             )}
           </TouchableOpacity>
-
-          {/* <TouchableOpacity
-            onPress={() => showPickerOptions(setTransferReceiptImage)}
-            className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2"
-          >
-            {transferReceiptImage ? (
-              <Image
-                source={{ uri: transferReceiptImage }}
-                className="w-full h-full rounded-lg"
-              />
-            ) : (
-              <>
-                <Icon name="photo-camera" size={30} color="#00b0b9" />
-                <Text className="text-gray-500 text-center text-xs mt-2 w-32">
-                  {isFeedback
-                    ? "(Optional)"
-                    : "Please add your transfer receipt (optional)"}
-                </Text>
-              </>
-            )}
-          </TouchableOpacity> */}
         </>
       ) : (
         // MULTI-IMAGE UI

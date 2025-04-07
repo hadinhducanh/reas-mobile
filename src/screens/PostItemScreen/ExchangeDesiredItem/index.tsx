@@ -26,7 +26,7 @@ const ExchangeDesiredItemScreen = () => {
       : uploadItem.desiredItem?.maxPrice.toString() || ""
   );
   const [description, setDescription] = useState<string>(
-    uploadItem.desiredItem?.description || ""
+    uploadItem.desiredItem?.description.replace(/\\n/g, "\n") || ""
   );
   const [error, setError] = useState<string>("");
   const [isInvalid, setIsInvalid] = useState<boolean>(false);
@@ -144,7 +144,10 @@ const ExchangeDesiredItemScreen = () => {
   };
 
   useEffect(() => {
-    if (parseInt(minPrice, 10) > parseInt(maxPrice, 10)) {
+    const minPriceValue = parseInt(minPrice.replace(/,/g, ""), 10) || 0;
+    const maxPriceValue = parseInt(maxPrice.replace(/,/g, ""), 10) || 0;
+
+    if (minPriceValue > maxPriceValue) {
       setError("Min price cannot be greater than Max price");
       setIsInvalid(true);
     } else {

@@ -26,7 +26,10 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
   }, [initialMinPrice, initialMaxPrice]);
 
   useEffect(() => {
-    if (parseInt(minValue, 10) > parseInt(maxValue, 10)) {
+    const minPriceValue = parseInt(minValue.replace(/,/g, ""), 10) || 0;
+    const maxPriceValue = parseInt(maxValue.replace(/,/g, ""), 10) || 0;
+
+    if (minPriceValue > maxPriceValue) {
       setError("Min price cannot be greater than Max price");
       setIsInvalid(true);
     } else {

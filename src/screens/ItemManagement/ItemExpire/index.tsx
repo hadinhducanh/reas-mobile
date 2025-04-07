@@ -19,7 +19,7 @@ import {
   useFocusEffect,
 } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ItemType, RootStackParamList } from "../../../navigation/AppNavigator";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
 import Header from "../../../components/Header";
 import LoadingButton from "../../../components/LoadingButton";
 import ConfirmModal from "../../../components/DeleteConfirmModal";
@@ -31,7 +31,10 @@ import {
   deleteFromFavoriteThunk,
 } from "../../../redux/thunk/favoriteThunk";
 import { resetItemDetailState } from "../../../redux/slices/itemSlice";
-import { getItemDetailThunk } from "../../../redux/thunk/itemThunks";
+import {
+  changeItemStatusThunk,
+  getItemDetailThunk,
+} from "../../../redux/thunk/itemThunks";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
@@ -152,14 +155,6 @@ const ItemExpire: React.FC = () => {
     }, [dispatch, itemId])
   );
 
-  const handleCreateExchange = useCallback(() => {
-    if (!accessToken) {
-      navigation.navigate("SignIn");
-    } else {
-      navigation.navigate("CreateExchange", { itemId });
-    }
-  }, [accessToken, navigation, itemId]);
-
   const handleFavoritePress = useCallback(() => {
     if (!accessToken) {
       navigation.navigate("SignIn");
@@ -176,7 +171,7 @@ const ItemExpire: React.FC = () => {
   }, [accessToken, dispatch, itemId, isFavorite, navigation]);
 
   const handleUpdate = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    navigation.navigate("UpdateItem", { screen: "UpdateItemScreen" });
   };
   const handleExtend = async () => {
     navigation.navigate("ExtendItemPlan");
@@ -190,7 +185,16 @@ const ItemExpire: React.FC = () => {
   };
 
   const handleConfirm = () => {
-    setDeletedVisible(false);
+    if (itemDetail) {
+      dispatch(
+        changeItemStatusThunk({
+          itemId: itemDetail?.id,
+          statusItem: StatusItem.NO_LONGER_FOR_EXCHANGE,
+        })
+      );
+
+      setDeletedVisible(false);
+    }
   };
 
   const renderImageItem = useCallback(
@@ -263,12 +267,14 @@ const ItemExpire: React.FC = () => {
               </View>
             </Pressable>
 
-            <View className="flex flex-row items-center mt-2">
-              <Icon name="time-outline" size={25} color="black" />
-              <Text className="ml-1 text-gray-500 text-lg">
-                Đăng {formatRelativeTime(itemDetail?.approvedTime)}
-              </Text>
-            </View>
+            {itemDetail?.approvedTime && (
+              <View className="flex flex-row items-center mt-2">
+                <Icon name="time-outline" size={25} color="black" />
+                <Text className="ml-1 text-gray-500 text-lg">
+                  Đăng {formatRelativeTime(itemDetail?.approvedTime)}
+                </Text>
+              </View>
+            )}
           </View>
 
           <View className="border-2 py-2 border-gray-300 rounded-xl mt-5 flex-row justify-between">
@@ -415,46 +421,55 @@ const ItemExpire: React.FC = () => {
                 Platform.OS === "ios" ? "pt-4 pb-7" : "py-5"
               } px-5 bg-white rounded-t-xl flex-row items-center`}
             >
-              {itemDetail?.statusItem === StatusItem.EXPIRED ? (
-                <View className="flex-1 mr-2">
-                  <LoadingButton
-                    title="Extend"
-                    onPress={handleExtend}
-                    buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
-                    iconName="time-outline"
-                    iconSize={25}
-                    iconColor="#00B0B9"
-                    showIcon={true}
-                    textColor="text-[#00B0B9]"
-                  />
-                </View>
-              ) : (
-                <View className="flex-1 mr-2">
-                  <LoadingButton
-                    title="Update"
-                    onPress={handleUpdate}
-                    buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
-                    iconName="reader-outline"
-                    iconSize={25}
-                    iconColor="#00B0B9"
-                    showIcon={true}
-                    textColor="text-[#00B0B9]"
-                  />
-                </View>
-              )}
+              {itemDetail?.statusItem !== StatusItem.REJECTED &&
+                itemDetail?.statusItem !== StatusItem.NO_LONGER_FOR_EXCHANGE &&
+                itemDetail?.statusItem !== StatusItem.SOLD &&
+                itemDetail?.statusItem !== StatusItem.UNAVAILABLE && (
+                  <>
+                    {itemDetail?.statusItem === StatusItem.EXPIRED ? (
+                      <View className="flex-1 mr-2">
+                        <LoadingButton
+                          title="Extend"
+                          onPress={handleExtend}
+                          buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
+                          iconName="time-outline"
+                          iconSize={25}
+                          iconColor="#00B0B9"
+                          showIcon={true}
+                          textColor="text-[#00B0B9]"
+                        />
+                      </View>
+                    ) : (
+                      <View className="flex-1 mr-2">
+                        <LoadingButton
+                          title="Update"
+                          onPress={handleUpdate}
+                          buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
+                          iconName="reader-outline"
+                          iconSize={25}
+                          iconColor="#00B0B9"
+                          showIcon={true}
+                          textColor="text-[#00B0B9]"
+                        />
+                      </View>
+                    )}
 
-              <View className="flex-1">
-                <LoadingButton
-                  title="Delete"
-                  onPress={handleDelete}
-                  buttonClassName="p-3 border-transparent border-2 bg-[#00B0B9]"
-                  iconName="trash-outline"
-                  iconSize={25}
-                  iconColor="white"
-                  showIcon={true}
-                  textColor="text-white"
-                />
-              </View>
+                    {itemDetail?.statusItem !== StatusItem.EXPIRED && (
+                      <View className="flex-1">
+                        <LoadingButton
+                          title="Delete"
+                          onPress={handleDelete}
+                          buttonClassName="p-3 border-transparent border-2 bg-[#00B0B9]"
+                          iconName="trash-outline"
+                          iconSize={25}
+                          iconColor="white"
+                          showIcon={true}
+                          textColor="text-white"
+                        />
+                      </View>
+                    )}
+                  </>
+                )}
             </View>
           </>
         )}

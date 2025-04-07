@@ -131,7 +131,7 @@ const TabHeader: FC<TabHeaderProps> = ({
                   }`}
                   numberOfLines={1}
                 >
-                  {`${tab.label} (${tab.count})`}
+                  {`${tab.header ? tab.header : tab.label} (${tab.count})`}
                 </Text>
               </View>
             </TouchableOpacity>

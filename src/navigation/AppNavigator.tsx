@@ -44,7 +44,6 @@ import Statistics from "../screens/AccountScreen/Statistics";
 import ItemDetails from "../screens/ItemManagement/ItemDetail";
 import FilterMap from "../screens/SearchResult/FilterMap";
 import { SignupDto } from "../common/models/auth";
-import CreateItemFlow from "./UploadItemFlow";
 import { defaultUploadItem, useUploadItem } from "../context/ItemContext";
 import ConfirmModal from "../components/DeleteConfirmModal";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -59,6 +58,8 @@ import OrderFailed from "../screens/OrderScreen/OrderFailed";
 import OrderSuccess from "../screens/OrderScreen/OrderSuccess";
 import ExtendItemPlan from "../screens/AccountScreen/SubscriptionPlan/ExtendItemPlan";
 import ExtendPremiumSucess from "../screens/AccountScreen/SubscriptionPlan/ExtendSubscriptionPlanSucess";
+import UpdateItem from "../screens/ItemManagement/UpdateItem";
+import UpdateItemFlow from "./UpdateItemFlow";
 
 export type ItemType = {
   id: number;
@@ -127,6 +128,7 @@ export type RootStackParamList = {
   Payment: { payOSURL: string; returnUrl: string; cancelUrl: string };
   OrderFailed: undefined;
   OrderSuccess: undefined;
+  UpdateItem: undefined;
 };
 
 const TabArr = [
@@ -316,9 +318,9 @@ export default function RootNavigator() {
         <Stack.Screen name="About" component={About} />
         <Stack.Screen name="UploadItemSuccess" component={UploadItemSuccess} />
         <Stack.Screen name="BrowseItems" component={BrowseItems} />
-        {/* <Stack.Screen name="DifferentItem" component={DifferentItem} /> */}
         <Stack.Screen name="ConfirmExchange" component={ConfirmExchange} />
         <Stack.Screen name="UploadScreen" component={UploadItem} />
+        <Stack.Screen name="UpdateItem" component={UpdateItemFlow} />
         <Stack.Screen
           name="AccpectRejectExchange"
           component={AccpectRejectExchange}

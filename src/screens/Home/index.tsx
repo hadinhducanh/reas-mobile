@@ -145,7 +145,7 @@ const HomeScreen: React.FC = () => {
         sortBy: "approvedTime",
       })
     );
-  }, [dispatch]);
+  }, [dispatch, itemAvailable]);
 
   const handleSearch = () => {
     if (searchText !== "") {

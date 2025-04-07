@@ -3,6 +3,7 @@ import { API_BASE_URL } from "../common/constant";
 import {
   ItemResponse,
   SearchItemRequest,
+  UpdateItemRequest,
   UploadItemRequest,
 } from "../common/models/item";
 import { ResponseEntityPagination } from "../common/models/pagination";
@@ -13,6 +14,22 @@ const uploadItem = async (
   accessToken: string
 ): Promise<ItemResponse> => {
   const response = await axios.post<ItemResponse>(
+    `${API_BASE_URL}/item`,
+    request,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+const updateItem = async (
+  request: UpdateItemRequest,
+  accessToken: string
+): Promise<ItemResponse> => {
+  const response = await axios.put<ItemResponse>(
     `${API_BASE_URL}/item`,
     request,
     {
@@ -37,8 +54,6 @@ const getRecommendedItems = async (
       },
     }
   );
-
-  console.log(response.data);
 
   return response.data;
 };
@@ -133,6 +148,23 @@ const getItemDetail = async (
   return response.data;
 };
 
+const changeItemStatus = async (
+  itemId: number,
+  statusItem: StatusItem,
+  accessToken?: string
+): Promise<ItemResponse> => {
+  const response = await axios.put<ItemResponse>(
+    `${API_BASE_URL}/item/status?itemId=${itemId}&statusItem=${statusItem}`,
+    null,
+    {
+      headers: {
+        Authorization: accessToken ? `Bearer ${accessToken}` : null,
+      },
+    }
+  );
+  return response.data;
+};
+
 const findNearbyItems = async (
   pageNo: number,
   latitude: number,
@@ -148,6 +180,7 @@ const findNearbyItems = async (
 
 export default {
   uploadItem,
+  updateItem,
   getAllItemAvailable,
   getItemDetail,
   getAllItemOfCurrentUserByStatus,
@@ -157,4 +190,5 @@ export default {
   getOtherItemsOfUser,
   getAllItemOfUserByStatus,
   findNearbyItems,
+  changeItemStatus,
 };

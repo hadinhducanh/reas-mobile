@@ -33,7 +33,7 @@ export const defaultUploadItem: ExtendedUploadItem = {
     maxPrice: null,
     description: "",
   },
-
+  typeItemDesire: TypeItem.NO_TYPE,
   isCheckedFree: false,
   conditionItemName: "",
   methodExchangeName: "",

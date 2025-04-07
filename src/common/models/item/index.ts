@@ -23,6 +23,21 @@ export interface UploadItemRequest {
   desiredItem?: DesiredItemDto | null;
 }
 
+export interface UpdateItemRequest {
+  id: number;
+  itemName: string;
+  description: string;
+  price: number;
+  conditionItem: ConditionItem;
+  imageUrl: string;
+  methodExchanges: MethodExchange[];
+  isMoneyAccepted: boolean;
+  termsAndConditionsExchange: string;
+  categoryId: number;
+  brandId: number;
+  desiredItem?: DesiredItemDto | null;
+}
+
 export interface DesiredItemDto {
   categoryId: number | null;
   conditionItem: ConditionItem | null;
@@ -52,13 +67,17 @@ export interface ItemResponse {
   userLocation: UserLocationDto;
   favorite: Boolean;
   distance: string;
+  typeItem: TypeItem;
 }
 
 export interface DesiredItemResponse {
   id: number;
+  categoryId: number;
   categoryName: string;
   conditionItem: ConditionItem;
+  brandId: number;
   brandName: string;
+  typeItem: TypeItem;
   minPrice: number;
   maxPrice: number;
   description: string;
@@ -72,6 +91,7 @@ export interface ExtendedUploadItem extends UploadItemRequest {
   brandName: string;
   typeExchange: TypeExchange;
   typeItem: TypeItem;
+  typeItemDesire: TypeItem;
   conditionDesiredItemName: string;
   categoryDesiredItemName: string;
   brandDesiredItemName: string;

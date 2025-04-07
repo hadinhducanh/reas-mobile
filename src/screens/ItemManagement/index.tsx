@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../components/Header";
@@ -6,6 +6,7 @@ import TabHeader from "../../components/TabHeader";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import CardItem from "../../components/CardItem";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux/store";
 import { ItemResponse } from "../../common/models/item";
@@ -15,6 +16,7 @@ import {
   getItemCountsOfCurrentUserThunk,
 } from "../../redux/thunk/itemThunks";
 import Icon from "react-native-vector-icons/Ionicons";
+import { ScrollView } from "react-native-gesture-handler";
 
 const statusItems = [
   { label: "AVAILABLE", value: StatusItem.AVAILABLE },
@@ -24,7 +26,10 @@ const statusItems = [
   },
   { label: "PENDING", value: StatusItem.PENDING },
   { label: "REJECTED", value: StatusItem.REJECTED },
-  { label: "NO LONGER FOR EXCHANGE", value: StatusItem.NO_LONGER_FOR_EXCHANGE },
+  {
+    label: "NO_LONGER_FOR_EXCHANGE",
+    value: StatusItem.NO_LONGER_FOR_EXCHANGE,
+  },
   { label: "SOLD", value: StatusItem.SOLD },
   { label: "UNAVAILABLE", value: StatusItem.UNAVAILABLE },
 ];
@@ -47,15 +52,17 @@ const ItemManagement: React.FC = () => {
     return found ? found.label : "";
   };
 
-  useEffect(() => {
-    dispatch(
-      getAllItemOfCurrentUserByStatusThunk({
-        pageNo: 0,
-        statusItem: selectedStatus,
-      })
-    );
-    dispatch(getItemCountsOfCurrentUserThunk());
-  }, [dispatch, selectedStatus]);
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(
+        getAllItemOfCurrentUserByStatusThunk({
+          pageNo: 0,
+          statusItem: selectedStatus,
+        })
+      );
+      dispatch(getItemCountsOfCurrentUserThunk());
+    }, [dispatch, selectedStatus])
+  );
 
   const tabs = [
     {
@@ -75,6 +82,7 @@ const ItemManagement: React.FC = () => {
       count: countsOfCurrentUser.REJECTED!,
     },
     {
+      header: "NO LONGER FOR EXCHANGE",
       label: getStatusItemLabel(StatusItem.NO_LONGER_FOR_EXCHANGE),
       count: countsOfCurrentUser.NO_LONGER_FOR_EXCHANGE!,
     },
@@ -97,6 +105,29 @@ const ItemManagement: React.FC = () => {
   };
 
   const rows = chunkArray(content, 2);
+
+  const isCloseToBottom = ({
+    layoutMeasurement,
+    contentOffset,
+    contentSize,
+  }: any) => {
+    const paddingToBottom = 80;
+    return (
+      layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom
+    );
+  };
+
+  const handleLoadMore = () => {
+    if (!loading && !last) {
+      dispatch(
+        getAllItemOfCurrentUserByStatusThunk({
+          pageNo: pageNo + 1,
+          statusItem: selectedStatus,
+        })
+      );
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#f6f9f9]">
@@ -122,25 +153,36 @@ const ItemManagement: React.FC = () => {
               <Text className="text-gray-500">No item</Text>
             </View>
           ) : (
-            <View className="mx-5">
-              <View className="mt-3">
-                {rows.map((row, rowIndex) => (
-                  <View key={rowIndex} className="flex flex-row gap-x-2">
-                    {row.map((item) => (
-                      <View key={item.id} className="flex-1">
-                        <CardItem
-                          item={item}
-                          navigation={navigation}
-                          // toggleLike={toggleLike}
-                          mode="management"
-                        />
-                      </View>
-                    ))}
-                    {row.length === 1 && <View className="flex-1" />}
-                  </View>
-                ))}
+            <ScrollView
+              className="bg-gray-100"
+              showsVerticalScrollIndicator={false}
+              onScroll={({ nativeEvent }) => {
+                if (isCloseToBottom(nativeEvent)) {
+                  handleLoadMore();
+                }
+              }}
+              scrollEventThrottle={100}
+            >
+              <View className="mx-5">
+                <View className="mt-3">
+                  {rows.map((row, rowIndex) => (
+                    <View key={rowIndex} className="flex flex-row gap-x-2">
+                      {row.map((item) => (
+                        <View key={item.id} className="flex-1">
+                          <CardItem
+                            item={item}
+                            navigation={navigation}
+                            // toggleLike={toggleLike}
+                            mode="management"
+                          />
+                        </View>
+                      ))}
+                      {row.length === 1 && <View className="flex-1" />}
+                    </View>
+                  ))}
+                </View>
               </View>
-            </View>
+            </ScrollView>
           )}
         </>
       )}
