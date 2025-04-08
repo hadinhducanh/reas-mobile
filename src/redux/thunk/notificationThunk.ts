@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { NotificationDto } from '../../common/models/notification/index';
+import { GetNotificationRequest, NotificationResponse } from '../../common/models/notification/index';
 import { fetchNotificationsOfCurrenteUser } from "../../services/NotificationService";
 
 export const setRegistrationTokenThunk = createAsyncThunk<
@@ -18,13 +18,13 @@ export const setRegistrationTokenThunk = createAsyncThunk<
 );
 
 export const getNotificationsOfCurrentUserThunk = createAsyncThunk<
-    NotificationDto[],
-    string
+    NotificationResponse,
+    GetNotificationRequest
 >(
     "notification/getNotificationsOfCurrentUser",
-    async (userId, thunkAPI) => {
+    async (getNotificationRequest, thunkAPI) => {
         try {
-           return await fetchNotificationsOfCurrenteUser(userId);
+           return await fetchNotificationsOfCurrenteUser(getNotificationRequest);
         } catch (error: any) {
             return thunkAPI.rejectWithValue(error.response.data || "Fetch notifications failed");
         }

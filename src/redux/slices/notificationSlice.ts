@@ -1,6 +1,7 @@
 import { ActionReducerMapBuilder, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { getNotificationsOfCurrentUserThunk, setRegistrationTokenThunk } from "../thunk/notificationThunk";
-import { NotificationDto } from '../../common/models/notification/index';
+import { NotificationDto, NotificationResponse } from '../../common/models/notification/index';
+import { set } from "zod";
 
 export interface NotificationState {
     token: string | null;
@@ -29,6 +30,7 @@ const notificationSlice = createSlice({
     },
     extraReducers: (builder) => {
         setRegistrationToken(builder);
+        setNotifications(builder);
     },
 });
 
@@ -58,9 +60,9 @@ function setNotifications(
             state.loading = true;
             state.error = null;
         })
-        .addCase(getNotificationsOfCurrentUserThunk.fulfilled, (state, action: PayloadAction<NotificationDto[]>) => {
+        .addCase(getNotificationsOfCurrentUserThunk.fulfilled, (state, action: PayloadAction<NotificationResponse>) => {
             state.loading = false;
-            state.notifications = action.payload;
+            state.notifications = action.payload.content;
         })
         .addCase(getNotificationsOfCurrentUserThunk.rejected, (state, action: PayloadAction<any>) => {
             state.loading = false;
