@@ -26,6 +26,7 @@ const FeebackModal: React.FC<ChooseLocationModalProps> = ({
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
   const { feedbackDetail } = useSelector((state: RootState) => state.feeback);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     dispatch(resetFeedback());
@@ -84,7 +85,8 @@ const FeebackModal: React.FC<ChooseLocationModalProps> = ({
                   {feedbackDetail?.user.fullName}
                 </Text>
               </View>
-              {feedbackDetail?.updated === false ? (
+              {feedbackDetail?.updated === false &&
+              user?.id === feedbackDetail.user.id ? (
                 <View>
                   <LoadingButton
                     onPress={() =>

@@ -171,8 +171,78 @@ const ExchangeDetail: React.FC = () => {
             </View>
             <View className="flex-row justify-between items-center py-5">
               <View className="flex-row items-center">
-                <View className="items-center">
-                  <Icon name="person-circle-outline" size={60} color="gray" />
+                <View className="items-center mr-2">
+                  {user?.id !==
+                  (exchangeDetail?.buyerItem === null
+                    ? exchangeDetail?.paidBy.id
+                    : exchangeDetail?.buyerItem.owner.id) ? (
+                    <>
+                      {exchangeDetail?.buyerItem === null ? (
+                        <>
+                          {exchangeDetail?.paidBy.image ? (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Image
+                                source={{
+                                  uri: exchangeDetail?.paidBy.image,
+                                }}
+                                className="w-full h-full rounded-full"
+                              />
+                            </View>
+                          ) : (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Icon
+                                name="person-circle-outline"
+                                size={60}
+                                color="gray"
+                              />
+                            </View>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {exchangeDetail?.buyerItem.owner.image ? (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Image
+                                source={{
+                                  uri: exchangeDetail?.buyerItem.owner.image,
+                                }}
+                                className="w-full h-full rounded-full"
+                              />
+                            </View>
+                          ) : (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Icon
+                                name="person-circle-outline"
+                                size={60}
+                                color="gray"
+                              />
+                            </View>
+                          )}
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {exchangeDetail?.sellerItem.owner.image ? (
+                        <View className="w-16 h-16 rounded-full items-center justify-center">
+                          <Image
+                            source={{
+                              uri: exchangeDetail?.sellerItem.owner.image,
+                            }}
+                            className="w-full h-full rounded-full"
+                          />
+                        </View>
+                      ) : (
+                        <View className="w-16 h-16 rounded-full items-center justify-center">
+                          <Icon
+                            name="person-circle-outline"
+                            size={60}
+                            color="gray"
+                          />
+                        </View>
+                      )}
+                    </>
+                  )}
                 </View>
                 <View>
                   <Text className="justify-start items-center text-left text-[18px] font-medium text-black">
@@ -223,8 +293,78 @@ const ExchangeDetail: React.FC = () => {
                       : "@Seller"}
                   </Text>
                 </View>
-                <View className="items-center">
-                  <Icon name="person-circle-outline" size={60} color="gray" />
+                <View className="items-center ml-2">
+                  {user?.id ===
+                  (exchangeDetail?.buyerItem === null
+                    ? exchangeDetail?.paidBy.id
+                    : exchangeDetail?.buyerItem.owner.id) ? (
+                    <Text className="justify-start items-center text-left text-[16px] font-medium text-black">
+                      {exchangeDetail?.buyerItem === null ? (
+                        <>
+                          {exchangeDetail?.paidBy.image ? (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Image
+                                source={{
+                                  uri: exchangeDetail?.paidBy.image,
+                                }}
+                                className="w-full h-full rounded-full"
+                              />
+                            </View>
+                          ) : (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Icon
+                                name="person-circle-outline"
+                                size={60}
+                                color="gray"
+                              />
+                            </View>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {exchangeDetail?.buyerItem.owner.image ? (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Image
+                                source={{
+                                  uri: exchangeDetail?.buyerItem.owner.image,
+                                }}
+                                className="w-full h-full rounded-full"
+                              />
+                            </View>
+                          ) : (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Icon
+                                name="person-circle-outline"
+                                size={60}
+                                color="gray"
+                              />
+                            </View>
+                          )}
+                        </>
+                      )}
+                    </Text>
+                  ) : (
+                    <>
+                      {exchangeDetail?.sellerItem.owner.image ? (
+                        <View className="w-16 h-16 rounded-full items-center justify-center">
+                          <Image
+                            source={{
+                              uri: exchangeDetail?.sellerItem.owner.image,
+                            }}
+                            className="w-full h-full rounded-full"
+                          />
+                        </View>
+                      ) : (
+                        <View className="w-16 h-16 rounded-full items-center justify-center">
+                          <Icon
+                            name="person-circle-outline"
+                            size={60}
+                            color="gray"
+                          />
+                        </View>
+                      )}
+                    </>
+                  )}
                 </View>
               </View>
             </View>
@@ -407,9 +547,13 @@ const ExchangeDetail: React.FC = () => {
                   Term & Conditions
                 </Text>
                 <View className="bg-white mt-2 rounded-lg p-4 flex-col justify-center h-fit">
-                  <Text className="text-base text-gray-500">
-                    {exchangeDetail.sellerItem.termsAndConditionsExchange}
-                  </Text>
+                  {exchangeDetail.sellerItem.termsAndConditionsExchange
+                    .split("\\n")
+                    .map((line, index) => (
+                      <Text className="text-base text-gray-500" key={index}>
+                        {line}
+                      </Text>
+                    ))}
                 </View>
               </View>
             )}

@@ -128,14 +128,26 @@ const HomeScreen: React.FC = () => {
   const handleLoadMore = () => {
     if (!loading && !last) {
       dispatch(
-        getAllItemAvailableThunk({ pageNo: pageNo + 1, request: searchRequest })
+        getAllItemAvailableThunk({
+          pageNo: pageNo + 1,
+          request: searchRequest,
+          sortBy: "approvedTime",
+          sortDir: "desc",
+        })
       );
     }
   };
 
   useEffect(() => {
-    dispatch(getAllItemAvailableThunk({ pageNo: 0, request: searchRequest }));
-  }, [dispatch]);
+    dispatch(
+      getAllItemAvailableThunk({
+        pageNo: 0,
+        request: searchRequest,
+        sortBy: "approvedTime",
+        sortDir: "desc",
+      })
+    );
+  }, []);
 
   const handleSearch = () => {
     if (searchText !== "") {
@@ -268,7 +280,7 @@ const HomeScreen: React.FC = () => {
           {content && (
             <View className="mx-3 mt-5">
               {rows.map((row, rowIndex) => (
-                <View key={rowIndex} className="flex flex-row mb-2 gap-x-2">
+                <View key={rowIndex} className="flex flex-row gap-x-2">
                   {row.map((item) => (
                     <View key={item.id} className="flex-1">
                       <ItemCard

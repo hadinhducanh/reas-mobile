@@ -51,29 +51,30 @@ const TypeOfItemScreen = () => {
     targetIndex > 0 &&
     state.routes[targetIndex].name === "ExchangeDesiredItemScreen"
   ) {
-    selectedTypeItem = uploadItem.desiredItem?.typeItem || TypeItem.NO_TYPE;
-    handleSelectTypeItem = (typeItem: TypeItem) => {
-      if (selectedTypeItem === typeItem) {
+    selectedTypeItem = uploadItem.typeItemDesire || TypeItem.NO_TYPE;
+    handleSelectTypeItem = (typeItemDesire: TypeItem) => {
+      if (selectedTypeItem === typeItemDesire) {
         setUploadItem({
           ...uploadItem,
           desiredItem: {
             ...uploadItem.desiredItem!,
-            typeItem: TypeItem.NO_TYPE,
             categoryId: 0,
           },
+          typeItemDesire: TypeItem.NO_TYPE,
+          categoryDesiredItemName: "",
         });
         navigation.goBack();
       } else {
         setUploadItem({
           ...uploadItem,
           categoryDesiredItemName: "",
+          typeItemDesire,
           desiredItem: {
             ...uploadItem.desiredItem!,
             categoryId: 0,
-            typeItem,
           },
         });
-        dispatch(getAllByTypeItemThunk(typeItem));
+        dispatch(getAllByTypeItemThunk(typeItemDesire));
         navigation.navigate("TypeOfItemDetailScreen");
       }
     };
@@ -85,6 +86,7 @@ const TypeOfItemScreen = () => {
           ...uploadItem,
           typeItem: TypeItem.NO_TYPE,
           categoryId: 0,
+          categoryName: "",
         });
         navigation.goBack();
       } else {
@@ -110,8 +112,8 @@ const TypeOfItemScreen = () => {
           ...uploadItem,
           desiredItem: {
             ...uploadItem.desiredItem!,
-            typeItem: TypeItem.NO_TYPE,
           },
+          typeItemDesire: TypeItem.NO_TYPE,
         });
       }
     } else {

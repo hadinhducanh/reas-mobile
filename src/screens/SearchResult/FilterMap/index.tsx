@@ -12,7 +12,8 @@ import { AppDispatch, RootState } from "../../../redux/store";
 import { GOONG_MAP_KEY } from "../../../common/constant";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { findNearbyItemsThunk } from "../../../redux/thunk/itemThunks";
-import { resetItemDetailState } from "../../../redux/slices/itemSlice";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { setRangeState } from "../../../redux/slices/itemSlice";
 
 const { width, height } = Dimensions.get("window");
 const ASPECT_RATIO = width / height;
@@ -22,7 +23,7 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const tileUrlTemplate = `https://tiles.goong.io/assets/goong_map_web.json?api_key=${GOONG_MAP_KEY}`;
 
 const FilterMap: React.FC = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
   const { itemSearch, loading } = useSelector((state: RootState) => state.item);
 
@@ -41,18 +42,12 @@ const FilterMap: React.FC = () => {
   const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
-    // const { status } = await Location.requestForegroundPermissionsAsync();
-    // if (status !== "granted") {
-    //   console.error("Permission to access location was denied");
-    //   return;
-    // }
-    // const currentLocation = await Location.getCurrentPositionAsync({});
     const newLocation = {
       latitude: 10.8171,
       longitude: 106.6563,
     };
     setLocation(newLocation);
-    setCircleCenter(newLocation); // Cập nhật vòng tròn ban đầu
+    setCircleCenter(newLocation);
   }, []);
 
   const coordinate = selectedPlaceDetail
@@ -71,7 +66,6 @@ const FilterMap: React.FC = () => {
       }
     : undefined;
 
-  // Cập nhật khi kéo slider
   const handleSliderComplete = (value: number) => {
     setRange(value);
     if (circleCenter && mapRef.current) {
@@ -98,7 +92,6 @@ const FilterMap: React.FC = () => {
     }
   };
 
-  // Khi di chuyển bản đồ, cập nhật vòng tròn vào giữa màn hình
   const handleRegionChangeComplete = (region: Region) => {
     setCircleCenter({
       latitude: region.latitude,
@@ -107,7 +100,6 @@ const FilterMap: React.FC = () => {
   };
 
   const handleGetCurrentLocation = async () => {
-    const currentLocation = await Location.getCurrentPositionAsync({});
     const newLocation = {
       latitude: 10.8171,
       longitude: 106.6563,
@@ -135,7 +127,8 @@ const FilterMap: React.FC = () => {
       );
 
       if (itemSearch) {
-        navigation.navigate("SearchResult", { range });
+        dispatch(setRangeState(range));
+        navigation.goBack();
       }
     } else {
       console.log("No marker location available");
@@ -211,6 +204,7 @@ const FilterMap: React.FC = () => {
           title="Apply"
           onPress={handleApplyPress} // Gọi hàm handleApplyPress khi ấn Apply
           buttonClassName="py-4"
+          loading={loading}
         />
       </View>
     </SafeAreaView>

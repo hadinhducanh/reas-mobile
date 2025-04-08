@@ -137,9 +137,7 @@ const SignUp: React.FC = () => {
         password: trimmedPassword,
         registrationTokens: registrationToken ? [registrationToken] : [],
       };
-      // Chờ đến khi OTP được gửi thành công (với dispatch sendOtpThunk)
       await dispatch(sendOtpThunk(signUpDTO)).unwrap();
-      // Sau khi gửi OTP, chuyển hướng sang màn hình OTP và truyền SignUpDTO qua params
       navigation.navigate("OTP", { signUpDTO });
     } catch (err: any) {
       Alert.alert("Sign up Failed", err.message || "Sign up failed");
@@ -165,31 +163,35 @@ const SignUp: React.FC = () => {
   }, [navigation]);
 
   useEffect(() => {
-    if (accessToken) {
-      dispatch(fetchUserInfoThunk());
-    }
-  }, [accessToken, dispatch, navigation]);
+    const handleLoginFlow = async () => {
+      if (!accessToken || user) return;
 
-  useEffect(() => {
-    if (user) {
-      if (user.firstLogin) {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Profile" }],
-        });
-      } else {
-        navigation.reset({
-          index: 0,
-          routes: [
-            {
-              name: "MainTabs",
-              state: { routes: [{ name: "Account" }] },
-            },
-          ],
-        });
+      try {
+        const result = await dispatch(fetchUserInfoThunk()).unwrap();
+
+        if (result.firstLogin) {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Profile" }],
+          });
+        } else {
+          navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: "MainTabs",
+                state: { routes: [{ name: "Account" }] },
+              },
+            ],
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch user info:", error);
       }
-    }
-  }, [user, navigation]);
+    };
+
+    handleLoginFlow();
+  }, [accessToken, user, dispatch, navigation]);
 
   useEffect(() => {
     setIsLengthValid(password.length >= 8 && password.length <= 20);

@@ -1,6 +1,6 @@
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
 import { StatusExchange } from "../../common/enums/StatusExchange";
 import { ExchangeResponse } from "../../common/models/exchange";
 import { useSelector } from "react-redux";
@@ -134,21 +134,105 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
         </View>
 
         <View className="flex-row items-center my-1">
-          <View className="items-center">
-            <Icon name="person-circle-outline" size={60} color="gray" />
+          <View className="items-center mr-2">
+            {user?.id !==
+            (exchange.buyerItem === null
+              ? exchange.paidBy.id
+              : exchange.buyerItem.owner.id) ? (
+              <>
+                {exchange.buyerItem === null ? (
+                  <>
+                    {exchange.paidBy.image ? (
+                      <View className="w-16 h-16 rounded-full items-center justify-center">
+                        <Image
+                          source={{
+                            uri: exchange.paidBy.image,
+                          }}
+                          className="w-full h-full rounded-full"
+                        />
+                      </View>
+                    ) : (
+                      <View className="w-16 h-16 rounded-full items-center justify-center">
+                        <Icon
+                          name="person-circle-outline"
+                          size={60}
+                          color="gray"
+                        />
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {exchange.buyerItem.owner.image ? (
+                      <View className="w-16 h-16 rounded-full items-center justify-center">
+                        <Image
+                          source={{
+                            uri: exchange.buyerItem.owner.image,
+                          }}
+                          className="w-full h-full rounded-full"
+                        />
+                      </View>
+                    ) : (
+                      <View className="w-16 h-16 rounded-full items-center justify-center">
+                        <Icon
+                          name="person-circle-outline"
+                          size={60}
+                          color="gray"
+                        />
+                      </View>
+                    )}
+                  </>
+                )}
+              </>
+            ) : (
+              <>
+                {exchange.sellerItem.owner.image ? (
+                  <View className="w-16 h-16 rounded-full items-center justify-center">
+                    <Image
+                      source={{
+                        uri: exchange.sellerItem.owner.image,
+                      }}
+                      className="w-full h-full rounded-full"
+                    />
+                  </View>
+                ) : (
+                  <View className="w-16 h-16 rounded-full items-center justify-center">
+                    <Icon name="person-circle-outline" size={60} color="gray" />
+                  </View>
+                )}
+              </>
+            )}
           </View>
 
           <View>
-            <Text className="justify-start items-center text-left text-[16px] font-medium text-black">
-              {exchange.buyerItem === null
-                ? exchange.paidBy.fullName
-                : exchange.buyerItem.owner.fullName}
-            </Text>
-            <Text className="justify-start items-center text-left text-[14px] font-normal text-[#6b7280]">
-              {exchange.buyerItem === null
-                ? "Item free"
-                : exchange.buyerItem.itemName}
-            </Text>
+            {user?.id !==
+            (exchange.buyerItem === null
+              ? exchange.paidBy.id
+              : exchange.buyerItem.owner.id) ? (
+              <Text className="justify-start items-center text-left text-[16px] font-medium text-black">
+                {exchange.buyerItem === null
+                  ? exchange.paidBy.fullName
+                  : exchange.buyerItem.owner.fullName}
+              </Text>
+            ) : (
+              <Text className="justify-start items-center text-left text-[16px] font-medium text-black">
+                {exchange.sellerItem.owner.fullName}
+              </Text>
+            )}
+            {user?.id !==
+            (exchange.buyerItem === null
+              ? exchange.paidBy.id
+              : exchange.buyerItem.owner.id) ? (
+              <Text className="justify-start items-center text-left text-[14px] font-normal text-[#6b7280]">
+                {exchange.buyerItem === null
+                  ? "Item free"
+                  : exchange.buyerItem.itemName}
+              </Text>
+            ) : (
+              <Text className="justify-start items-center text-left text-[14px] font-normal text-[#6b7280]">
+                {exchange.sellerItem.itemName}
+              </Text>
+            )}
           </View>
         </View>
         <View className="my-2 border-t-[1px] border-b-[1px] py-2 border-gray-200">
@@ -238,7 +322,28 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
               <View>
                 <LoadingButton
                   title="Chat"
-                  onPress={() => navigation.navigate("ChatHistory")}
+                  onPress={() =>
+                    navigation.navigate("ChatDetails", {
+                      receiverUsername:
+                        user?.id ===
+                        (exchange.buyerItem === null
+                          ? exchange.paidBy.id
+                          : exchange.buyerItem.owner.id)
+                          ? exchange.buyerItem === null
+                            ? exchange.paidBy.userName
+                            : exchange.buyerItem.owner.userName
+                          : exchange.sellerItem.owner.userName,
+                      receiverFullName:
+                        user?.id ===
+                        (exchange.buyerItem === null
+                          ? exchange.paidBy.id
+                          : exchange.buyerItem.owner.id)
+                          ? exchange.buyerItem === null
+                            ? exchange.paidBy.fullName
+                            : exchange.buyerItem.owner.fullName
+                          : exchange.sellerItem.owner.fullName,
+                    })
+                  }
                   buttonClassName="py-4 px-8 border-2 border-transparent"
                   iconColor="#fff"
                   showIcon={true}

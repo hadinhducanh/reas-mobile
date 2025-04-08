@@ -1,3 +1,6 @@
+import { number } from "zod";
+import { UserLocationDto } from "../auth";
+
 export interface LocationDto {
   id: number;
   area: string;
@@ -27,4 +30,15 @@ export interface PlaceDetail {
     };
   };
   name: string;
+  userLocationInfo?: UserLocationDto;
+}
+
+export interface LocationDto {
+  id: number;
+  area: string;
+  province: string;
+  city: string;
+  district: string;
+  ward: string;
+  cluster: string;
 }

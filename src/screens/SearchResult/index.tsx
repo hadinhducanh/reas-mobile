@@ -51,14 +51,17 @@ const SearchResult: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const dispatch = useDispatch<AppDispatch>();
   const route = useRoute<RouteProp<RootStackParamList, "SearchResult">>();
-  const { searchTextParam, itemType, range } = route.params;
+
+  const { searchTextParam, itemType } = route.params;
 
   const [isSortModalVisible, setIsSortModalVisible] = useState<boolean>(false);
   const [isFilterPriceModalVisible, setIsFilterPriceModalVisible] =
     useState<boolean>(false);
 
   const [selectedSort, setSelectedSort] = useState<string>("new");
-  const { itemSearch, loading } = useSelector((state: RootState) => state.item);
+  const { itemSearch, range, loading } = useSelector(
+    (state: RootState) => state.item
+  );
   const { content, pageNo, last } = itemSearch;
 
   const [minPrice, setMinPrice] = useState<string>("0");
@@ -116,6 +119,8 @@ const SearchResult: React.FC = () => {
   }, [selectedSort]);
 
   useEffect(() => {
+    console.log("abc");
+
     dispatch(resetItemDetailState());
     if (searchTextParam !== undefined) {
       setSearchText(searchTextParam);
@@ -126,6 +131,8 @@ const SearchResult: React.FC = () => {
             ...searchRequest,
             itemName: searchTextParam,
           },
+          sortBy: "approvedTime",
+          sortDir: "desc",
         })
       );
     } else if (itemType !== undefined) {
@@ -137,6 +144,8 @@ const SearchResult: React.FC = () => {
             ...searchRequest,
             typeItems: [itemType],
           },
+          sortBy: "approvedTime",
+          sortDir: "desc",
         })
       );
     }
@@ -145,23 +154,26 @@ const SearchResult: React.FC = () => {
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      return; // Bỏ qua lần render đầu tiên
+      return;
     }
 
-    dispatch(
-      searchItemPaginationThunk({
-        pageNo: 0,
-        request: {
-          ...searchRequest,
-          typeItems: typeItem || undefined,
-          itemName: searchText || undefined,
-          fromPrice: fromPrice || undefined,
-          toPrice: toPrice || undefined,
-        },
-        sortBy: sortBy,
-        sortDir: sortDir,
-      })
-    );
+    const deplayDebounce = setTimeout(() => {
+      dispatch(
+        searchItemPaginationThunk({
+          pageNo: 0,
+          request: {
+            ...searchRequest,
+            typeItems: typeItem || undefined,
+            itemName: searchText || undefined,
+            fromPrice: fromPrice || undefined,
+            toPrice: toPrice || undefined,
+          },
+          sortBy: sortBy,
+          sortDir: sortDir,
+        })
+      );
+    }, 500);
+    return () => clearTimeout(deplayDebounce);
   }, [dispatch, searchText, typeItem, fromPrice, toPrice, sortBy, sortDir]);
 
   const handleLoadMore = useCallback(() => {
@@ -316,7 +328,7 @@ const SearchResult: React.FC = () => {
         </View>
 
         {/* Filter Section */}
-        <View className="bg-white px-5 py-5">
+        <View className="bg-white px-5 py-4 flex-row items-center justify-between">
           <Pressable
             className="flex-row items-center"
             onPress={() => navigation.navigate("FilterMap")}
@@ -325,40 +337,18 @@ const SearchResult: React.FC = () => {
               name="location-outline"
               size={25}
               color="#000"
-              className="mr-2"
+              className="mr-1"
             />
-            <Text className="ml-2 text-base text-gray-500">
+            <Text className="text-base text-gray-500">
               Distance:
               <Text className="text-[#00B0B9] font-semibold">
-                {range !== undefined ? range + "km" : " Choose"}
+                {range !== 0 ? " " + range + "km" : " Choose"}
               </Text>
             </Text>
-            <Icon
-              name="chevron-down-outline"
-              size={16}
-              color="#000"
-              className="ml-1"
-            />
+            <Icon name="chevron-down-outline" size={16} color="#000" />
           </Pressable>
 
-          {/* Filter Price Button */}
-          <View className="flex-row items-center mt-3">
-            {minPrice === "0" && maxPrice === "0" ? (
-              <View className="relative mr-2">
-                <Icon name="funnel-outline" size={25} color="black" />
-                <View className="absolute -top-1 -right-1 w-4 h-4 bg-black rounded-full items-center justify-center">
-                  <Icon name="checkmark" size={10} color="#fff" />
-                </View>
-              </View>
-            ) : (
-              <View className="relative mr-2">
-                <Icon name="funnel-outline" size={25} color="#00B0B9" />
-                <View className="absolute -top-1 -right-1 w-4 h-4 bg-[#00B0B9] rounded-full items-center justify-center">
-                  <Icon name="checkmark" size={10} color="#fff" />
-                </View>
-              </View>
-            )}
-
+          <View className="flex-row items-center">
             {minPrice === "0" && maxPrice === "0" ? (
               <Pressable
                 className="flex-row items-center border border-black rounded-full px-3 py-1 active:bg-gray-100"
@@ -387,6 +377,21 @@ const SearchResult: React.FC = () => {
                   className="ml-2"
                 />
               </Pressable>
+            )}
+            {minPrice === "0" && maxPrice === "0" ? (
+              <View className="relative ml-2">
+                <Icon name="funnel-outline" size={25} color="black" />
+                <View className="absolute -top-1 -right-1 w-4 h-4 bg-black rounded-full items-center justify-center">
+                  <Icon name="checkmark" size={10} color="#fff" />
+                </View>
+              </View>
+            ) : (
+              <View className="relative ml-2">
+                <Icon name="funnel-outline" size={25} color="#00B0B9" />
+                <View className="absolute -top-1 -right-1 w-4 h-4 bg-[#00B0B9] rounded-full items-center justify-center">
+                  <Icon name="checkmark" size={10} color="#fff" />
+                </View>
+              </View>
             )}
           </View>
         </View>
@@ -477,7 +482,7 @@ const SearchResult: React.FC = () => {
             >
               <View className="mt-3">
                 {rows.map((row, rowIndex) => (
-                  <View key={rowIndex} className="flex flex-row mb-2 gap-x-2">
+                  <View key={rowIndex} className="flex flex-row gap-x-2">
                     {row.map((item) => (
                       <View key={item.id} className="flex-1">
                         <ItemCard

@@ -9,6 +9,7 @@ import {
 } from "@react-navigation/native";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Modal,
@@ -50,7 +51,7 @@ const CreateExchange: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
   const { itemId } = route.params;
-  const { itemDetail, itemSuggested } = useSelector(
+  const { itemDetail, itemSuggested, loading } = useSelector(
     (state: RootState) => state.item
   );
   const { user } = useSelector((state: RootState) => state.auth);
@@ -60,7 +61,7 @@ const CreateExchange: React.FC = () => {
   const { exchangeItem, setExchangeItem } = useExchangeItem();
   const [warningVisible, setWarningVisible] = useState(false);
 
-  const [items, setItems] = useState<ItemResponse[]>(itemSuggested);
+  const [items, setItems] = useState<ItemResponse[]>([]);
   const item = items.find((item) => item.id === itemId);
 
   const [selectedItem, setSelectedItem] = useState<ItemResponse | null>(
@@ -214,6 +215,12 @@ const CreateExchange: React.FC = () => {
     }
   }, [itemId]);
 
+  useEffect(() => {
+    if (itemSuggested) {
+      setItems(itemSuggested);
+    }
+  }, [itemSuggested]);
+
   const formatPrice = (price: number | undefined): string => {
     return price !== undefined ? price.toLocaleString("vi-VN") : "0";
   };
@@ -317,218 +324,236 @@ const CreateExchange: React.FC = () => {
     <>
       <SafeAreaView className="flex-1 bg-[#F6F9F9]" edges={["top"]}>
         <Header title="Create exchange" showOption={false} />
-        <KeyboardAwareScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          extraScrollHeight={20}
-          enableOnAndroid={true}
-          keyboardShouldPersistTaps="handled"
-        >
-          <ScrollView className="mx-5" showsVerticalScrollIndicator={false}>
-            <View className="py-5">
-              <Text className="text-lg text-gray-500 font-medium mb-1">
-                You want to exchange for:
-              </Text>
-              <View className="rounded-md p-3 flex-row items-center bg-white">
-                <View className="w-40 h-28 rounded-md ">
-                  <Image
-                    source={{
-                      uri: itemDetail?.imageUrl.split(", ")[0],
-                    }}
-                    className="w-full h-full object-contain"
-                    resizeMode="contain"
-                  />
-                </View>
-
-                <View className="ml-3 flex-1">
-                  <Text className="text-lg font-bold text-gray-900">
-                    {itemDetail?.itemName}
+        {loading ? (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#00b0b9" />
+          </View>
+        ) : (
+          <>
+            <KeyboardAwareScrollView
+              contentContainerStyle={{ flexGrow: 1 }}
+              extraScrollHeight={20}
+              enableOnAndroid={true}
+              keyboardShouldPersistTaps="handled"
+            >
+              <ScrollView className="mx-5" showsVerticalScrollIndicator={false}>
+                <View className="py-5">
+                  <Text className="text-lg text-gray-500 font-medium mb-1">
+                    You want to exchange for:
                   </Text>
-                  <Text className="text-gray-500 text-base my-1">
-                    Listed by {itemDetail?.owner.fullName}
-                  </Text>
-                  <Text className="text-[#00B0B9] text-xl font-semibold">
-                    {itemDetail?.price === 0
-                      ? "Free"
-                      : formatPrice(itemDetail?.price) + " VND"}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View>
-              {itemDetail?.desiredItem === null ? (
-                ""
-              ) : (
-                <MatchedList items={items} onSelectItem={handleSelectItem} />
-              )}
-
-              <Pressable
-                className="flex-row justify-center items-center bg-gray-100 border-[1px] border-gray-300 px-5 py-4 rounded-lg active:bg-gray-200 mt-5"
-                onPress={() => navigation.navigate("BrowseItems")}
-              >
-                <Icon name="folder-open" size={20} />
-                <Text className="text-center text-lg text-gray-500 font-medium mx-1">
-                  Browse my items
-                </Text>
-              </Pressable>
-
-              <View className="bg-gray-100 p-4 rounded-lg border border-gray-300 mt-10">
-                <Text className="text-gray-500 text-lg font-medium mb-2">
-                  Your chosen item
-                </Text>
-                {exchangeItem.selectedItem ? (
-                  <View
-                    key={item?.id}
-                    className="mb-3 flex-row justify-between w-full items-center bg-white rounded-lg p-3"
-                  >
-                    <View className="w-20 h-20 rounded-md overflow-hidden">
+                  <View className="rounded-md p-3 flex-row items-center bg-white">
+                    <View className="w-40 h-28 rounded-md ">
                       <Image
                         source={{
-                          uri: exchangeItem.selectedItem.imageUrl.split(
-                            ", "
-                          )[0],
+                          uri: itemDetail?.imageUrl.split(", ")[0],
                         }}
                         className="w-full h-full object-contain"
                         resizeMode="contain"
                       />
                     </View>
-                    <Text
-                      className="text-gray-700 text-lg mx-3 font-medium flex-1"
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                      style={{ flexShrink: 1 }}
-                    >
-                      {exchangeItem.selectedItem.itemName}
-                    </Text>
 
-                    <View className="flex-1">
-                      <LoadingButton
-                        title="Remove"
-                        onPress={handleRemoveItem}
-                        buttonClassName="border-2 border-[#00B0B9] py-3 px-5 bg-white"
-                        textColor="text-[#00B0B9]"
-                      />
+                    <View className="ml-3 flex-1">
+                      <Text className="text-lg font-bold text-gray-900">
+                        {itemDetail?.itemName}
+                      </Text>
+                      <Text className="text-gray-500 text-base my-1">
+                        Listed by {itemDetail?.owner.fullName}
+                      </Text>
+                      <Text className="text-[#00B0B9] text-xl font-semibold">
+                        {itemDetail?.price === 0
+                          ? "Free"
+                          : formatPrice(itemDetail?.price) + " VND"}
+                      </Text>
                     </View>
                   </View>
-                ) : (
-                  <View className="py-10">
-                    <Text className="text-gray-300 text-center text-base mb-1">
-                      Please add an item you want to exchange
-                    </Text>
-                    <Text className="text-gray-300 text-center text-base">
-                      (optional for free exchange)
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
-
-            <View className="mt-8">
-              <Text className="font-bold text-lg text-gray-500">
-                Exchange Details
-              </Text>
-
-              <View className="bg-white mt-2 rounded-lg p-4">
-                <View className="items-center flex-row justify-between mb-3">
-                  <Text className="text-base text-gray-500">Method</Text>
-                  <Pressable onPress={() => setMethodVisible(true)}>
-                    <Text
-                      className={`text-right text-base text-[#00b0b9] underline font-normal`}
-                    >
-                      {exchangeItem.methodExchangeName.length !== 0
-                        ? exchangeItem.methodExchangeName
-                        : "Choose your method"}
-                    </Text>
-                  </Pressable>
-                </View>
-                <View className="items-center flex-row justify-between mb-3">
-                  <Text className="text-base text-gray-500">Type</Text>
-                  <Text className="text-right text-base text-[#00b0b9] font-normal">
-                    {itemDetail?.desiredItem === null
-                      ? "Open"
-                      : "Open with desired item"}
-                  </Text>
                 </View>
 
-                <View className="items-center flex-row justify-between mb-3">
-                  <Text className="text-base text-gray-500 w-1/2">
-                    Meeting location
-                  </Text>
-                  <Pressable
-                    className="flex-row items-center w-1/2 justify-end"
-                    onPress={handleSetLocation}
-                  >
-                    <Icon name="location-outline" size={20} color="#00B0B9" />
-                    <Text
-                      className="text-base underline text-[#00b0b9] font-normal "
-                      numberOfLines={1}
-                    >
-                      {getLocationDisplay()}
-                    </Text>
-                  </Pressable>
-                </View>
-
-                <View className="items-center flex-row justify-between">
-                  <Text className="text-base text-gray-500">Date & Time</Text>
-                  <Pressable
-                    className="flex-row items-center justify-end"
-                    onPress={() => setCalendarVisible(true)}
-                  >
-                    <Icon
-                      name="calendar-clear-outline"
-                      size={20}
-                      color="#00B0B9"
+                <View>
+                  {itemDetail?.desiredItem === null ? (
+                    ""
+                  ) : (
+                    <MatchedList
+                      items={items}
+                      onSelectItem={handleSelectItem}
                     />
-                    <Text className="ml-2 underline text-[#00B0B9] font-normal text-base">
-                      {selectedDateTime
-                        ? formatExchangeDate(selectedDateTime.toISOString())
-                        : "Choose Schedule"}
+                  )}
+
+                  <Pressable
+                    className="flex-row justify-center items-center bg-gray-100 border-[1px] border-gray-300 px-5 py-4 rounded-lg active:bg-gray-200 mt-5"
+                    onPress={() => navigation.navigate("BrowseItems")}
+                  >
+                    <Icon name="folder-open" size={20} />
+                    <Text className="text-center text-lg text-gray-500 font-medium mx-1">
+                      Browse my items
                     </Text>
                   </Pressable>
+
+                  <View className="bg-gray-100 p-4 rounded-lg border border-gray-300 mt-10">
+                    <Text className="text-gray-500 text-lg font-medium mb-2">
+                      Your chosen item
+                    </Text>
+                    {exchangeItem.selectedItem ? (
+                      <View
+                        key={item?.id}
+                        className="mb-3 flex-row justify-between w-full items-center bg-white rounded-lg p-3"
+                      >
+                        <View className="w-20 h-20 rounded-md overflow-hidden">
+                          <Image
+                            source={{
+                              uri: exchangeItem.selectedItem.imageUrl.split(
+                                ", "
+                              )[0],
+                            }}
+                            className="w-full h-full object-contain"
+                            resizeMode="contain"
+                          />
+                        </View>
+                        <Text
+                          className="text-gray-700 text-lg mx-3 font-medium flex-1"
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                          style={{ flexShrink: 1 }}
+                        >
+                          {exchangeItem.selectedItem.itemName}
+                        </Text>
+
+                        <View className="flex-1">
+                          <LoadingButton
+                            title="Remove"
+                            onPress={handleRemoveItem}
+                            buttonClassName="border-2 border-[#00B0B9] py-3 px-5 bg-white"
+                            textColor="text-[#00B0B9]"
+                          />
+                        </View>
+                      </View>
+                    ) : (
+                      <View className="py-10">
+                        <Text className="text-gray-300 text-center text-base mb-1">
+                          Please add an item you want to exchange
+                        </Text>
+                        <Text className="text-gray-300 text-center text-base">
+                          (optional for free exchange)
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
 
-                {itemDetail?.moneyAccepted && (
-                  <Text
-                    className="text-gray-500 font-semibold text-right mt-5"
-                    style={{ fontStyle: "italic" }}
-                  >
-                    *Accept exchange with cash
+                <View className="mt-8">
+                  <Text className="font-bold text-lg text-gray-500">
+                    Exchange Details
                   </Text>
-                )}
-              </View>
-            </View>
 
-            <View className="my-5">
-              <Text className="font-bold text-lg text-gray-500">
-                Note (Optional)
-              </Text>
+                  <View className="bg-white mt-2 rounded-lg p-4">
+                    <View className="items-center flex-row justify-between mb-3">
+                      <Text className="text-base text-gray-500">Method</Text>
+                      <Pressable onPress={() => setMethodVisible(true)}>
+                        <Text
+                          className={`text-right text-base text-[#00b0b9] underline font-normal`}
+                        >
+                          {exchangeItem.methodExchangeName.length !== 0
+                            ? exchangeItem.methodExchangeName
+                            : "Choose your method"}
+                        </Text>
+                      </Pressable>
+                    </View>
+                    <View className="items-center flex-row justify-between mb-3">
+                      <Text className="text-base text-gray-500">Type</Text>
+                      <Text className="text-right text-base text-[#00b0b9] font-normal">
+                        {itemDetail?.desiredItem === null
+                          ? "Open"
+                          : "Open with desired item"}
+                      </Text>
+                    </View>
 
-              <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
-                <TextInput
-                  className="flex-1 text-base font-normal text-gray-500"
-                  placeholder="Aaaaa"
-                  placeholderTextColor="#d1d5db"
-                  multiline={true}
-                  textAlignVertical="top"
-                  value={additionalNotes}
-                  onChangeText={(text) => handleAdditionalNotes(text)}
-                />
-              </View>
+                    <View className="items-center flex-row justify-between mb-3">
+                      <Text className="text-base text-gray-500 w-1/2">
+                        Meeting location
+                      </Text>
+                      <Pressable
+                        className="flex-row items-center w-1/2 justify-end"
+                        onPress={handleSetLocation}
+                      >
+                        <Icon
+                          name="location-outline"
+                          size={20}
+                          color="#00B0B9"
+                        />
+                        <Text
+                          className="text-base underline text-[#00b0b9] font-normal "
+                          numberOfLines={1}
+                        >
+                          {getLocationDisplay()}
+                        </Text>
+                      </Pressable>
+                    </View>
+
+                    <View className="items-center flex-row justify-between">
+                      <Text className="text-base text-gray-500">
+                        Date & Time
+                      </Text>
+                      <Pressable
+                        className="flex-row items-center justify-end"
+                        onPress={() => setCalendarVisible(true)}
+                      >
+                        <Icon
+                          name="calendar-clear-outline"
+                          size={20}
+                          color="#00B0B9"
+                        />
+                        <Text className="ml-2 underline text-[#00B0B9] font-normal text-base">
+                          {selectedDateTime
+                            ? formatExchangeDate(selectedDateTime.toISOString())
+                            : "Choose Schedule"}
+                        </Text>
+                      </Pressable>
+                    </View>
+
+                    {itemDetail?.moneyAccepted && (
+                      <Text
+                        className="text-gray-500 font-semibold text-right mt-5"
+                        style={{ fontStyle: "italic" }}
+                      >
+                        *Accept exchange with cash
+                      </Text>
+                    )}
+                  </View>
+                </View>
+
+                <View className="my-5">
+                  <Text className="font-bold text-lg text-gray-500">
+                    Note (Optional)
+                  </Text>
+
+                  <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
+                    <TextInput
+                      className="flex-1 text-base font-normal text-gray-500"
+                      placeholder="Aaaaa"
+                      placeholderTextColor="#d1d5db"
+                      multiline={true}
+                      textAlignVertical="top"
+                      value={additionalNotes}
+                      onChangeText={(text) => handleAdditionalNotes(text)}
+                    />
+                  </View>
+                </View>
+              </ScrollView>
+            </KeyboardAwareScrollView>
+
+            <View
+              className={`${
+                Platform.OS === "ios" ? "pt-4 pb-7" : "py-3"
+              } px-5 bg-white mt-auto rounded-t-xl flex-row items-center`}
+            >
+              <LoadingButton
+                buttonClassName="p-4"
+                title="Propose exchange"
+                onPress={handleProposeExchange}
+              />
             </View>
-          </ScrollView>
-        </KeyboardAwareScrollView>
+          </>
+        )}
       </SafeAreaView>
-      <View
-        className={`${
-          Platform.OS === "ios" ? "pt-4 pb-7" : "py-3"
-        } px-5 bg-white mt-auto rounded-t-xl flex-row items-center`}
-      >
-        <LoadingButton
-          buttonClassName="p-4"
-          title="Propose exchange"
-          onPress={handleProposeExchange}
-        />
-      </View>
 
       <Modal
         transparent={true}

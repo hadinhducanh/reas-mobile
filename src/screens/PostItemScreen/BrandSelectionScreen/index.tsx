@@ -1,11 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   Text,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { useNavigation, useNavigationState } from "@react-navigation/native";
+import {
+  RouteProp,
+  useNavigation,
+  useNavigationState,
+  useRoute,
+} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +24,7 @@ import { useUploadItem } from "../../../context/ItemContext";
 const BrandSelectionScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
   const state = useNavigationState((state) => state);
   const dispatch = useDispatch<AppDispatch>();
   const { brands, loading, error } = useSelector(
