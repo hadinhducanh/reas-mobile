@@ -1,14 +1,18 @@
 import { ActionReducerMapBuilder, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { setRegistrationTokenThunk } from "../thunk/notificationThunk";
+import { getNotificationsOfCurrentUserThunk, setRegistrationTokenThunk } from "../thunk/notificationThunk";
+import { NotificationDto, NotificationResponse } from '../../common/models/notification/index';
+import { set } from "zod";
 
 export interface NotificationState {
     token: string | null;
+    notifications: NotificationDto[] | null;
     loading: boolean;
     error: string | null;
 }
 
 const initialState: NotificationState = {
     token: null,
+    notifications: null,
     loading: false,
     error: null,
 };
@@ -26,6 +30,7 @@ const notificationSlice = createSlice({
     },
     extraReducers: (builder) => {
         setRegistrationToken(builder);
+        setNotifications(builder);
     },
 });
 
@@ -42,6 +47,24 @@ function setRegistrationToken(
             state.token = action.payload;
         })
         .addCase(setRegistrationTokenThunk.rejected, (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.error = action.payload || "Register token failed";
+        });
+}
+
+function setNotifications(
+    builder: ActionReducerMapBuilder<NotificationState>,
+) {
+    builder
+        .addCase(getNotificationsOfCurrentUserThunk.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(getNotificationsOfCurrentUserThunk.fulfilled, (state, action: PayloadAction<NotificationResponse>) => {
+            state.loading = false;
+            state.notifications = action.payload.content;
+        })
+        .addCase(getNotificationsOfCurrentUserThunk.rejected, (state, action: PayloadAction<any>) => {
             state.loading = false;
             state.error = action.payload || "Register token failed";
         });
