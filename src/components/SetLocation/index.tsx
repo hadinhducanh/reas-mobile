@@ -6,21 +6,30 @@ import {
   TextInput,
   FlatList,
   Text,
+  Pressable,
 } from "react-native";
 import MapView, { Marker, UrlTile, Region } from "react-native-maps";
 import * as Location from "expo-location";
 import Icon from "react-native-vector-icons/Ionicons";
 import { GOONG_MAP_KEY } from "../../common/constant";
 import { View, TouchableOpacity } from "react-native";
-import { Suggestion } from "../../common/models/location";
+import { LocationDto, Suggestion } from "../../common/models/location";
 import { useExchangeItem } from "../../context/ExchangeContext";
 import LoadingButton from "../LoadingButton";
 import LocationService from "../../services/LocationService";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux/store";
-import { getPlaceDetailsThunk } from "../../redux/thunk/locationThunks";
+import {
+  getAllLocationThunk,
+  getPlaceDetailsThunk,
+} from "../../redux/thunk/locationThunks";
 import { MethodExchange } from "../../common/enums/MethodExchange";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ErrorModal from "../ErrorModal";
+import { createNewUserLocationThunk } from "../../redux/thunk/userThunk";
+import { fetchUserInfoThunk } from "../../redux/thunk/authThunks";
+import { resetPlaceDetail } from "../../redux/slices/locationSlice";
+import { resetUser } from "../../redux/slices/userSlice";
 
 const { width, height } = Dimensions.get("window");
 const ASPECT_RATIO = width / height;
@@ -31,15 +40,23 @@ const tileUrlTemplate = `https://tiles.goong.io/assets/goong_map_web.json?api_ke
 
 interface SetLocationProps {
   visible: boolean;
+  userLocation?: boolean;
   onCancel: () => void;
+  onAddSuccess?: () => void;
 }
 
-const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
+const SetLocation: React.FC<SetLocationProps> = ({
+  visible,
+  userLocation,
+  onCancel,
+  onAddSuccess,
+}) => {
   const { exchangeItem, setExchangeItem } = useExchangeItem();
   const dispatch = useDispatch<AppDispatch>();
-  const { selectedPlaceDetail } = useSelector(
+  const { selectedPlaceDetail, locations } = useSelector(
     (state: RootState) => state.location
   );
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const [location, setLocation] = useState<{
     latitude: number;
@@ -48,6 +65,11 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [isLocationVisible, setLocationVisible] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<LocationDto | null>(
+    null
+  );
+  const [errorVisible, setErrorVisible] = useState<boolean>(false);
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const mapRef = useRef<MapView>(null);
@@ -87,6 +109,10 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
     [location]
   );
 
+  useEffect(() => {
+    dispatch(getAllLocationThunk(0));
+  }, [locations.content.length]);
+
   const handleCancel = () => {
     if (isSearching) {
       setIsSearching(false);
@@ -109,21 +135,47 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
   }, [searchText, fetchSuggestions]);
 
   const onSelectSuggestion = (item: Suggestion) => {
-    dispatch(getPlaceDetailsThunk(item.place_id));
-    setIsSearching(false);
+    if (selectedLocation === null && userLocation) {
+      setErrorVisible(true);
+    } else {
+      dispatch(getPlaceDetailsThunk(item.place_id));
+      setIsSearching(false);
+    }
   };
 
-  const handleConfirm = () => {
-    setExchangeItem({
-      ...exchangeItem,
-      exchangeLocation:
-        selectedPlaceDetail?.geometry.location.lat +
-        "," +
-        selectedPlaceDetail?.geometry.location.lng +
-        "//" +
-        selectedPlaceDetail?.formatted_address,
-    });
-    onCancel();
+  const handleConfirm = async () => {
+    if (userLocation) {
+      try {
+        await dispatch(
+          createNewUserLocationThunk({
+            id: user?.id!,
+            latitude: selectedPlaceDetail?.geometry.location.lat!,
+            longitude: selectedPlaceDetail?.geometry.location.lng!,
+            specificAddress: selectedPlaceDetail?.formatted_address!,
+            locationId: selectedLocation?.id!,
+          })
+        ).unwrap();
+
+        dispatch(fetchUserInfoThunk());
+        dispatch(resetPlaceDetail());
+        dispatch(resetUser());
+
+        onAddSuccess?.();
+      } catch (error) {
+        console.error("Failed to create location:", error);
+      }
+    } else {
+      setExchangeItem({
+        ...exchangeItem,
+        exchangeLocation:
+          selectedPlaceDetail?.geometry.location.lat +
+          "," +
+          selectedPlaceDetail?.geometry.location.lng +
+          "//" +
+          selectedPlaceDetail?.formatted_address,
+      });
+      onCancel();
+    }
   };
 
   const coordinate = selectedPlaceDetail
@@ -148,6 +200,15 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
     }
   }, [region]);
 
+  const handleSelectedLocation = (locationSelected: LocationDto) => {
+    if (selectedLocation?.id === locationSelected.id) {
+      setSelectedLocation(null);
+    } else {
+      setSelectedLocation(locationSelected);
+    }
+    setLocationVisible(false);
+  };
+
   return (
     <Modal
       transparent
@@ -163,14 +224,23 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
                 <Icon name="chevron-back-outline" size={25} color="white" />
               </TouchableOpacity>
               <Text className="text-xl font-semibold text-white">
-                Modify location
+                Add location
               </Text>
             </View>
-            {isSearching && (
-              <TouchableOpacity onPress={() => setIsSearching(false)}>
-                <Text className="text-[#00B0B9] text-base font-semibold">
-                  Back to map
+            {userLocation && isSearching && (
+              <TouchableOpacity
+                onPress={() => setLocationVisible(true)}
+                className="flex-row items-center justify-center"
+              >
+                <Text className="text-white font-semibold text-base">
+                  {selectedLocation ? selectedLocation.area : "Choose location"}
                 </Text>
+                <Icon
+                  name="chevron-down-outline"
+                  size={14}
+                  color="white"
+                  className="ml-1"
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -266,6 +336,77 @@ const SetLocation: React.FC<SetLocationProps> = ({ visible, onCancel }) => {
             </View>
           )}
         </View>
+
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={isLocationVisible}
+          onRequestClose={() => setLocationVisible(false)}
+        >
+          <Pressable
+            className="flex-1 bg-black/50 justify-center items-center"
+            onPress={() => setLocationVisible(false)}
+          >
+            <View
+              onStartShouldSetResponder={() => true}
+              className="w-4/5 bg-white rounded-xl p-6"
+            >
+              <Text className="text-center text-xl font-bold text-[#00B0B9]">
+                Select location
+              </Text>
+              <Text className="text-center text-base text-gray-500 mt-1">
+                Please choose your location
+              </Text>
+
+              <View className="mt-6">
+                {locations.content.map((location) => {
+                  const isSelected = selectedLocation?.id === location.id;
+
+                  return (
+                    <TouchableOpacity
+                      key={location.id}
+                      onPress={() => handleSelectedLocation(location)}
+                      className={`flex-row items-center justify-between border ${
+                        isSelected
+                          ? "border-[#00B0B9] bg-[#00B0B9] "
+                          : "border-gray-200"
+                      } rounded-lg p-4 mb-4`}
+                    >
+                      <View className="flex-row items-center">
+                        <Text
+                          className={`font-semibold text-base ${
+                            isSelected ? "text-white" : "text-gray-500"
+                          }`}
+                        >
+                          {location.area}
+                        </Text>
+                      </View>
+                      {isSelected ? (
+                        <Icon
+                          name="radio-button-on-outline"
+                          size={20}
+                          color="white"
+                        />
+                      ) : (
+                        <Icon
+                          name="radio-button-off-outline"
+                          size={20}
+                          color="#00B0B9"
+                        />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          </Pressable>
+        </Modal>
+        <ErrorModal
+          title={"Invalid"}
+          content={"Please choose your location first."}
+          visible={errorVisible}
+          onCancel={() => setErrorVisible(false)}
+        />
       </SafeAreaView>
     </Modal>
   );

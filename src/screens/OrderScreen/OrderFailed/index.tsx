@@ -5,7 +5,6 @@ import LoadingButton from "../../../components/LoadingButton";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   NavigationProp,
-  StackActions,
   useNavigation,
   useNavigationState,
 } from "@react-navigation/native";
@@ -23,7 +22,12 @@ const OrderFailed: React.FC = () => {
     ) {
       navigation.reset({
         index: 1,
-        routes: [{ name: "ItemPreview" }, { name: "ExtendItemPlan" }],
+        routes: [
+          {
+            name: "MainTabs",
+            state: { routes: [{ name: "Items" }] },
+          },
+        ],
       });
     } else {
       navigation.reset({

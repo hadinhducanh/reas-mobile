@@ -34,12 +34,12 @@ const ExtendItemPlan: React.FC = () => {
     try {
       // console.log("Subscribing to plan:", selectedPlan);
       const createPaymentLinkRequest: CreatePaymentLinkRequest = {
-        description: "Extend subscription",
+        description: "Extend item",
         subscriptionPlanId: plans[3].id,
         returnUrl:
           "https://user-images.githubusercontent.com/16245250/38747567-7af6fbbc-3f75-11e8-9f52-16720dbf8231.png",
         cancelUrl:
-          "https://img.freepik.com/premium-vector/transaction-is-cancelled-red-stamp_545399-2577.jpg",
+          "https://user-images.githubusercontent.com/16245250/38747567-7af6fbbc-3f75-11e8-9f52-16720dbf8231.png",
       };
       await dispatch(createPaymentLinkThunk(createPaymentLinkRequest));
       if (checkoutUrl) {

@@ -57,9 +57,9 @@ import Payment from "../screens/Payment";
 import OrderFailed from "../screens/OrderScreen/OrderFailed";
 import OrderSuccess from "../screens/OrderScreen/OrderSuccess";
 import ExtendItemPlan from "../screens/AccountScreen/SubscriptionPlan/ExtendItemPlan";
-import ExtendPremiumSucess from "../screens/AccountScreen/SubscriptionPlan/ExtendSubscriptionPlanSucess";
 import UpdateItem from "../screens/ItemManagement/UpdateItem";
 import UpdateItemFlow from "./UpdateItemFlow";
+import LocationOfUser from "../screens/AccountScreen/ProfileDetail/LocationOfUser";
 
 export type ItemType = {
   id: number;
@@ -129,6 +129,7 @@ export type RootStackParamList = {
   OrderFailed: undefined;
   OrderSuccess: undefined;
   UpdateItem: undefined;
+  LocationOfUser: undefined;
 };
 
 const TabArr = [
@@ -310,10 +311,6 @@ export default function RootNavigator() {
         <Stack.Screen name="ItemPreview" component={ItemExpire} />
         <Stack.Screen name="Premium" component={Premium} />
         <Stack.Screen name="ExtendPremium" component={ExtendPremium} />
-        <Stack.Screen
-          name="ExtendPremiumSucess"
-          component={ExtendPremiumSucess}
-        />
         <Stack.Screen name="ExtendItemPlan" component={ExtendItemPlan} />
         <Stack.Screen name="About" component={About} />
         <Stack.Screen name="UploadItemSuccess" component={UploadItemSuccess} />
@@ -326,6 +323,7 @@ export default function RootNavigator() {
           component={AccpectRejectExchange}
         />
         <Stack.Screen name="Payment" component={Payment} />
+        <Stack.Screen name="LocationOfUser" component={LocationOfUser} />
         <Stack.Screen name="OrderFailed" component={OrderFailed} />
         <Stack.Screen name="OrderSuccess" component={OrderSuccess} />
       </Stack.Navigator>

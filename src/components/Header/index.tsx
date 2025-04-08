@@ -15,10 +15,12 @@ interface HeaderProps {
   showBackButton?: boolean;
   showOption?: boolean;
   showFilter?: boolean;
+  showUserLocation?: boolean;
   onBackPress?: () => void;
   backIconColor?: string;
   optionIconColor?: string;
   setFavorites?: () => void;
+  onAddLocation?: () => void;
   owner?: boolean;
 }
 
@@ -34,8 +36,10 @@ const Header: React.FC<HeaderProps> = ({
   showBackButton = true,
   showOption = true,
   showFilter = false,
+  showUserLocation = false,
   onBackPress,
   setFavorites,
+  onAddLocation,
   backIconColor = "#0b1d2d",
   optionIconColor = "#0b1d2d",
   owner = true,
@@ -102,6 +106,11 @@ const Header: React.FC<HeaderProps> = ({
             onPress={() => setFilterVisible(true)}
           >
             <Icon name="funnel-outline" size={24} color="#00b0b9" />
+          </Pressable>
+        )}
+        {showUserLocation && (
+          <Pressable className="absolute right-5" onPress={onAddLocation}>
+            <Icon name="add-circle-outline" size={30} color="#00b0b9" />
           </Pressable>
         )}
       </View>

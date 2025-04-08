@@ -344,7 +344,6 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
                   <Image
                     source={{ uri: transferReceiptImage }}
                     className="w-full h-full rounded-full"
-                    resizeMode="contain"
                   />
                 </View>
                 <View className="absolute w-full h-full rounded-full bg-gray-100/5">

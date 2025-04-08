@@ -184,9 +184,9 @@ const ItemDetails: React.FC = () => {
     if (itemDetail) {
       setIsFavorite((prev) => !prev);
       if (isFavorite) {
-        dispatch(deleteFromFavoriteThunk(itemDetail?.id));
+        dispatch(deleteFromFavoriteThunk(itemDetail.id));
       } else {
-        dispatch(addToFavoriteThunk(itemDetail?.id));
+        dispatch(addToFavoriteThunk(itemDetail.id));
       }
     }
   }, [accessToken, dispatch, itemId, isFavorite, navigation]);

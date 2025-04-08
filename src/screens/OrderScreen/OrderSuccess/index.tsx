@@ -32,7 +32,7 @@ const OrderSuccess: React.FC = () => {
     } else {
       navigation.reset({
         index: 1,
-        routes: [{ name: "Premium" }, { name: "ExtendPremiumSucess" }],
+        routes: [{ name: "Premium" }, { name: "ExtendPremium" }],
       });
     }
   };

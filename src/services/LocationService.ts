@@ -1,6 +1,11 @@
 import axios from "axios";
-import { GOONG_API_KEY } from "../common/constant";
-import { PlaceDetail, Suggestion } from "../common/models/location";
+import { API_BASE_URL, GOONG_API_KEY } from "../common/constant";
+import {
+  LocationDto,
+  PlaceDetail,
+  Suggestion,
+} from "../common/models/location";
+import { ResponseEntityPagination } from "../common/models/pagination";
 
 const getSuggestions = async (
   input: string,
@@ -39,8 +44,18 @@ const getPlaceDetailsByReverseGeocode = async (
   return response.data.results[0];
 };
 
+const getAllLocation = async (
+  pageNo: number
+): Promise<ResponseEntityPagination<LocationDto>> => {
+  const response = await axios.get<ResponseEntityPagination<LocationDto>>(
+    `${API_BASE_URL}/location?pageNo=${pageNo}&pageSize=10&sortBy=id&sortDir=desc`
+  );
+  return response.data;
+};
+
 export default {
   getSuggestions,
   getPlaceDetails,
   getPlaceDetailsByReverseGeocode,
+  getAllLocation,
 };

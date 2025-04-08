@@ -51,7 +51,7 @@ export interface UserLocationDto {
   specificAddress: string;
   latitude: number;
   longitude: number;
-  isPrimary: boolean;
+  primary: boolean;
   location: LocationDto;
 }
 

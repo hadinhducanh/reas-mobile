@@ -132,6 +132,7 @@ const HomeScreen: React.FC = () => {
           pageNo: pageNo + 1,
           request: searchRequest,
           sortBy: "approvedTime",
+          sortDir: "desc",
         })
       );
     }
@@ -143,9 +144,10 @@ const HomeScreen: React.FC = () => {
         pageNo: 0,
         request: searchRequest,
         sortBy: "approvedTime",
+        sortDir: "desc",
       })
     );
-  }, [dispatch, itemAvailable]);
+  }, []);
 
   const handleSearch = () => {
     if (searchText !== "") {

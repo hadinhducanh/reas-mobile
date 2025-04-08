@@ -157,17 +157,26 @@ export const getAllItemAvailableThunk = createAsyncThunk<
     pageNo: number;
     request: SearchItemRequest;
     sortBy?: string;
+    sortDir?: string;
   }
->("item/getAllItemAvailable", async ({ pageNo, request, sortBy }, thunkAPI) => {
-  try {
-    const data = await ItemService.getAllItemAvailable(pageNo, request, sortBy);
-    return data;
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(
-      error.response?.data || "Get all item available failed"
-    );
+>(
+  "item/getAllItemAvailable",
+  async ({ pageNo, request, sortBy, sortDir }, thunkAPI) => {
+    try {
+      const data = await ItemService.getAllItemAvailable(
+        pageNo,
+        request,
+        sortBy,
+        sortDir
+      );
+      return data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Get all item available failed"
+      );
+    }
   }
-});
+);
 
 export const searchItemPaginationThunk = createAsyncThunk<
   ResponseEntityPagination<ItemResponse>,
