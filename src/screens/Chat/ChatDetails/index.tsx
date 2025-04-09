@@ -5,7 +5,6 @@ import {
   Pressable,
   ScrollView,
   Platform,
-  Alert,
   Image,
   ActivityIndicator,
 } from "react-native";
@@ -30,7 +29,6 @@ import { ChatMessage } from "../../../common/models/chat";
 import Message from "../../../components/ChatMessage";
 import { formatTimestamp } from "../../../utils/TimestampFormatter";
 import moment from "moment-timezone";
-import { set } from "zod";
 
 const ChatDetails: React.FC = () => {
   const navigation = useNavigation();
@@ -174,7 +172,7 @@ const ChatDetails: React.FC = () => {
         <View className="flex-1">
           <View className="flex-row items-center justify-start h-[60px] px-5">
             <Pressable onPress={() => navigation.goBack()}>
-              <Icon name="chevron-back-outline" size={24} color="#fff" />
+              <Icon name="chevron-back" size={24} color="#fff" />
             </Pressable>
             <View className="mx-3 w-12 h-12 rounded-full items-center justify-center">
               <Icon name="person-circle-outline" size={45} color="white" />
@@ -186,10 +184,6 @@ const ChatDetails: React.FC = () => {
 
           {/* Chat Messages */}
           <View className="flex-1 bg-white">
-            {/* {messages.length === 0
-                ? ""
-                : } */}
-
             {Array.isArray(messages) && messages.length > 0 ? (
               <ScrollView
                 ref={scrollViewRef}

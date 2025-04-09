@@ -1,0 +1,5 @@
+export enum TypeNotification {
+    CHAT_MESSAGE = "CHAT_MESSAGE",
+    UPLOAD_ITEM = "UPLOAD_ITEM",
+    EXCHANGE_REQUEST = "EXCHANGE_REQUEST",
+}
