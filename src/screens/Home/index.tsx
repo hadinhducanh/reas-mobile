@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   ScrollView,
@@ -32,6 +32,7 @@ import {
 import { StatusItem } from "../../common/enums/StatusItem";
 import { TypeItem } from "../../common/enums/TypeItem";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 
 type HomeScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -138,16 +139,18 @@ const HomeScreen: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    dispatch(
-      getAllItemAvailableThunk({
-        pageNo: 0,
-        request: searchRequest,
-        sortBy: "approvedTime",
-        sortDir: "desc",
-      })
-    );
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(
+        getAllItemAvailableThunk({
+          pageNo: 0,
+          request: searchRequest,
+          sortBy: "approvedTime",
+          sortDir: "desc",
+        })
+      );
+    }, [])
+  );
 
   const handleSearch = () => {
     if (searchText !== "") {

@@ -30,7 +30,10 @@ import { AppDispatch, RootState } from "../../redux/store";
 import { StatusItem } from "../../common/enums/StatusItem";
 import { searchItemPaginationThunk } from "../../redux/thunk/itemThunks";
 import { TypeItem } from "../../common/enums/TypeItem";
-import { resetItemDetailState } from "../../redux/slices/itemSlice";
+import {
+  resetItemDetailState,
+  setRangeState,
+} from "../../redux/slices/itemSlice";
 import {
   BATHROOM_TYPE_IMAGE,
   BEDROOM_TYPE_IMAGE,
@@ -119,8 +122,6 @@ const SearchResult: React.FC = () => {
   }, [selectedSort]);
 
   useEffect(() => {
-    console.log("abc");
-
     dispatch(resetItemDetailState());
     if (searchTextParam !== undefined) {
       setSearchText(searchTextParam);
@@ -206,6 +207,7 @@ const SearchResult: React.FC = () => {
   ]);
 
   const handleApplyPrice = (min: string, max: string) => {
+    dispatch(setRangeState(0));
     setMinPrice(min);
     setMaxPrice(max);
     setIsFilterPriceModalVisible(false);
@@ -280,7 +282,6 @@ const SearchResult: React.FC = () => {
     return chunked;
   };
 
-  // Sử dụng useMemo cho rows để không tính lại mỗi lần render nếu content không thay đổi
   const rows = useMemo(() => chunkArray(content, 2), [content]);
 
   const formatPrice = (value: string): string => {
@@ -293,7 +294,6 @@ const SearchResult: React.FC = () => {
   return (
     <>
       <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
-        {/* Header */}
         <View className="h-20 bg-[#00B0B9] w-full flex-row justify-between items-center px-4">
           <Pressable onPress={() => navigation.goBack()} className="mr-1">
             <Icon name="chevron-back-outline" size={30} color="white" />
@@ -396,7 +396,6 @@ const SearchResult: React.FC = () => {
           </View>
         </View>
 
-        {/* Category & Sort */}
         <View className="px-2 bg-gray-100">
           <View className="relative rounded-lg mt-5 p-3 bg-white">
             <Text className="text-[#0b1d2d] text-lg font-bold capitalize mb-3">
@@ -458,7 +457,6 @@ const SearchResult: React.FC = () => {
           </View>
         </View>
 
-        {/* List Items */}
         {loading ? (
           <View className="flex-1 justify-center items-center bg-white">
             <ActivityIndicator size="large" color="#00b0b9" />
@@ -535,7 +533,6 @@ const SearchResult: React.FC = () => {
         </Pressable>
       </Modal>
 
-      {/* Filter Price Modal */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -545,9 +542,7 @@ const SearchResult: React.FC = () => {
         <Pressable
           className="flex-1 bg-[rgba(0,0,0,0.2)]"
           onPress={() => setIsFilterPriceModalVisible(false)}
-        >
-          {/* Click outside to close */}
-        </Pressable>
+        ></Pressable>
         <FilterPriceModal
           initialMinPrice={minPrice}
           initialMaxPrice={maxPrice}

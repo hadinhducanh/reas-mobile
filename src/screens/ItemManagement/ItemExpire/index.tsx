@@ -173,9 +173,11 @@ const ItemExpire: React.FC = () => {
   const handleUpdate = async () => {
     navigation.navigate("UpdateItem", { screen: "UpdateItemScreen" });
   };
+
   const handleExtend = async () => {
     navigation.navigate("ExtendItemPlan");
   };
+
   const handleDelete = async () => {
     setDeletedVisible(true);
   };

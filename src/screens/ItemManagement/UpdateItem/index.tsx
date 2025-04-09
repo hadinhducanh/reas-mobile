@@ -156,6 +156,38 @@ export default function UpdateItem() {
             ? ""
             : itemDetail.desiredItem.categoryName,
       });
+    } else if (itemDetail && !itemDetail.desiredItem) {
+      setPrice(itemDetail?.price.toString());
+      setItemName(itemDetail.itemName);
+      setDescription(itemDetail.description.replace(/\\n/g, "\n"));
+      setTermCondition(
+        itemDetail.termsAndConditionsExchange
+          ? itemDetail.termsAndConditionsExchange.replace(/\\n/g, "\n")
+          : ""
+      );
+      setImages(itemDetail.imageUrl);
+      setIsCheckedFree(itemDetail.price === 0 ? true : false);
+      setIsMoneyAccepted(itemDetail.moneyAccepted);
+
+      setUploadItem({
+        ...uploadItem,
+        price: itemDetail.price,
+        itemName: itemDetail.itemName,
+        description: itemDetail.description,
+        termsAndConditionsExchange: itemDetail.termsAndConditionsExchange,
+        imageUrl: itemDetail.imageUrl,
+        isCheckedFree: itemDetail.price === 0 ? true : false,
+        isMoneyAccepted: itemDetail.moneyAccepted,
+        brandName: itemDetail.brand.brandName,
+        brandId: itemDetail.brand.id,
+        conditionItem: itemDetail.conditionItem,
+        conditionItemName: getConditionItemLabel(itemDetail.conditionItem),
+        methodExchanges: itemDetail.methodExchanges,
+        methodExchangeName: getMethodExchangeLabel(itemDetail.methodExchanges),
+        typeItem: itemDetail.typeItem,
+        categoryName: itemDetail.category.categoryName,
+        categoryId: itemDetail.category.id,
+      });
     }
   }, [itemDetail]);
 
@@ -271,7 +303,10 @@ export default function UpdateItem() {
         termsAndConditionsExchange: uploadItem.termsAndConditionsExchange,
         categoryId: uploadItem.categoryId,
         brandId: uploadItem.brandId,
-        desiredItem: uploadItem.desiredItem ? uploadItem.desiredItem : null,
+        desiredItem:
+          uploadItem.desiredItem?.description.length === 0
+            ? null
+            : uploadItem.desiredItem,
       };
 
       await dispatch(updateItemThunk(updateItemRequest));
@@ -523,8 +558,8 @@ export default function UpdateItem() {
       )}
 
       <ConfirmModal
-        title="Confirm upload"
-        content="Are you sure you to upload this item?"
+        title="Confirm update"
+        content="Are you sure you to update this item?"
         visible={confirmVisible}
         onCancel={handleCancel}
         onConfirm={handleUpdateItem}

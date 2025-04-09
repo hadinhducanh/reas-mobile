@@ -21,19 +21,16 @@ import { resetItemDetailState } from "../../../redux/slices/itemSlice";
 const UploadItemSuccess: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { itemRecommnand, itemUpload, loading } = useSelector(
+  const { itemRecommnand, itemUpload, loading, itemAvailable } = useSelector(
     (state: RootState) => state.item
   );
 
-  // Chỉ dispatch getRecommendedItemsThunk khi itemUpload đã có phản hồi
   useEffect(() => {
     if (itemUpload && itemUpload.desiredItem !== null) {
-      // Giả sử bạn muốn dùng id của itemUpload để lấy gợi ý
       dispatch(getRecommendedItemsThunk({ id: itemUpload.id, limit: 4 }));
     }
   }, [dispatch, itemUpload]);
 
-  // UI sẽ hiển thị sau khi loading hoàn thành (tức là khi getRecommendedItemsThunk đã phản hồi)
   const hanleBackPress = () => {
     dispatch(resetItemDetailState());
     navigation.navigate("MainTabs", { screen: "Items" });
@@ -78,7 +75,7 @@ const UploadItemSuccess: React.FC = () => {
               >
                 Upload item successfully!
               </Text>
-              <Text className="text-lg font-medium text-[#738aa0] text-center">
+              <Text className="text-lg font-medium text-gray-500 text-center">
                 Your item is in review queue right now.{"\n"}Please wait for
                 approval before the item{"\n"}is available to exchange.
               </Text>
@@ -87,7 +84,7 @@ const UploadItemSuccess: React.FC = () => {
             {itemRecommnand.length !== 0 && (
               <View className="mt-6">
                 <HorizontalSection
-                  title="Bài đăng tương tự"
+                  title={`You may want to check out items based${"\n"}on your desired item:`}
                   data={itemRecommnand}
                   navigation={navigation}
                 />

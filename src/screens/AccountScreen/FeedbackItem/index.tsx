@@ -19,13 +19,17 @@ import {
   updateFeedbackThunk,
   viewFeedbackDetailThunk,
 } from "../../../redux/thunk/feedbackThunk";
-import { getExchangeDetailThunk } from "../../../redux/thunk/exchangeThunk";
+import {
+  getAllExchangesByStatusOfCurrentUserThunk,
+  getExchangeDetailThunk,
+} from "../../../redux/thunk/exchangeThunk";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { uploadToCloudinary } from "../../../utils/CloudinaryImageUploader";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ConfirmModal from "../../../components/DeleteConfirmModal";
 import { resetFeedback } from "../../../redux/slices/feedbackSlice";
+import { StatusExchange } from "../../../common/enums/StatusExchange";
 
 const FeedbackItem: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -96,7 +100,13 @@ const FeedbackItem: React.FC = () => {
       };
 
       setConfirmVisible(false);
-      dispatch(createFeedbackThunk(feedbackRequest));
+      await dispatch(createFeedbackThunk(feedbackRequest));
+      dispatch(
+        getAllExchangesByStatusOfCurrentUserThunk({
+          pageNo: 0,
+          statusExchangeRequest: StatusExchange.SUCCESSFUL,
+        })
+      );
       dispatch(resetFeedback());
       setReceivedItemImage("");
       setTransferReceiptImage("");
@@ -120,7 +130,13 @@ const FeedbackItem: React.FC = () => {
       imageUrl: processedImages,
     };
     setConfirmVisible(false);
-    dispatch(updateFeedbackThunk(feedbackRequest));
+    await dispatch(updateFeedbackThunk(feedbackRequest));
+    dispatch(
+      getAllExchangesByStatusOfCurrentUserThunk({
+        pageNo: 0,
+        statusExchangeRequest: StatusExchange.SUCCESSFUL,
+      })
+    );
     dispatch(resetFeedback());
     setReceivedItemImage("");
     setTransferReceiptImage("");
