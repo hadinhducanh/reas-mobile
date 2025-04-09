@@ -21,7 +21,11 @@ const initialState: PaymentState = {
 const paymentSlice = createSlice({
   name: "payment",
   initialState,
-  reducers: {},
+  reducers: {
+    resetCheckoutUrl: (state) => {
+      state.checkoutUrl = null;
+    },
+  },
   extraReducers: (builder) => {
     setCheckoutUrl(builder);
   },
@@ -49,4 +53,5 @@ function setCheckoutUrl(builder: ActionReducerMapBuilder<PaymentState>) {
     );
 }
 
+export const { resetCheckoutUrl } = paymentSlice.actions;
 export default paymentSlice.reducer;

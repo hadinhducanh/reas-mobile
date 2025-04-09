@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -14,13 +14,17 @@ import { createPaymentLinkThunk } from "../../../../redux/thunk/paymentThunk";
 
 const ExtendItemPlan: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { checkoutUrl, loadingPayment, errorPayment } = useSelector(
+  const { checkoutUrl, loadingPayment } = useSelector(
     (state: RootState) => state.payment
   );
   const { plans, loading, error } = useSelector(
     (state: RootState) => state.subscription
   );
   const dispatch = useDispatch<AppDispatch>();
+  const [pendingNavigation, setPendingNavigation] = useState<{
+    returnUrl: string;
+    cancelUrl: string;
+  } | null>(null);
 
   useEffect(() => {
     dispatch(getSubscriptionThunk());
@@ -32,27 +36,35 @@ const ExtendItemPlan: React.FC = () => {
 
   const handleSubscribe = async () => {
     try {
-      // console.log("Subscribing to plan:", selectedPlan);
       const createPaymentLinkRequest: CreatePaymentLinkRequest = {
         description: "Extend item",
         subscriptionPlanId: plans[3].id,
         returnUrl:
           "https://user-images.githubusercontent.com/16245250/38747567-7af6fbbc-3f75-11e8-9f52-16720dbf8231.png",
         cancelUrl:
-          "https://user-images.githubusercontent.com/16245250/38747567-7af6fbbc-3f75-11e8-9f52-16720dbf8231.png",
+          "https://img.freepik.com/premium-vector/transaction-is-cancelled-red-stamp_545399-2577.jpg",
       };
       await dispatch(createPaymentLinkThunk(createPaymentLinkRequest));
-      if (checkoutUrl) {
-        navigation.navigate("Payment", {
-          payOSURL: checkoutUrl,
-          returnUrl: createPaymentLinkRequest.returnUrl,
-          cancelUrl: createPaymentLinkRequest.cancelUrl,
-        });
-      }
+      setPendingNavigation({
+        returnUrl: createPaymentLinkRequest.returnUrl,
+        cancelUrl: createPaymentLinkRequest.cancelUrl,
+      });
     } catch (error) {
       console.error("Error creating payment link:", error);
     }
   };
+
+  useEffect(() => {
+    if (checkoutUrl && pendingNavigation) {
+      navigation.navigate("Payment", {
+        payOSURL: checkoutUrl,
+        returnUrl: pendingNavigation.returnUrl,
+        cancelUrl: pendingNavigation.cancelUrl,
+      });
+
+      setPendingNavigation(null);
+    }
+  }, [checkoutUrl, pendingNavigation]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>

@@ -1,4 +1,4 @@
-import React, { useCallback, memo, useState, useMemo } from "react";
+import React, { useCallback, memo, useState, useMemo, useEffect } from "react";
 import { View, Text, Pressable, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -12,6 +12,7 @@ import { RootStackParamList } from "../../navigation/AppNavigator";
 import LoadingButton from "../../components/LoadingButton";
 import LanguageSwitchModal from "./LanguageSwitch";
 import { useTranslation } from "react-i18next";
+import { getCurrentSubscriptionThunk } from "../../redux/thunk/subscriptionThunks";
 
 type AccountListItemProps = {
   iconName: string;
@@ -47,6 +48,7 @@ const Account: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [languageSwitchVisible, setLanguageSwitchVisible] = useState(false);
   const isLoggedIn = !!user;
+  const { currentPlan } = useSelector((state: RootState) => state.subscription);
 
   const navigateScreens = useCallback(
     <T extends keyof RootStackParamList>(
@@ -71,6 +73,10 @@ const Account: React.FC = () => {
   const toggleLanguageModal = useCallback(() => {
     setLanguageSwitchVisible((prev) => !prev);
   }, []);
+
+  useEffect(() => {
+    dispatch(getCurrentSubscriptionThunk());
+  }, [dispatch]);
 
   const accountItems = useMemo(() => {
     return [
@@ -103,7 +109,11 @@ const Account: React.FC = () => {
         route: "Favorite",
         requireAuth: true,
       },
-      { iconName: "wallet-outline", label: "Premium", route: "Premium" },
+      {
+        iconName: "wallet-outline",
+        label: "Premium",
+        route: currentPlan ? "ExtendPremium" : "Premium",
+      },
       {
         iconName: "information-circle-outline",
         label: "About",
