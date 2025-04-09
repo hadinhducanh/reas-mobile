@@ -17,6 +17,7 @@ const ExtendItemPlan: React.FC = () => {
   const { checkoutUrl, loadingPayment } = useSelector(
     (state: RootState) => state.payment
   );
+  const { itemDetail } = useSelector((state: RootState) => state.item);
   const { plans, loading, error } = useSelector(
     (state: RootState) => state.subscription
   );
@@ -38,7 +39,7 @@ const ExtendItemPlan: React.FC = () => {
     try {
       const createPaymentLinkRequest: CreatePaymentLinkRequest = {
         description: "Extend item",
-        subscriptionPlanId: plans[3].id,
+        itemId: itemDetail?.id,
         returnUrl:
           "https://user-images.githubusercontent.com/16245250/38747567-7af6fbbc-3f75-11e8-9f52-16720dbf8231.png",
         cancelUrl:
