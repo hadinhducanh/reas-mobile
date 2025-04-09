@@ -11,8 +11,8 @@ export interface SubscriptionResponse {
 }
 
 export interface UserSubscriptionDto {
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   subscriptionPlan: SubscriptionPlanDto;
 }
 

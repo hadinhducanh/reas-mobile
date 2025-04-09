@@ -9,8 +9,12 @@ import {
   useNavigationState,
 } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { resetCheckoutUrl } from "../../../redux/slices/paymentSlice";
+import { AppDispatch } from "../../../redux/store";
+import { useDispatch } from "react-redux";
 
 const OrderSuccess: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const state = useNavigationState((state) => state);
   const targetIndex = state.index - 2;
@@ -20,6 +24,8 @@ const OrderSuccess: React.FC = () => {
       targetIndex > 0 &&
       state.routes[targetIndex].name === "ExtendItemPlan"
     ) {
+      dispatch(resetCheckoutUrl());
+
       navigation.reset({
         index: 1,
         routes: [
@@ -30,6 +36,8 @@ const OrderSuccess: React.FC = () => {
         ],
       });
     } else {
+      dispatch(resetCheckoutUrl());
+
       navigation.reset({
         index: 1,
         routes: [{ name: "Premium" }, { name: "ExtendPremium" }],

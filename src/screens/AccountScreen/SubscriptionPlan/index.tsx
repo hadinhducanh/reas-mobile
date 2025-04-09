@@ -105,9 +105,6 @@ const Premium: React.FC = () => {
               Loading...
             </Text>
           )}
-          {error && (
-            <Text className="text-center text-lg text-red-500">{error}</Text>
-          )}
           <View>
             <Text className="text-xl font-bold text-black">{planName}</Text>
             <Text className="text-base text-gray-500 mt-2">
