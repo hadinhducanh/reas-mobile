@@ -56,7 +56,7 @@ const ProfileDetail: React.FC = () => {
       setFullName(user?.fullName);
       setEmail(user.email);
       if (user.phone) {
-        setPhoneNumber(user.phone);
+        setPhoneNumber(formatPhoneNumber(user.phone));
       }
       if (user.userLocations.length !== 0) {
         setAddress(user.userLocations[0].specificAddress);
@@ -108,25 +108,23 @@ const ProfileDetail: React.FC = () => {
     }, [user, userLocationId])
   );
 
-  const formatPhoneNumber = (digits: string) => {
-    if (digits.length <= 3) {
-      return digits;
-    } else if (digits.length <= 6) {
-      return digits.slice(0, 3) + "-" + digits.slice(3);
+  const formatPhoneNumber = (input: string) => {
+    const cleaned = input.replace(/\D/g, "");
+
+    if (cleaned.length <= 3) {
+      return cleaned;
+    } else if (cleaned.length <= 6) {
+      return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
     } else {
-      return (
-        digits.slice(0, 3) +
-        "-" +
-        digits.slice(3, 6) +
-        "-" +
-        digits.slice(6, 10)
-      );
+      return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(
+        6,
+        10
+      )}`;
     }
   };
 
   const handlePhoneChange = (input: string) => {
-    const cleaned = input.replace(/\D/g, "");
-    const limited = cleaned.slice(0, 10);
+    const limited = input.replace(/\D/g, "").slice(0, 10);
     const formatted = formatPhoneNumber(limited);
     setPhoneNumber(formatted);
   };

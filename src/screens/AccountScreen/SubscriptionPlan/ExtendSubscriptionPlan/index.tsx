@@ -95,6 +95,22 @@ const ExtendPremium: React.FC = () => {
     return inputDate < today;
   };
 
+  const handleBackPress = () => {
+    if (currentPlan) {
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: "MainTabs",
+            state: { routes: [{ name: "Account" }] },
+          },
+        ],
+      });
+    } else {
+      navigation.goBack();
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
       <Header
@@ -104,6 +120,7 @@ const ExtendPremium: React.FC = () => {
         textColor="text-white"
         optionIconColor="white"
         showOption={false}
+        onBackPress={handleBackPress}
       />
 
       {loading ? (

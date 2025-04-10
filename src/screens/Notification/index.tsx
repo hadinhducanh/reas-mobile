@@ -12,7 +12,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 const Notifications: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { notifications, loading, error } = useSelector(
+  const { notifications, loading } = useSelector(
     (state: RootState) => state.notification
   );
 
@@ -37,34 +37,31 @@ const Notifications: React.FC = () => {
         optionIconColor="white"
         showOption={false}
       />
-      <ScrollView
-        className="bg-gray-100 flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 10 }}
-      >
-        {loading && (
-          <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color="#00B0B9" />
-          </View>
-        )}
-        {error && (
-          <Text className="text-center text-red-500 my-2">{error}</Text>
-        )}
-        {notifications && notifications.length > 0
-          ? notifications.map((notification, index) => (
-              <NotificationItem key={index} notification={notification} />
-            ))
-          : !loading && (
-              <View className="flex-1 justify-center items-center">
-                <Icon
-                  name="remove-circle-outline"
-                  size={70}
-                  color={"#00b0b9"}
-                />
-                <Text className="text-gray-500">No notifications</Text>
-              </View>
-            )}
-      </ScrollView>
+
+      {loading ? (
+        <View className="flex-1 justify-center items-center bg-white">
+          <ActivityIndicator size="large" color="#00B0B9" />
+        </View>
+      ) : (
+        <>
+          {notifications && notifications.length > 0 ? (
+            <ScrollView
+              className="bg-gray-100 flex-1"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingVertical: 10 }}
+            >
+              {notifications.map((notification, index) => (
+                <NotificationItem key={index} notification={notification} />
+              ))}
+            </ScrollView>
+          ) : (
+            <View className="flex-1 justify-center items-center bg-white">
+              <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
+              <Text className="text-gray-500">No notifications</Text>
+            </View>
+          )}
+        </>
+      )}
     </SafeAreaView>
   );
 };

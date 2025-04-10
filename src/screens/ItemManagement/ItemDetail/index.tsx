@@ -176,6 +176,17 @@ const ItemDetails: React.FC = () => {
     }
   }, [accessToken, navigation, itemId]);
 
+  const handleChat = useCallback(() => {
+    if (!accessToken) {
+      navigation.navigate("SignIn");
+    } else {
+      navigation.navigate("ChatDetails", {
+        receiverUsername: itemDetail!.owner.userName,
+        receiverFullName: itemDetail!.owner.fullName,
+      });
+    }
+  }, [accessToken, navigation, itemId]);
+
   const handleFavoritePress = useCallback(() => {
     if (!accessToken) {
       navigation.navigate("SignIn");
@@ -453,12 +464,7 @@ const ItemDetails: React.FC = () => {
                 <View className="flex-1 mx-2">
                   <LoadingButton
                     title="Chat"
-                    onPress={() =>
-                      navigation.navigate("ChatDetails", {
-                        receiverUsername: itemDetail!.owner.userName,
-                        receiverFullName: itemDetail!.owner.fullName,
-                      })
-                    }
+                    onPress={handleChat}
                     buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
                     iconName="chatbubble-outline"
                     iconSize={25}

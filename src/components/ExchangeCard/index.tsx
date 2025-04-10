@@ -331,8 +331,8 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
                           : exchange.buyerItem.owner.id)
                           ? exchange.buyerItem === null
                             ? exchange.paidBy.userName
-                            : exchange.buyerItem.owner.userName
-                          : exchange.sellerItem.owner.userName,
+                            : exchange.sellerItem.owner.userName
+                          : exchange.buyerItem.owner.userName,
                       receiverFullName:
                         user?.id ===
                         (exchange.buyerItem === null
@@ -340,8 +340,8 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
                           : exchange.buyerItem.owner.id)
                           ? exchange.buyerItem === null
                             ? exchange.paidBy.fullName
-                            : exchange.buyerItem.owner.fullName
-                          : exchange.sellerItem.owner.fullName,
+                            : exchange.sellerItem.owner.fullName
+                          : exchange.buyerItem.owner.fullName,
                     })
                   }
                   buttonClassName="py-4 px-8 border-2 border-transparent"
