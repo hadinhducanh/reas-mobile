@@ -17,26 +17,11 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
 }) => {
   const [minValue, setMinValue] = useState<string>(initialMinPrice);
   const [maxValue, setMaxValue] = useState<string>(initialMaxPrice);
-  const [error, setError] = useState<string>("");
-  const [isInvalid, setIsInvalid] = useState<boolean>(false);
 
   useEffect(() => {
     setMinValue(initialMinPrice);
     setMaxValue(initialMaxPrice);
   }, [initialMinPrice, initialMaxPrice]);
-
-  useEffect(() => {
-    const minPriceValue = parseInt(minValue.replace(/,/g, ""), 10) || 0;
-    const maxPriceValue = parseInt(maxValue.replace(/,/g, ""), 10) || 0;
-
-    if (minPriceValue > maxPriceValue) {
-      setError("Min price cannot be greater than Max price");
-      setIsInvalid(true);
-    } else {
-      setError("");
-      setIsInvalid(false);
-    }
-  }, [minValue, maxValue]);
 
   const handleApply = () => {
     onApply(minValue, maxValue);
@@ -78,7 +63,7 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
               keyboardType="numeric"
               value={formatPrice(minValue)}
               onChangeText={(value) => {
-                setMinValue(value);
+                setMinValue(value.length === 0 ? "0" : value);
               }}
             />
             <Text className="text-gray-500 text-base ml-1">VND</Text>
@@ -99,7 +84,7 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
               keyboardType="numeric"
               value={formatPrice(maxValue)}
               onChangeText={(value) => {
-                setMaxValue(value);
+                setMaxValue(value.length === 0 ? "0" : value);
               }}
             />
             <Text className="text-gray-500 text-base ml-1">VND</Text>
@@ -107,16 +92,11 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
         </View>
       </View>
 
-      {error ? (
-        <Text className="text-red-500 text-sm mt-2">{error}</Text>
-      ) : null}
-
       <View className="mt-5">
         <LoadingButton
           title="Apply"
           onPress={handleApply}
-          buttonClassName={`py-4 ${isInvalid ? "bg-gray-200" : ""}`}
-          disable={isInvalid}
+          buttonClassName={`py-4 `}
         />
       </View>
     </View>

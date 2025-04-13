@@ -40,6 +40,7 @@ import {
   deleteFromFavoriteThunk,
 } from "../../../redux/thunk/favoriteThunk";
 import { StatusItem } from "../../../common/enums/StatusItem";
+import { TypeItem } from "../../../common/enums/TypeItem";
 
 const { width } = Dimensions.get("window");
 
@@ -62,6 +63,41 @@ const methodExchanges = [
   { label: "Pick up", value: MethodExchange.PICK_UP_IN_PERSON },
 ];
 
+const typeItems = [
+  {
+    name: "Kitchen",
+    value: TypeItem.KITCHEN_APPLIANCES,
+  },
+  {
+    name: "Cleaning & Laundry",
+    value: TypeItem.CLEANING_LAUNDRY_APPLIANCES,
+  },
+  {
+    name: "Cooling & Heating",
+    value: TypeItem.COOLING_HEATING_APPLIANCES,
+  },
+  {
+    name: "Electric & Entertainment",
+    value: TypeItem.ELECTRONICS_ENTERTAINMENT_DEVICES,
+  },
+  {
+    name: "Lighting & Security",
+    value: TypeItem.LIGHTING_SECURITY_DEVICES,
+  },
+  {
+    name: "Living room",
+    value: TypeItem.LIVING_ROOM_APPLIANCES,
+  },
+  {
+    name: "Bedroom",
+    value: TypeItem.BEDROOM_APPLIANCES,
+  },
+  {
+    name: "Bathroom",
+    value: TypeItem.BATHROOM_APPLIANCES,
+  },
+];
+
 const ItemDetails: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "ItemDetails">>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -79,6 +115,11 @@ const ItemDetails: React.FC = () => {
     return found ? found.label : "";
   };
 
+  const getTypeItemLabel = (status: TypeItem | undefined): string => {
+    const found = typeItems.find((item) => item.value === status);
+    return found ? found.name : "";
+  };
+
   const getMethodExchangeLabel = (
     selectedMethods: MethodExchange[] | undefined
   ): string => {
@@ -94,20 +135,24 @@ const ItemDetails: React.FC = () => {
   const data = useMemo(
     () => [
       {
-        label: "Tình trạng",
+        label: "Condition",
         value: getConditionItemLabel(itemDetail?.conditionItem),
       },
-      { label: "Thiết bị", value: itemDetail?.category.categoryName },
-      { label: "Hãng", value: itemDetail?.brand.brandName },
       {
-        label: "Phương thức trao đổi",
+        label: "Type",
+        value: getTypeItemLabel(itemDetail?.typeItem),
+      },
+      { label: "Category", value: itemDetail?.category.categoryName },
+      { label: "Brand", value: itemDetail?.brand.brandName },
+      {
+        label: "Exchange method",
         value:
           itemDetail?.methodExchanges.length === 3
             ? "All of methods"
             : getMethodExchangeLabel(itemDetail?.methodExchanges),
       },
       {
-        label: "Loại giao dịch",
+        label: "Exchange type",
         value:
           itemDetail?.desiredItem !== null ? "Open with desired item" : "Open",
       },
@@ -275,7 +320,7 @@ const ItemDetails: React.FC = () => {
             <View className="flex flex-row items-center mt-2">
               <Icon name="time-outline" size={25} color="black" />
               <Text className="ml-1 text-gray-500 text-lg">
-                Đăng {formatRelativeTime(itemDetail?.approvedTime)}
+                Upload {formatRelativeTime(itemDetail?.approvedTime)}
               </Text>
             </View>
           </View>
@@ -345,7 +390,7 @@ const ItemDetails: React.FC = () => {
         </View>
 
         <View className="p-5 my-5 bg-white">
-          <Text className="text-xl font-bold mb-3">Mô tả chi tiết</Text>
+          <Text className="text-xl font-bold mb-3">Description</Text>
           <View className="mb-3">
             {itemDetail?.description.split("\\n").map((line, index) => (
               <Text className="text-lg font-normal mb-1" key={index}>
@@ -355,7 +400,7 @@ const ItemDetails: React.FC = () => {
           </View>
 
           <Text className="text-xl font-bold mt-4 mb-3">
-            Thông tin chi tiết
+            Information details
           </Text>
           <View className="border border-gray-300 rounded-md overflow-hidden">
             {data.map((info, index) => (

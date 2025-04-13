@@ -308,6 +308,7 @@ export default function UpdateItem() {
             ? null
             : uploadItem.desiredItem,
       };
+      // console.log(updateItemRequest);
 
       await dispatch(updateItemThunk(updateItemRequest));
     }

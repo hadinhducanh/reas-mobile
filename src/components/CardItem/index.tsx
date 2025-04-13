@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { TouchableOpacity, View, Text, Image } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import dayjs from "dayjs";
@@ -127,6 +127,14 @@ const CardItem: React.FC<CardItemProps> = ({
             <Text className="text-gray-400 text-sm" numberOfLines={1}>
               {formatRelativeTime(item.approvedTime)} | {item.owner.fullName}
             </Text>
+
+            <View className="flex-row items-center mt-1">
+              <Icon name="location-outline" size={18} color="#00B0B9" />
+              <Text className="text-gray-400 text-sm" numberOfLines={1}>
+                {item.userLocation.specificAddress}
+              </Text>
+            </View>
+
             {item.distance ? (
               <Text className="text-[#00B0B9] text-sm" numberOfLines={1}>
                 {item.distance}

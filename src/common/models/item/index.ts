@@ -21,6 +21,7 @@ export interface UploadItemRequest {
   categoryId: number;
   brandId: number;
   desiredItem?: DesiredItemDto | null;
+  userLocationId: number;
 }
 
 export interface UpdateItemRequest {
@@ -36,6 +37,7 @@ export interface UpdateItemRequest {
   categoryId: number;
   brandId: number;
   desiredItem?: DesiredItemDto | null;
+  userLocationId: number;
 }
 
 export interface DesiredItemDto {
@@ -57,7 +59,7 @@ export interface ItemResponse {
   statusItem: StatusItem;
   conditionItem: ConditionItem;
   termsAndConditionsExchange: string;
-  expiredTime: Date;
+  expiredTime: string;
   approvedTime: Date;
   methodExchanges: MethodExchange[];
   category: CategoryDto;
@@ -103,10 +105,10 @@ export interface SearchItemRequest {
   price?: number;
   fromPrice?: number;
   toPrice?: number;
-  categoryIds?: [number];
-  brandIds?: [number];
-  ownerIds?: [number];
-  locationIds?: [number];
+  categoryIds?: number[];
+  brandIds?: number[];
+  ownerIds?: number[];
+  locationIds?: number[];
   statusItems?: StatusItem[];
   statusEntities?: StatusEntity[];
   typeItems?: TypeItem[];

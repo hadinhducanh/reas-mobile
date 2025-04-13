@@ -363,7 +363,7 @@ export const getItemCountsOfCurrentUserThunk = createAsyncThunk<
       StatusItem.REJECTED,
       StatusItem.NO_LONGER_FOR_EXCHANGE,
       StatusItem.SOLD,
-      StatusItem.UNAVAILABLE,
+      StatusItem.IN_EXCHANGE,
     ];
 
     const requests = statuses.map((status) => {

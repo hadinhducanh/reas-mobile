@@ -6,5 +6,5 @@ export interface BrandResponse {
 export interface BrandDto {
   id: number;
   brandName: string;
-  image: string;
+  image?: string;
 }
