@@ -72,7 +72,7 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: "images",
         allowsEditing: true,
         quality: 1,
       });
@@ -185,7 +185,7 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
     );
     if (!hasPermission) return;
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: "images",
       quality: 1,
       allowsEditing: true,
     });

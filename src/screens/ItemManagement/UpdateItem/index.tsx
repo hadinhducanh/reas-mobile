@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useDispatch, useSelector } from "react-redux";
@@ -33,6 +34,13 @@ import { ConditionItem } from "../../../common/enums/ConditionItem";
 import { MethodExchange } from "../../../common/enums/MethodExchange";
 import { TypeItem } from "../../../common/enums/TypeItem";
 import { resetItemDetailState } from "../../../redux/slices/itemSlice";
+import { PlaceDetail } from "../../../common/models/location";
+import LocationService from "../../../services/LocationService";
+import {
+  resetLocation,
+  setUserLocationIdState,
+  setUserPlaceIdState,
+} from "../../../redux/slices/userSlice";
 
 const conditionItems = [
   { label: "Brand new", value: ConditionItem.BRAND_NEW },
@@ -58,6 +66,7 @@ export default function UpdateItem() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { user } = useSelector((state: RootState) => state.auth);
+  const { userLocationId } = useSelector((state: RootState) => state.user);
   const { itemDetail, loading, itemUpdate } = useSelector(
     (state: RootState) => state.item
   );
@@ -82,6 +91,7 @@ export default function UpdateItem() {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [exitVisible, setExitVisible] = useState(false);
+  const [locationDetail, setLocationDetail] = useState<PlaceDetail>();
 
   const pendingBeforeRemoveEvent = useRef<any>(null);
   const hasConfirmedRef = useRef(false);
@@ -191,6 +201,40 @@ export default function UpdateItem() {
     }
   }, [itemDetail]);
 
+  useEffect(() => {
+    const fetchLocationDetails = async () => {
+      if (user && user.userLocations && user.userLocations.length) {
+        let targetLocation = null;
+
+        if (userLocationId !== 0) {
+          targetLocation = user.userLocations.find(
+            (loc) => loc.id === userLocationId
+          );
+        } else {
+          targetLocation = itemDetail?.userLocation;
+        }
+
+        if (targetLocation) {
+          try {
+            const details =
+              await LocationService.getPlaceDetailsByReverseGeocode(
+                `${targetLocation.latitude},${targetLocation.longitude}`
+              );
+            setLocationDetail(details);
+            dispatch(setUserPlaceIdState(details.place_id));
+            if (userLocationId === 0) {
+              dispatch(setUserLocationIdState(targetLocation.id));
+            }
+          } catch (error) {
+            console.error("Error fetching location details:", error);
+          }
+        }
+      }
+    };
+
+    fetchLocationDetails();
+  }, [user, userLocationId, itemDetail, dispatch]);
+
   const getConditionItemLabel = (status: ConditionItem | undefined): string => {
     const found = conditionItems.find((item) => item.value === status);
     return found ? found.label : "";
@@ -294,28 +338,33 @@ export default function UpdateItem() {
       const updateItemRequest = {
         id: itemDetail?.id!,
         itemName: uploadItem.itemName.trim(),
-        description: uploadItem.description,
+        description: uploadItem.description.trim(),
         price: uploadItem.price,
         conditionItem: uploadItem.conditionItem,
         imageUrl: processedImages,
         methodExchanges: uploadItem.methodExchanges,
         isMoneyAccepted: uploadItem.isMoneyAccepted,
-        termsAndConditionsExchange: uploadItem.termsAndConditionsExchange,
+        termsAndConditionsExchange:
+          uploadItem.termsAndConditionsExchange &&
+          uploadItem.termsAndConditionsExchange.trim().length !== 0
+            ? uploadItem.termsAndConditionsExchange.trim()
+            : null,
         categoryId: uploadItem.categoryId,
         brandId: uploadItem.brandId,
+        userLocationId: userLocationId,
         desiredItem:
-          uploadItem.desiredItem?.description.length === 0
-            ? null
-            : uploadItem.desiredItem,
+          uploadItem.desiredItem?.description.length !== 0
+            ? uploadItem.desiredItem
+            : null,
       };
-      // console.log(updateItemRequest);
 
-      await dispatch(updateItemThunk(updateItemRequest));
+      await dispatch(updateItemThunk(updateItemRequest)).unwrap();
     }
-  }, [setUploadItem, uploadItem, dispatch]);
+  }, [setUploadItem, uploadItem, dispatch, userLocationId]);
 
   useEffect(() => {
     if (itemUpdate !== null) {
+      dispatch(resetLocation());
       dispatch(resetItemDetailState());
       setUploadItem(defaultUploadItem);
 
@@ -381,6 +430,7 @@ export default function UpdateItem() {
     hasConfirmedRef.current = true;
     setExitVisible(false);
     if (pendingBeforeRemoveEvent.current) {
+      dispatch(resetLocation());
       navigation.dispatch(pendingBeforeRemoveEvent.current.data.action);
     }
   };
@@ -439,6 +489,31 @@ export default function UpdateItem() {
               route="MethodOfExchangeScreen"
               defaultValue="Select methods"
             />
+
+            <TouchableOpacity
+              className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
+              onPress={() => navigation.navigate("LocationOfUser")}
+            >
+              <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
+                <Icon name="location-on" size={22} color={"white"} />
+              </View>
+              <View className="flex-col items-start justify-start flex-1 w-full">
+                <Text
+                  className={`text-lg font-semibold text-black`}
+                  numberOfLines={1}
+                >
+                  {locationDetail?.name}
+                </Text>
+                <Text
+                  className={`text-base text-black w-full flex-wrap`}
+                  numberOfLines={1}
+                >
+                  {locationDetail?.formatted_address}
+                </Text>
+              </View>
+
+              <Icon name="arrow-forward-ios" size={24} color={"gray"} />
+            </TouchableOpacity>
 
             <Toggle
               label="I want to give it for free"

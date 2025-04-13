@@ -178,6 +178,22 @@ const findNearbyItems = async (
   return response.data;
 };
 
+const extendItemForFree = async (
+  itemId: number,
+  accessToken: string
+): Promise<boolean> => {
+  const response = await axios.put<boolean>(
+    `${API_BASE_URL}/item/extend-item-for-free?itemId=${itemId}`,
+    null,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
 export default {
   uploadItem,
   updateItem,
@@ -191,4 +207,5 @@ export default {
   getAllItemOfUserByStatus,
   findNearbyItems,
   changeItemStatus,
+  extendItemForFree,
 };

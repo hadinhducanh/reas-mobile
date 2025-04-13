@@ -10,6 +10,7 @@ import ExchangeDesiredItemScreen from "../screens/PostItemScreen/ExchangeDesired
 import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelectionScreen";
 import { useIsFocused } from "@react-navigation/native";
 import UploadItem from "../screens/PostItemScreen";
+import LocationOfUser from "../screens/AccountScreen/ProfileDetail/LocationOfUser";
 
 const UploadItemStack = createNativeStackNavigator();
 
@@ -60,6 +61,10 @@ export default function UploadItemFlow() {
         <UploadItemStack.Screen
           name="BrandSelectionScreen"
           component={BrandSelectionScreen}
+        />
+        <UploadItemStack.Screen
+          name="LocationOfUser"
+          component={LocationOfUser}
         />
       </UploadItemStack.Navigator>
     </>

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -30,9 +30,13 @@ import {
   addToFavoriteThunk,
   deleteFromFavoriteThunk,
 } from "../../../redux/thunk/favoriteThunk";
-import { resetItemDetailState } from "../../../redux/slices/itemSlice";
+import {
+  resetExtendFree,
+  resetItemDetailState,
+} from "../../../redux/slices/itemSlice";
 import {
   changeItemStatusThunk,
+  extendItemForFreeThunk,
   getItemDetailThunk,
 } from "../../../redux/thunk/itemThunks";
 import dayjs from "dayjs";
@@ -40,6 +44,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
 import { StatusItem } from "../../../common/enums/StatusItem";
 import { TypeItem } from "../../../common/enums/TypeItem";
+import { getCurrentSubscriptionThunk } from "../../../redux/thunk/subscriptionThunks";
 
 const { width } = Dimensions.get("window");
 
@@ -143,14 +148,16 @@ const statusItems = [
 
 const ItemExpire: React.FC = () => {
   const [deletedVisible, setDeletedVisible] = useState(false);
+  const [extendFreeVisible, setExtendFreeVisible] = useState(false);
+  const [reOpenVisible, setReOpenVisible] = useState(false);
 
   const route = useRoute<RouteProp<RootStackParamList, "ItemDetails">>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { itemId } = route.params;
   const dispatch = useDispatch<AppDispatch>();
-  const { itemDetail, itemSimilar, otherItemOfUser, loading } = useSelector(
-    (state: RootState) => state.item
-  );
+  const { itemDetail, itemSimilar, otherItemOfUser, extendFree, loading } =
+    useSelector((state: RootState) => state.item);
+  const { currentPlan } = useSelector((state: RootState) => state.subscription);
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const [isFavorite, setIsFavorite] = useState(itemDetail?.favorite);
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
@@ -261,6 +268,7 @@ const ItemExpire: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
+      dispatch(getCurrentSubscriptionThunk());
       dispatch(resetItemDetailState());
       dispatch(getItemDetailThunk(itemId));
     }, [dispatch, itemId])
@@ -289,8 +297,16 @@ const ItemExpire: React.FC = () => {
     navigation.navigate("ExtendItemPlan");
   };
 
-  const handleDelete = async () => {
+  const handleExtendFree = async () => {
+    setExtendFreeVisible(true);
+  };
+
+  const handleDeactivate = async () => {
     setDeletedVisible(true);
+  };
+
+  const handleReOpen = async () => {
+    setReOpenVisible(true);
   };
 
   const handleCancel = () => {
@@ -309,6 +325,41 @@ const ItemExpire: React.FC = () => {
       setDeletedVisible(false);
     }
   };
+
+  const handleCancelReOpen = () => {
+    setReOpenVisible(false);
+  };
+
+  const handleConfirmReOpen = async () => {
+    if (itemDetail) {
+      dispatch(
+        changeItemStatusThunk({
+          itemId: itemDetail?.id,
+          statusItem: StatusItem.AVAILABLE,
+        })
+      );
+
+      setReOpenVisible(false);
+    }
+  };
+
+  const handleCancelExtendFree = () => {
+    setExtendFreeVisible(false);
+  };
+
+  const handleConfirmExtendFree = async () => {
+    if (itemDetail) {
+      await dispatch(extendItemForFreeThunk(itemId)).unwrap();
+      setExtendFreeVisible(false);
+    }
+  };
+
+  useEffect(() => {
+    if (extendFree) {
+      dispatch(resetExtendFree());
+      navigation.goBack();
+    }
+  }, [extendFree]);
 
   const renderImageItem = useCallback(
     ({ item: image }: { item: string }) => (
@@ -540,15 +591,24 @@ const ItemExpire: React.FC = () => {
               } px-5 bg-white rounded-t-xl flex-row items-center`}
             >
               {itemDetail?.statusItem !== StatusItem.REJECTED &&
-                itemDetail?.statusItem !== StatusItem.NO_LONGER_FOR_EXCHANGE &&
                 itemDetail?.statusItem !== StatusItem.SOLD &&
                 itemDetail?.statusItem !== StatusItem.IN_EXCHANGE && (
                   <>
                     {itemDetail?.statusItem === StatusItem.EXPIRED ? (
                       <View className="flex-1 mr-2">
                         <LoadingButton
-                          title="Extend"
-                          onPress={handleExtend}
+                          title={
+                            currentPlan &&
+                            currentPlan?.numberOfFreeExtensionLeft !== 0
+                              ? "Extend free"
+                              : "Extend"
+                          }
+                          onPress={
+                            currentPlan &&
+                            currentPlan?.numberOfFreeExtensionLeft !== 0
+                              ? handleExtendFree
+                              : handleExtend
+                          }
                           buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
                           iconName="time-outline"
                           iconSize={25}
@@ -557,34 +617,59 @@ const ItemExpire: React.FC = () => {
                           textColor="text-[#00B0B9]"
                         />
                       </View>
+                    ) : itemDetail?.statusItem ===
+                      StatusItem.NO_LONGER_FOR_EXCHANGE ? (
+                      <>
+                        <View className="flex-1 mr-2">
+                          <LoadingButton
+                            title="Re-Open"
+                            onPress={handleReOpen}
+                            buttonClassName="p-3 border-[#00B0B9] border-2"
+                            iconName="refresh-outline"
+                            iconSize={25}
+                            iconColor="white"
+                            showIcon={true}
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <LoadingButton
+                            title="Delete"
+                            onPress={handleDeactivate}
+                            buttonClassName="p-3 border-transparent border-2 bg-[rgba(250,85,85)] active:bg-[rgba(250,85,85,0.5)]"
+                            iconName="trash-outline"
+                            iconSize={25}
+                            iconColor="white"
+                            showIcon={true}
+                            textColor="text-white"
+                          />
+                        </View>
+                      </>
                     ) : (
-                      <View className="flex-1 mr-2">
-                        <LoadingButton
-                          title="Update"
-                          onPress={handleUpdate}
-                          buttonClassName="p-3 border-[#00B0B9] border-2"
-                          iconName="reader-outline"
-                          iconSize={25}
-                          iconColor="white"
-                          showIcon={true}
-                          // textColor="text-[#00B0B9]"
-                        />
-                      </View>
-                    )}
-
-                    {itemDetail?.statusItem !== StatusItem.EXPIRED && (
-                      <View className="flex-1">
-                        <LoadingButton
-                          title="Deactivate"
-                          onPress={handleDelete}
-                          buttonClassName="p-3 border-transparent border-2 bg-[rgba(250,85,85)] active:bg-[rgba(250,85,85,0.5)]"
-                          iconName="trash-outline"
-                          iconSize={25}
-                          iconColor="white"
-                          showIcon={true}
-                          textColor="text-white"
-                        />
-                      </View>
+                      <>
+                        <View className="flex-1 mr-2">
+                          <LoadingButton
+                            title="Update"
+                            onPress={handleUpdate}
+                            buttonClassName="p-3 border-[#00B0B9] border-2"
+                            iconName="reader-outline"
+                            iconSize={25}
+                            iconColor="white"
+                            showIcon={true}
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <LoadingButton
+                            title="Deactivate"
+                            onPress={handleDeactivate}
+                            buttonClassName="p-3 border-transparent border-2 bg-[rgba(250,85,85)] active:bg-[rgba(250,85,85,0.5)]"
+                            iconName="trash-outline"
+                            iconSize={25}
+                            iconColor="white"
+                            showIcon={true}
+                            textColor="text-white"
+                          />
+                        </View>
+                      </>
                     )}
                   </>
                 )}
@@ -611,6 +696,24 @@ const ItemExpire: React.FC = () => {
         visible={deletedVisible}
         onCancel={handleCancel}
         onConfirm={handleConfirm}
+      />
+
+      <ConfirmModal
+        title="Confirm extend"
+        content={`You have ${
+          currentPlan?.numberOfFreeExtensionLeft
+        } extend free ${"\n"} Are you sure you to reopen this item?`}
+        visible={extendFreeVisible}
+        onCancel={handleCancelExtendFree}
+        onConfirm={handleConfirmExtendFree}
+      />
+
+      <ConfirmModal
+        title="Confirm reopen"
+        content="Are you sure you to reopen this item?"
+        visible={reOpenVisible}
+        onCancel={handleCancelReOpen}
+        onConfirm={handleConfirmReOpen}
       />
     </>
   );

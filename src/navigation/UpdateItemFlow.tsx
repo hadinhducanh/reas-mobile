@@ -10,8 +10,9 @@ import ExchangeDesiredItemScreen from "../screens/PostItemScreen/ExchangeDesired
 import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelectionScreen";
 import { useIsFocused } from "@react-navigation/native";
 import UpdateItem from "../screens/ItemManagement/UpdateItem";
+import LocationOfUser from "../screens/AccountScreen/ProfileDetail/LocationOfUser";
 
-const UploadItemStack = createNativeStackNavigator();
+const UpdateItemStack = createNativeStackNavigator();
 
 export default function UpdateItemFlow() {
   const isFocused = useIsFocused();
@@ -24,44 +25,48 @@ export default function UpdateItemFlow() {
   }, [isFocused]);
   return (
     <>
-      <UploadItemStack.Navigator
+      <UpdateItemStack.Navigator
         screenOptions={{
           headerShown: false,
           gestureEnabled: false,
         }}
       >
-        <UploadItemStack.Screen
+        <UpdateItemStack.Screen
           name="UpdateItemScreen"
           component={UpdateItem}
           options={{
             gestureEnabled: false,
           }}
         />
-        <UploadItemStack.Screen
+        <UpdateItemStack.Screen
           name="TypeOfItemScreen"
           component={TypeOfItemScreen}
         />
-        <UploadItemStack.Screen
+        <UpdateItemStack.Screen
           name="TypeOfItemDetailScreen"
           component={TypeOfItemDetailScreen}
         />
-        <UploadItemStack.Screen
+        <UpdateItemStack.Screen
           name="ItemConditionScreen"
           component={ItemConditionScreen}
         />
-        <UploadItemStack.Screen
+        <UpdateItemStack.Screen
           name="MethodOfExchangeScreen"
           component={MethodOfExchangeScreen}
         />
-        <UploadItemStack.Screen
+        <UpdateItemStack.Screen
           name="ExchangeDesiredItemScreen"
           component={ExchangeDesiredItemScreen}
         />
-        <UploadItemStack.Screen
+        <UpdateItemStack.Screen
           name="BrandSelectionScreen"
           component={BrandSelectionScreen}
         />
-      </UploadItemStack.Navigator>
+        <UpdateItemStack.Screen
+          name="LocationOfUser"
+          component={LocationOfUser}
+        />
+      </UpdateItemStack.Navigator>
     </>
   );
 }

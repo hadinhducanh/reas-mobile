@@ -37,6 +37,9 @@ const userSlice = createSlice({
     setUserLocationIdState: (state, action: PayloadAction<number>) => {
       state.userLocationId = action.payload;
     },
+    resetLocation: (state) => {
+      (state.userLocationId = 0), (state.userPlaceId = "");
+    },
     resetUser: (state) => {
       state.userDetail = null;
       state.userLocation = null;
@@ -124,6 +127,10 @@ const userSlice = createSlice({
   },
 });
 
-export const { resetUser, setUserPlaceIdState, setUserLocationIdState } =
-  userSlice.actions;
+export const {
+  resetUser,
+  setUserPlaceIdState,
+  setUserLocationIdState,
+  resetLocation,
+} = userSlice.actions;
 export default userSlice.reducer;

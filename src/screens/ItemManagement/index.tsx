@@ -91,6 +91,7 @@ const ItemManagement: React.FC = () => {
       count: countsOfCurrentUser.SOLD!,
     },
     {
+      header: "IN EXCHANGE",
       label: getStatusItemLabel(StatusItem.IN_EXCHANGE),
       count: countsOfCurrentUser.IN_EXCHANGE!,
     },

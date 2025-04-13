@@ -17,7 +17,7 @@ export interface UploadItemRequest {
   imageUrl: string;
   methodExchanges: MethodExchange[];
   isMoneyAccepted: boolean;
-  termsAndConditionsExchange: string;
+  termsAndConditionsExchange: string | null;
   categoryId: number;
   brandId: number;
   desiredItem?: DesiredItemDto | null;
@@ -33,7 +33,7 @@ export interface UpdateItemRequest {
   imageUrl: string;
   methodExchanges: MethodExchange[];
   isMoneyAccepted: boolean;
-  termsAndConditionsExchange: string;
+  termsAndConditionsExchange: string | null;
   categoryId: number;
   brandId: number;
   desiredItem?: DesiredItemDto | null;

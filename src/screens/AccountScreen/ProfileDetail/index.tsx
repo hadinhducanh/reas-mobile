@@ -23,7 +23,9 @@ import LocationService from "../../../services/LocationService";
 import { updateResidentInfoThunk } from "../../../redux/thunk/userThunk";
 import { Gender } from "../../../common/enums/Gender";
 import {
+  resetLocation,
   resetUser,
+  setUserLocationIdState,
   setUserPlaceIdState,
 } from "../../../redux/slices/userSlice";
 import { fetchUserInfoThunk } from "../../../redux/thunk/authThunks";
@@ -80,7 +82,6 @@ const ProfileDetail: React.FC = () => {
           }
 
           if (!targetLocation) {
-            // fallback nếu userLocationId không tồn tại hoặc không match
             const primaryLocations = user.userLocations.filter(
               (loc) => loc.primary
             );
@@ -96,6 +97,7 @@ const ProfileDetail: React.FC = () => {
                   `${targetLocation.latitude},${targetLocation.longitude}`
                 );
               dispatch(setUserPlaceIdState(details.place_id));
+              dispatch(setUserLocationIdState(targetLocation.id));
               setLocationDetail(details);
             } catch (error) {
               console.error("Error fetching location details:", error);
@@ -186,6 +188,7 @@ const ProfileDetail: React.FC = () => {
     }
 
     setIsEditing(false);
+    const cleanedPhoneNumber = phoneNumber.replace(/\D/g, "");
 
     if (transferReceiptImage && transferReceiptImage !== user?.image) {
       setIsUploadingImages(true);
@@ -196,23 +199,23 @@ const ProfileDetail: React.FC = () => {
 
       const updateResidentRequest = {
         fullName: fullName,
-        phone: phoneNumber,
+        phone: cleanedPhoneNumber,
         gender: Gender.FEMALE,
         image: finalImage.length === 0 ? null : finalImage,
-        userLocationId: 1,
+        userLocationId: userLocationId,
       };
 
-      dispatch(updateResidentInfoThunk(updateResidentRequest));
+      await dispatch(updateResidentInfoThunk(updateResidentRequest)).unwrap();
     } else {
       const updateResidentRequest = {
         fullName: fullName,
-        phone: phoneNumber,
+        phone: cleanedPhoneNumber,
         gender: Gender.FEMALE,
         image: transferReceiptImage?.length === 0 ? null : transferReceiptImage,
-        userLocationId: 1,
+        userLocationId: userLocationId,
       };
 
-      dispatch(updateResidentInfoThunk(updateResidentRequest));
+      await dispatch(updateResidentInfoThunk(updateResidentRequest)).unwrap();
     }
   };
 
@@ -232,23 +235,26 @@ const ProfileDetail: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
+  const handleBackPress = () => {
+    dispatch(resetLocation());
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: "MainTabs",
+          state: { routes: [{ name: "Account" }] },
+        },
+      ],
+    });
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
       <Header
         title="Personal information"
         showOption={false}
         showBackButton={user?.firstLogin ? false : true}
-        onBackPress={() =>
-          navigation.reset({
-            index: 0,
-            routes: [
-              {
-                name: "MainTabs",
-                state: { routes: [{ name: "Account" }] },
-              },
-            ],
-          })
-        }
+        onBackPress={handleBackPress}
       />
 
       {loading || isUploadingImages ? (

@@ -76,7 +76,7 @@ const Account: React.FC = () => {
 
   useEffect(() => {
     dispatch(getCurrentSubscriptionThunk());
-  }, [dispatch]);
+  }, [dispatch, accessToken]);
 
   const accountItems = useMemo(() => {
     return [

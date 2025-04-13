@@ -60,6 +60,7 @@ import ExtendItemPlan from "../screens/AccountScreen/SubscriptionPlan/ExtendItem
 import UpdateItem from "../screens/ItemManagement/UpdateItem";
 import UpdateItemFlow from "./UpdateItemFlow";
 import LocationOfUser from "../screens/AccountScreen/ProfileDetail/LocationOfUser";
+import { resetLocation } from "../redux/slices/userSlice";
 
 export type ItemType = {
   id: number;
@@ -179,6 +180,7 @@ function BottomTabs() {
   const handleConfirm = async () => {
     setConfirmVisible(false);
     dispatch(resetItemDetailState());
+    dispatch(resetLocation());
     setUploadItem(defaultUploadItem);
 
     if (pendingTabName) {
