@@ -9,11 +9,11 @@ import MethodOfExchangeScreen from "../screens/PostItemScreen/MethodOfExchange";
 import ExchangeDesiredItemScreen from "../screens/PostItemScreen/ExchangeDesiredItem";
 import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelectionScreen";
 import { useIsFocused } from "@react-navigation/native";
-import UploadItem from "../screens/PostItemScreen";
+import UpdateItem from "../screens/ItemManagement/UpdateItem";
 
 const UploadItemStack = createNativeStackNavigator();
 
-export default function UploadItemFlow() {
+export default function UpdateItemFlow() {
   const isFocused = useIsFocused();
   const { setUploadItem } = useUploadItem();
 
@@ -31,8 +31,8 @@ export default function UploadItemFlow() {
         }}
       >
         <UploadItemStack.Screen
-          name="UploadScreen"
-          component={UploadItem}
+          name="UpdateItemScreen"
+          component={UpdateItem}
           options={{
             gestureEnabled: false,
           }}

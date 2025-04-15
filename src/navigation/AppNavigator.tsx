@@ -44,7 +44,6 @@ import Statistics from "../screens/AccountScreen/Statistics";
 import ItemDetails from "../screens/ItemManagement/ItemDetail";
 import FilterMap from "../screens/SearchResult/FilterMap";
 import { SignupDto } from "../common/models/auth";
-import CreateItemFlow from "./UploadItemFlow";
 import { defaultUploadItem, useUploadItem } from "../context/ItemContext";
 import ConfirmModal from "../components/DeleteConfirmModal";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -57,6 +56,10 @@ import { TypeItem } from "../common/enums/TypeItem";
 import Payment from "../screens/Payment";
 import OrderFailed from "../screens/OrderScreen/OrderFailed";
 import OrderSuccess from "../screens/OrderScreen/OrderSuccess";
+import ExtendItemPlan from "../screens/AccountScreen/SubscriptionPlan/ExtendItemPlan";
+import UpdateItem from "../screens/ItemManagement/UpdateItem";
+import UpdateItemFlow from "./UpdateItemFlow";
+import LocationOfUser from "../screens/AccountScreen/ProfileDetail/LocationOfUser";
 
 export type ItemType = {
   id: number;
@@ -116,6 +119,8 @@ export type RootStackParamList = {
   FilterMap: undefined;
   Premium: undefined;
   ExtendPremium: undefined;
+  ExtendItemPlan: undefined;
+  ExtendPremiumSucess: undefined;
   About: undefined;
   UploadItemSuccess: undefined;
   UploadScreen: undefined;
@@ -123,6 +128,8 @@ export type RootStackParamList = {
   Payment: { payOSURL: string; returnUrl: string; cancelUrl: string };
   OrderFailed: undefined;
   OrderSuccess: undefined;
+  UpdateItem: undefined;
+  LocationOfUser: undefined;
 };
 
 const TabArr = [
@@ -304,17 +311,19 @@ export default function RootNavigator() {
         <Stack.Screen name="ItemPreview" component={ItemExpire} />
         <Stack.Screen name="Premium" component={Premium} />
         <Stack.Screen name="ExtendPremium" component={ExtendPremium} />
+        <Stack.Screen name="ExtendItemPlan" component={ExtendItemPlan} />
         <Stack.Screen name="About" component={About} />
         <Stack.Screen name="UploadItemSuccess" component={UploadItemSuccess} />
         <Stack.Screen name="BrowseItems" component={BrowseItems} />
-        {/* <Stack.Screen name="DifferentItem" component={DifferentItem} /> */}
         <Stack.Screen name="ConfirmExchange" component={ConfirmExchange} />
         <Stack.Screen name="UploadScreen" component={UploadItem} />
+        <Stack.Screen name="UpdateItem" component={UpdateItemFlow} />
         <Stack.Screen
           name="AccpectRejectExchange"
           component={AccpectRejectExchange}
         />
         <Stack.Screen name="Payment" component={Payment} />
+        <Stack.Screen name="LocationOfUser" component={LocationOfUser} />
         <Stack.Screen name="OrderFailed" component={OrderFailed} />
         <Stack.Screen name="OrderSuccess" component={OrderSuccess} />
       </Stack.Navigator>

@@ -1,6 +1,6 @@
 // StatsCard.tsx
 import React, { useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import NegotiateModal from "../NegotiateModal";
 import EvidenceModal from "../EvidenceModal";
@@ -52,12 +52,25 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
                 <>
                   <View className="flex-row items-center justify-between">
                     <View className="flex-row items-center">
-                      <View className="items-center">
-                        <Icon
-                          name="person-circle-outline"
-                          size={60}
-                          color="gray"
-                        />
+                      <View className="items-center mr-2">
+                        {exchangeDetail?.sellerItem.owner.image ? (
+                          <View className="w-16 h-16 rounded-full items-center justify-center">
+                            <Image
+                              source={{
+                                uri: exchangeDetail?.sellerItem.owner.image,
+                              }}
+                              className="w-full h-full rounded-full"
+                            />
+                          </View>
+                        ) : (
+                          <View className="w-16 h-16 rounded-full items-center justify-center">
+                            <Icon
+                              name="person-circle-outline"
+                              size={60}
+                              color="gray"
+                            />
+                          </View>
+                        )}
                       </View>
                       <Text className="justify-start items-center text-left text-lg font-medium text-black">
                         You
@@ -100,12 +113,50 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
 
                   <View className="flex-row items-center justify-between">
                     <View className="flex-row items-center">
-                      <View className="items-center">
-                        <Icon
-                          name="person-circle-outline"
-                          size={60}
-                          color="gray"
-                        />
+                      <View className="items-center mr-2">
+                        {exchangeDetail?.buyerItem === null ? (
+                          <>
+                            {exchangeDetail?.paidBy.image ? (
+                              <View className="w-16 h-16 rounded-full items-center justify-center">
+                                <Image
+                                  source={{
+                                    uri: exchangeDetail?.paidBy.image,
+                                  }}
+                                  className="w-full h-full rounded-full"
+                                />
+                              </View>
+                            ) : (
+                              <View className="w-16 h-16 rounded-full items-center justify-center">
+                                <Icon
+                                  name="person-circle-outline"
+                                  size={60}
+                                  color="gray"
+                                />
+                              </View>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {exchangeDetail?.buyerItem.owner.image ? (
+                              <View className="w-16 h-16 rounded-full items-center justify-center">
+                                <Image
+                                  source={{
+                                    uri: exchangeDetail?.buyerItem.owner.image,
+                                  }}
+                                  className="w-full h-full rounded-full"
+                                />
+                              </View>
+                            ) : (
+                              <View className="w-16 h-16 rounded-full items-center justify-center">
+                                <Icon
+                                  name="person-circle-outline"
+                                  size={60}
+                                  color="gray"
+                                />
+                              </View>
+                            )}
+                          </>
+                        )}
                       </View>
                       <Text className="justify-start items-center text-left text-lg font-medium text-black">
                         {exchangeDetail.buyerItem === null
@@ -153,12 +204,50 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
                 <>
                   <View className="flex-row items-center justify-between">
                     <View className="flex-row items-center">
-                      <View className="items-center">
-                        <Icon
-                          name="person-circle-outline"
-                          size={60}
-                          color="gray"
-                        />
+                      <View className="items-center mr-2">
+                        {exchangeDetail?.buyerItem === null ? (
+                          <>
+                            {exchangeDetail?.paidBy.image ? (
+                              <View className="w-16 h-16 rounded-full items-center justify-center">
+                                <Image
+                                  source={{
+                                    uri: exchangeDetail?.paidBy.image,
+                                  }}
+                                  className="w-full h-full rounded-full"
+                                />
+                              </View>
+                            ) : (
+                              <View className="w-16 h-16 rounded-full items-center justify-center">
+                                <Icon
+                                  name="person-circle-outline"
+                                  size={60}
+                                  color="gray"
+                                />
+                              </View>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {exchangeDetail?.buyerItem.owner.image ? (
+                              <View className="w-16 h-16 rounded-full items-center justify-center">
+                                <Image
+                                  source={{
+                                    uri: exchangeDetail?.buyerItem.owner.image,
+                                  }}
+                                  className="w-full h-full rounded-full"
+                                />
+                              </View>
+                            ) : (
+                              <View className="w-16 h-16 rounded-full items-center justify-center">
+                                <Icon
+                                  name="person-circle-outline"
+                                  size={60}
+                                  color="gray"
+                                />
+                              </View>
+                            )}
+                          </>
+                        )}
                       </View>
                       <Text className="justify-start items-center text-left text-lg font-medium text-black">
                         You
@@ -168,7 +257,7 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
                       <Pressable className="flex-row items-center">
                         <Text
                           onPress={() =>
-                            handlUploadEvidenceModal("Their evidence", false)
+                            handlUploadEvidenceModal("Your evidence", false)
                           }
                           className={`text-sm  font-semibold underline ${
                             exchangeDetail.exchangeHistory.buyerConfirmation
@@ -201,12 +290,25 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
 
                   <View className="flex-row items-center justify-between">
                     <View className="flex-row items-center">
-                      <View className="items-center">
-                        <Icon
-                          name="person-circle-outline"
-                          size={60}
-                          color="gray"
-                        />
+                      <View className="items-center mr-2">
+                        {exchangeDetail?.sellerItem.owner.image ? (
+                          <View className="w-16 h-16 rounded-full items-center justify-center">
+                            <Image
+                              source={{
+                                uri: exchangeDetail?.sellerItem.owner.image,
+                              }}
+                              className="w-full h-full rounded-full"
+                            />
+                          </View>
+                        ) : (
+                          <View className="w-16 h-16 rounded-full items-center justify-center">
+                            <Icon
+                              name="person-circle-outline"
+                              size={60}
+                              color="gray"
+                            />
+                          </View>
+                        )}
                       </View>
                       <Text className="justify-start items-center text-left text-lg font-medium text-black">
                         {exchangeDetail.sellerItem.owner.fullName}
@@ -216,7 +318,7 @@ export const UploadEvidence: React.FC<UploadEvidenceProps> = ({ status }) => {
                       <Pressable className="flex-row items-center">
                         <Text
                           onPress={() =>
-                            handlUploadEvidenceModal("Your evidence", true)
+                            handlUploadEvidenceModal("Their evidence", true)
                           }
                           disabled={
                             !exchangeDetail.exchangeHistory.sellerConfirmation

@@ -295,41 +295,43 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
                     </>
                   )}
 
-                  <View className="my-5">
-                    <Text className="font-bold text-base text-gray-500">
-                      Note (Optional)
-                    </Text>
+                  {exchangeDetail?.exchangeHistory.buyerAdditionalNotes && (
+                    <View className="my-5">
+                      <Text className="font-bold text-base text-gray-500">
+                        Note (Optional)
+                      </Text>
 
-                    {exchangeDetail?.exchangeHistory?.buyerAdditionalNotes ===
-                      null &&
-                    exchangeDetail.statusExchangeRequest ===
-                      StatusExchange.APPROVED ? (
-                      <View className="w-full h-40 bg-gray-100 rounded-lg mt-4 px-5 py-3">
-                        <TextInput
-                          className="flex-1 text-base font-normal text-gray-500"
-                          placeholder="Aaaaa"
-                          placeholderTextColor="#d1d5db"
-                          multiline={true}
-                          textAlignVertical="top"
-                          value={additionalNotes}
-                          onChangeText={(text) => handleAdditionalNotes(text)}
-                        />
-                      </View>
-                    ) : (
-                      <View className="bg-white mt-2 rounded-lg p-4 h-fit">
-                        {exchangeDetail?.exchangeHistory?.buyerAdditionalNotes
-                          .split("\\n")
-                          .map((line, index) => (
-                            <Text
-                              className="text-base text-gray-500"
-                              key={index}
-                            >
-                              {line}
-                            </Text>
-                          ))}
-                      </View>
-                    )}
-                  </View>
+                      {exchangeDetail?.exchangeHistory?.buyerAdditionalNotes ===
+                        null &&
+                      exchangeDetail.statusExchangeRequest ===
+                        StatusExchange.APPROVED ? (
+                        <View className="w-full h-40 bg-gray-100 rounded-lg mt-4 px-5 py-3">
+                          <TextInput
+                            className="flex-1 text-base font-normal text-gray-500"
+                            placeholder="Aaaaa"
+                            placeholderTextColor="#d1d5db"
+                            multiline={true}
+                            textAlignVertical="top"
+                            value={additionalNotes}
+                            onChangeText={(text) => handleAdditionalNotes(text)}
+                          />
+                        </View>
+                      ) : (
+                        <View className="bg-white mt-2 rounded-lg p-4 h-fit">
+                          {exchangeDetail?.exchangeHistory?.buyerAdditionalNotes
+                            .split("\\n")
+                            .map((line, index) => (
+                              <Text
+                                className="text-base text-gray-500"
+                                key={index}
+                              >
+                                {line}
+                              </Text>
+                            ))}
+                        </View>
+                      )}
+                    </View>
+                  )}
 
                   {!exchangeDetail?.exchangeHistory?.buyerConfirmation &&
                     exchangeDetail?.statusExchangeRequest ===

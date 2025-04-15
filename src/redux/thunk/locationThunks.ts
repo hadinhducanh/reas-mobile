@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { PlaceDetail } from "../../common/models/location";
+import { LocationDto, PlaceDetail } from "../../common/models/location";
 import LocationService from "../../services/LocationService";
+import { ResponseEntityPagination } from "../../common/models/pagination";
 
 export const getPlaceDetailsThunk = createAsyncThunk<PlaceDetail, string>(
   "location/getPlaceDetails",
@@ -30,6 +31,20 @@ export const getPlaceDetailsByReverseGeocodeThunk = createAsyncThunk<
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
       error.response?.data || "Get detail location failed"
+    );
+  }
+});
+
+export const getAllLocationThunk = createAsyncThunk<
+  ResponseEntityPagination<LocationDto>,
+  number
+>("location/getAllLocation", async (pageNo, thunkAPI) => {
+  try {
+    const data = await LocationService.getAllLocation(pageNo);
+    return data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Get all locations failed"
     );
   }
 });

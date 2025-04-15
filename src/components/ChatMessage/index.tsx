@@ -1,11 +1,6 @@
 import React from "react";
 import Icon from "react-native-vector-icons/Ionicons";
-import {
-  View,
-  Text,
-  Image,
-  ImageBackground,
-} from "react-native";
+import { View, Text, Image, ImageBackground } from "react-native";
 
 interface ExchangeInfo {
   images: string[];
@@ -179,7 +174,9 @@ const Message: React.FC<ChatMessageProps> = ({
         </View>
       ) : (
         <View className="flex-row ">
-          <View className="w-10 h-10 mr-3 rounded-full bg-[#738aa0]" />
+          <View className="w-12 h-12 rounded-full items-center justify-center">
+            <Icon name="person-circle-outline" size={45} color="gray" />
+          </View>
           <View
             className={`${alignmentClass} ${backgroundClass} max-w-[70%] rounded-lg p-3 my-2`}
           >

@@ -4,6 +4,7 @@ import { RootState } from "../store";
 import {
   ItemResponse,
   SearchItemRequest,
+  UpdateItemRequest,
   UploadItemRequest,
 } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
@@ -26,6 +27,27 @@ export const uploadItemThunk = createAsyncThunk<
     console.log(error);
     return thunkAPI.rejectWithValue(
       error.response?.data || "Upload item failed"
+    );
+  }
+});
+
+export const updateItemThunk = createAsyncThunk<
+  ItemResponse,
+  UpdateItemRequest,
+  { state: RootState }
+>("item/updateItem", async (item, thunkAPI) => {
+  const state = thunkAPI.getState();
+  const accessToken = state.auth.accessToken;
+  if (!accessToken) {
+    return thunkAPI.rejectWithValue("No access token available");
+  }
+  try {
+    const data = await ItemService.updateItem(item, accessToken);
+    return data;
+  } catch (error: any) {
+    console.log(error);
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Update item failed"
     );
   }
 });
@@ -134,17 +156,27 @@ export const getAllItemAvailableThunk = createAsyncThunk<
   {
     pageNo: number;
     request: SearchItemRequest;
+    sortBy?: string;
+    sortDir?: string;
   }
->("item/getAllItemAvailable", async ({ pageNo, request }, thunkAPI) => {
-  try {
-    const data = await ItemService.getAllItemAvailable(pageNo, request);
-    return data;
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(
-      error.response?.data || "Get all item available failed"
-    );
+>(
+  "item/getAllItemAvailable",
+  async ({ pageNo, request, sortBy, sortDir }, thunkAPI) => {
+    try {
+      const data = await ItemService.getAllItemAvailable(
+        pageNo,
+        request,
+        sortBy,
+        sortDir
+      );
+      return data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "Get all item available failed"
+      );
+    }
   }
-});
+);
 
 export const searchItemPaginationThunk = createAsyncThunk<
   ResponseEntityPagination<ItemResponse>,
@@ -262,6 +294,27 @@ export const getItemDetailThunk = createAsyncThunk<
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
       error.response.data || "Get item detail failed"
+    );
+  }
+});
+
+export const changeItemStatusThunk = createAsyncThunk<
+  ItemResponse,
+  { itemId: number; statusItem: StatusItem },
+  { state: RootState }
+>("item/changeItemStatus", async ({ itemId, statusItem }, thunkAPI) => {
+  const state = thunkAPI.getState();
+  const accessToken = state.auth.accessToken;
+  try {
+    const data = await ItemService.changeItemStatus(
+      itemId,
+      statusItem,
+      accessToken!
+    );
+    return data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response.data || "Change item status failed"
     );
   }
 });

@@ -5,19 +5,43 @@ import LoadingButton from "../../../components/LoadingButton";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   NavigationProp,
-  StackActions,
   useNavigation,
+  useNavigationState,
 } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../../redux/store";
+import { resetCheckoutUrl } from "../../../redux/slices/paymentSlice";
 
 const OrderFailed: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const state = useNavigationState((state) => state);
+  const targetIndex = state.index - 2;
 
   const handleGoBack = async () => {
-    navigation.reset({
-      index: 1,
-      routes: [{ name: "Premium" }, { name: "ExtendPremium" }],
-    });
+    if (
+      targetIndex > 0 &&
+      state.routes[targetIndex].name === "ExtendItemPlan"
+    ) {
+      dispatch(resetCheckoutUrl());
+      navigation.reset({
+        index: 1,
+        routes: [
+          {
+            name: "MainTabs",
+            state: { routes: [{ name: "Items" }] },
+          },
+        ],
+      });
+    } else {
+      dispatch(resetCheckoutUrl());
+      navigation.reset({
+        index: 1,
+        routes: [{ name: "Premium" }, { name: "ExtendPremium" }],
+      });
+    }
   };
 
   return (

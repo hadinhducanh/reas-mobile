@@ -100,34 +100,13 @@ const SignIn: React.FC = () => {
     }
 
     try {
-      const res = await dispatch(
+      await dispatch(
         authenticateUserThunk({
           userNameOrEmailOrPhone: trimmedEmail,
           password: trimmedPassword,
           registrationTokens: registrationToken ? [registrationToken] : [],
         })
       ).unwrap();
-
-      if (res.accessToken) {
-        if (remember) {
-          await AsyncStorage.setItem(
-            "CREDENTIALS",
-            JSON.stringify({ savedEmail: email, savedPassword: password })
-          );
-        } else {
-          await AsyncStorage.removeItem("CREDENTIALS");
-        }
-        dispatch(fetchUserInfoThunk());
-        navigation.reset({
-          index: 0,
-          routes: [
-            {
-              name: "MainTabs",
-              state: { routes: [{ name: "Account" }] },
-            },
-          ],
-        });
-      }
     } catch (err: any) {
       Alert.alert("Sign in Failed", err.message || "Sign in failed");
     }
@@ -170,10 +149,23 @@ const SignIn: React.FC = () => {
   }, [navigation]);
 
   useEffect(() => {
-    if (accessToken) {
-      dispatch(fetchUserInfoThunk());
-    }
-  }, [accessToken, dispatch]);
+    const handleLogin = async () => {
+      if (accessToken) {
+        if (remember) {
+          await AsyncStorage.setItem(
+            "CREDENTIALS",
+            JSON.stringify({ savedEmail: email, savedPassword: password })
+          );
+        } else {
+          await AsyncStorage.removeItem("CREDENTIALS");
+        }
+
+        await dispatch(fetchUserInfoThunk());
+      }
+    };
+
+    handleLogin();
+  }, [accessToken, remember, email, password, dispatch]);
 
   useEffect(() => {
     if (user) {

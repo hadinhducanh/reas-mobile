@@ -105,9 +105,6 @@ const Premium: React.FC = () => {
               Loading...
             </Text>
           )}
-          {error && (
-            <Text className="text-center text-lg text-red-500">{error}</Text>
-          )}
           <View>
             <Text className="text-xl font-bold text-black">{planName}</Text>
             <Text className="text-base text-gray-500 mt-2">
@@ -116,10 +113,12 @@ const Premium: React.FC = () => {
           </View>
 
           <View>
-            <Text className="text-3xl font-bold text-[#00b0b9]">
-              {planPrice}
+            <Text className="text-2xl font-bold text-[#00b0b9]">
+              {planPrice} VND
             </Text>
-            <Text className="text-sm text-gray-500 ml-auto">per month</Text>
+            <Text className="text-sm text-gray-500 ml-auto mt-2">
+              per month
+            </Text>
           </View>
         </View>
 

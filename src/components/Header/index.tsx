@@ -15,10 +15,12 @@ interface HeaderProps {
   showBackButton?: boolean;
   showOption?: boolean;
   showFilter?: boolean;
+  showUserLocation?: boolean;
   onBackPress?: () => void;
   backIconColor?: string;
   optionIconColor?: string;
   setFavorites?: () => void;
+  onAddLocation?: () => void;
   owner?: boolean;
 }
 
@@ -34,8 +36,10 @@ const Header: React.FC<HeaderProps> = ({
   showBackButton = true,
   showOption = true,
   showFilter = false,
+  showUserLocation = false,
   onBackPress,
   setFavorites,
+  onAddLocation,
   backIconColor = "#0b1d2d",
   optionIconColor = "#0b1d2d",
   owner = true,
@@ -104,6 +108,11 @@ const Header: React.FC<HeaderProps> = ({
             <Icon name="funnel-outline" size={24} color="#00b0b9" />
           </Pressable>
         )}
+        {showUserLocation && (
+          <Pressable className="absolute right-5" onPress={onAddLocation}>
+            <Icon name="add-circle-outline" size={30} color="#00b0b9" />
+          </Pressable>
+        )}
       </View>
 
       <Modal
@@ -128,7 +137,7 @@ const Header: React.FC<HeaderProps> = ({
                 <Text className="ml-2 text-base">Báo cáo người dùng</Text>
               )}
             </Pressable>
-            {owner && (
+            {/* {owner && (
               <Pressable
                 className="flex-row items-center bg-white p-5 active:bg-gray-100 border-t-[1px] border-b-[1px] border-gray-200"
                 onPress={setFavorites}
@@ -136,7 +145,7 @@ const Header: React.FC<HeaderProps> = ({
                 <Icon name="heart-outline" size={24} color="black" />
                 <Text className="text-base ml-2">Lưu tin</Text>
               </Pressable>
-            )}
+            )} */}
 
             <Pressable
               className="flex-row items-center bg-white p-5 active:bg-gray-100"

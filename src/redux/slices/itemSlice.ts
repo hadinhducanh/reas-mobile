@@ -13,6 +13,8 @@ import {
   searchItemPaginationThunk,
   getItemCountsOfCurrentUserThunk,
   findNearbyItemsThunk,
+  changeItemStatusThunk,
+  updateItemThunk,
 } from "../thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
@@ -36,8 +38,10 @@ interface ItemState {
   otherItemOfUser: ItemResponse[];
   itemSuggested: ItemResponse[];
   itemUpload: ItemResponse | null;
+  itemUpdate: ItemResponse | null;
   countsOfUser: { [key in StatusItem]?: number };
   countsOfCurrentUser: { [key in StatusItem]?: number };
+  range: number;
   loading: boolean;
   error: string | null;
 }
@@ -89,8 +93,10 @@ const initialState: ItemState = {
   },
   itemSuggested: [],
   itemUpload: null,
+  itemUpdate: null,
   countsOfUser: {},
   countsOfCurrentUser: {},
+  range: 0,
   loading: false,
   error: null,
 };
@@ -99,8 +105,12 @@ const itemSlice = createSlice({
   name: "item",
   initialState,
   reducers: {
+    setRangeState: (state, action: PayloadAction<number>) => {
+      state.range = action.payload;
+    },
     resetItemDetailState: (state) => {
       state.itemUpload = null;
+      state.itemUpdate = null;
       state.itemDetail = null;
       state.itemRecommnand = [];
       state.itemSimilar = [];
@@ -134,6 +144,26 @@ const itemSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Upload item failed";
+        }
+      );
+
+    builder
+      .addCase(updateItemThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        updateItemThunk.fulfilled,
+        (state, action: PayloadAction<ItemResponse>) => {
+          state.loading = false;
+          state.itemUpdate = action.payload;
+        }
+      )
+      .addCase(
+        updateItemThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Update item failed";
         }
       );
 
@@ -267,6 +297,26 @@ const itemSlice = createSlice({
       )
       .addCase(
         getItemDetailThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Get item detail failed";
+        }
+      );
+
+    builder
+      .addCase(changeItemStatusThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        changeItemStatusThunk.fulfilled,
+        (state, action: PayloadAction<ItemResponse>) => {
+          state.loading = false;
+          state.itemDetail = action.payload;
+        }
+      )
+      .addCase(
+        changeItemStatusThunk.rejected,
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Get item detail failed";
@@ -488,5 +538,5 @@ const itemSlice = createSlice({
   },
 });
 
-export const { resetItemDetailState } = itemSlice.actions;
+export const { resetItemDetailState, setRangeState } = itemSlice.actions;
 export default itemSlice.reducer;

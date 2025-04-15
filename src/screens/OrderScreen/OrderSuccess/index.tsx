@@ -3,17 +3,46 @@ import { View, Text } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import LoadingButton from "../../../components/LoadingButton";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import {
+  NavigationProp,
+  useNavigation,
+  useNavigationState,
+} from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { resetCheckoutUrl } from "../../../redux/slices/paymentSlice";
+import { AppDispatch } from "../../../redux/store";
+import { useDispatch } from "react-redux";
 
 const OrderSuccess: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const state = useNavigationState((state) => state);
+  const targetIndex = state.index - 2;
 
   const handleGoBack = async () => {
-    navigation.reset({
-      index: 1,
-      routes: [{ name: "Premium" }, { name: "ExtendPremium" }],
-    });
+    if (
+      targetIndex > 0 &&
+      state.routes[targetIndex].name === "ExtendItemPlan"
+    ) {
+      dispatch(resetCheckoutUrl());
+
+      navigation.reset({
+        index: 1,
+        routes: [
+          {
+            name: "MainTabs",
+            state: { routes: [{ name: "Items" }] },
+          },
+        ],
+      });
+    } else {
+      dispatch(resetCheckoutUrl());
+
+      navigation.reset({
+        index: 1,
+        routes: [{ name: "Premium" }, { name: "ExtendPremium" }],
+      });
+    }
   };
 
   return (

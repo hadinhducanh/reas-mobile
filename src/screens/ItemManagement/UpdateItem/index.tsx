@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -13,30 +13,54 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useDispatch, useSelector } from "react-redux";
-
-import { RootStackParamList } from "../../navigation/AppNavigator";
-import { AppDispatch, RootState } from "../../redux/store";
-import Header from "../../components/Header";
-import ChooseImage from "../../components/ChooseImage";
-import LoadingButton from "../../components/LoadingButton";
-import { defaultUploadItem, useUploadItem } from "../../context/ItemContext";
-import { TypeExchange } from "../../common/enums/TypeExchange";
-import { uploadItemThunk } from "../../redux/thunk/itemThunks";
-import NavigationListItem from "../../components/NavigationListItem";
-import Toggle from "../../components/Toggle";
-import ConfirmModal from "../../components/DeleteConfirmModal";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { AppDispatch, RootState } from "../../../redux/store";
+import { defaultUploadItem, useUploadItem } from "../../../context/ItemContext";
+import { uploadToCloudinary } from "../../../utils/CloudinaryImageUploader";
+import { TypeExchange } from "../../../common/enums/TypeExchange";
+import {
+  updateItemThunk,
+  uploadItemThunk,
+} from "../../../redux/thunk/itemThunks";
+import Header from "../../../components/Header";
+import ChooseImage from "../../../components/ChooseImage";
+import NavigationListItem from "../../../components/NavigationListItem";
+import Toggle from "../../../components/Toggle";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { uploadToCloudinary } from "../../utils/CloudinaryImageUploader";
+import LoadingButton from "../../../components/LoadingButton";
+import ConfirmModal from "../../../components/DeleteConfirmModal";
+import { ConditionItem } from "../../../common/enums/ConditionItem";
+import { MethodExchange } from "../../../common/enums/MethodExchange";
+import { TypeItem } from "../../../common/enums/TypeItem";
+import { resetItemDetailState } from "../../../redux/slices/itemSlice";
 
-export default function UploadItem() {
+const conditionItems = [
+  { label: "Brand new", value: ConditionItem.BRAND_NEW },
+  { label: "Excellent", value: ConditionItem.EXCELLENT },
+  { label: "Fair", value: ConditionItem.FAIR },
+  { label: "Good", value: ConditionItem.GOOD },
+  { label: "Not working", value: ConditionItem.NOT_WORKING },
+  { label: "Poor", value: ConditionItem.POOR },
+  { label: "Like new", value: ConditionItem.LIKE_NEW },
+];
+
+const methodExchanges = [
+  { label: "Delivery", value: MethodExchange.DELIVERY },
+  {
+    label: "Meet at location",
+    value: MethodExchange.MEET_AT_GIVEN_LOCATION,
+  },
+  { label: "Pick up", value: MethodExchange.PICK_UP_IN_PERSON },
+];
+
+export default function UpdateItem() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const state = useNavigationState((state) => state);
-
-  const targetIndex = state.index - 1;
 
   const { user } = useSelector((state: RootState) => state.auth);
-  const { itemUpload, loading } = useSelector((state: RootState) => state.item);
+  const { itemDetail, loading, itemUpdate } = useSelector(
+    (state: RootState) => state.item
+  );
   const dispatch = useDispatch<AppDispatch>();
   const { uploadItem, setUploadItem } = useUploadItem();
 
@@ -57,18 +81,132 @@ export default function UploadItem() {
   const [images, setImages] = useState<string>(uploadItem.imageUrl);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [exitVisible, setExitVisible] = useState(false);
+
+  const pendingBeforeRemoveEvent = useRef<any>(null);
+  const hasConfirmedRef = useRef(false);
 
   useEffect(() => {
-    setPrice(uploadItem.price.toString());
-    setItemName(uploadItem.itemName);
-    setDescription(uploadItem.description.replace(/\\n/g, "\n"));
-    setTermCondition(
-      uploadItem.termsAndConditionsExchange.replace(/\\n/g, "\n")
-    );
-    setImages(uploadItem.imageUrl);
-    setIsCheckedFree(uploadItem.isCheckedFree);
-    setIsMoneyAccepted(uploadItem.isMoneyAccepted);
-  }, [uploadItem.itemName]);
+    if (itemDetail && itemDetail.desiredItem) {
+      setPrice(itemDetail?.price.toString());
+      setItemName(itemDetail.itemName);
+      setDescription(itemDetail.description.replace(/\\n/g, "\n"));
+      setTermCondition(
+        itemDetail.termsAndConditionsExchange
+          ? itemDetail.termsAndConditionsExchange.replace(/\\n/g, "\n")
+          : ""
+      );
+      setImages(itemDetail.imageUrl);
+      setIsCheckedFree(itemDetail.price === 0 ? true : false);
+      setIsMoneyAccepted(itemDetail.moneyAccepted);
+
+      setUploadItem({
+        ...uploadItem,
+        price: itemDetail.price,
+        itemName: itemDetail.itemName,
+        description: itemDetail.description,
+        termsAndConditionsExchange: itemDetail.termsAndConditionsExchange,
+        imageUrl: itemDetail.imageUrl,
+        isCheckedFree: itemDetail.price === 0 ? true : false,
+        isMoneyAccepted: itemDetail.moneyAccepted,
+        brandName: itemDetail.brand.brandName,
+        brandId: itemDetail.brand.id,
+        conditionItem: itemDetail.conditionItem,
+        conditionItemName: getConditionItemLabel(itemDetail.conditionItem),
+        methodExchanges: itemDetail.methodExchanges,
+        methodExchangeName: getMethodExchangeLabel(itemDetail.methodExchanges),
+        typeItem: itemDetail.typeItem,
+        categoryName: itemDetail.category.categoryName,
+        categoryId: itemDetail.category.id,
+        desiredItem: {
+          ...uploadItem,
+          categoryId:
+            itemDetail.desiredItem.categoryId === null
+              ? 0
+              : itemDetail.desiredItem.categoryId,
+          conditionItem:
+            itemDetail.desiredItem.conditionItem === null
+              ? ConditionItem.NO_CONDITION
+              : itemDetail.desiredItem.conditionItem,
+          brandId:
+            itemDetail.desiredItem.brandId === null
+              ? 0
+              : itemDetail.desiredItem.brandId,
+          minPrice: itemDetail.desiredItem.minPrice,
+          maxPrice:
+            itemDetail.desiredItem.maxPrice === null
+              ? 0
+              : itemDetail.desiredItem.maxPrice,
+          description: itemDetail.desiredItem.description,
+        },
+        typeItemDesire:
+          itemDetail.category.id === null
+            ? TypeItem.NO_TYPE
+            : itemDetail.desiredItem.typeItem,
+        conditionDesiredItemName:
+          itemDetail.desiredItem.conditionItem === null
+            ? ""
+            : getConditionItemLabel(itemDetail.desiredItem.conditionItem),
+        brandDesiredItemName:
+          itemDetail.desiredItem.brandId === null
+            ? ""
+            : itemDetail.desiredItem.brandName,
+        categoryDesiredItemName:
+          itemDetail.desiredItem.categoryId === null
+            ? ""
+            : itemDetail.desiredItem.categoryName,
+      });
+    } else if (itemDetail && !itemDetail.desiredItem) {
+      setPrice(itemDetail?.price.toString());
+      setItemName(itemDetail.itemName);
+      setDescription(itemDetail.description.replace(/\\n/g, "\n"));
+      setTermCondition(
+        itemDetail.termsAndConditionsExchange
+          ? itemDetail.termsAndConditionsExchange.replace(/\\n/g, "\n")
+          : ""
+      );
+      setImages(itemDetail.imageUrl);
+      setIsCheckedFree(itemDetail.price === 0 ? true : false);
+      setIsMoneyAccepted(itemDetail.moneyAccepted);
+
+      setUploadItem({
+        ...uploadItem,
+        price: itemDetail.price,
+        itemName: itemDetail.itemName,
+        description: itemDetail.description,
+        termsAndConditionsExchange: itemDetail.termsAndConditionsExchange,
+        imageUrl: itemDetail.imageUrl,
+        isCheckedFree: itemDetail.price === 0 ? true : false,
+        isMoneyAccepted: itemDetail.moneyAccepted,
+        brandName: itemDetail.brand.brandName,
+        brandId: itemDetail.brand.id,
+        conditionItem: itemDetail.conditionItem,
+        conditionItemName: getConditionItemLabel(itemDetail.conditionItem),
+        methodExchanges: itemDetail.methodExchanges,
+        methodExchangeName: getMethodExchangeLabel(itemDetail.methodExchanges),
+        typeItem: itemDetail.typeItem,
+        categoryName: itemDetail.category.categoryName,
+        categoryId: itemDetail.category.id,
+      });
+    }
+  }, [itemDetail]);
+
+  const getConditionItemLabel = (status: ConditionItem | undefined): string => {
+    const found = conditionItems.find((item) => item.value === status);
+    return found ? found.label : "";
+  };
+
+  const getMethodExchangeLabel = (
+    selectedMethods: MethodExchange[] | undefined
+  ): string => {
+    if (!selectedMethods || selectedMethods.length === 0) {
+      return "";
+    }
+    return methodExchanges
+      .filter((item) => selectedMethods.includes(item.value))
+      .map((item) => item.label)
+      .join(", ");
+  };
 
   const handleFieldChange = useCallback(
     (
@@ -113,7 +251,7 @@ export default function UploadItem() {
     return validUrls.join(", ");
   }, [images, uploadToCloudinary, user?.email]);
 
-  const handleCreateItem = useCallback(async () => {
+  const handleUpdateItem = useCallback(async () => {
     setConfirmVisible(false);
 
     const priceItem = isCheckedFree
@@ -153,7 +291,8 @@ export default function UploadItem() {
         }));
       }
 
-      const uploadItemRequest = {
+      const updateItemRequest = {
+        id: itemDetail?.id!,
         itemName: uploadItem.itemName.trim(),
         description: uploadItem.description,
         price: uploadItem.price,
@@ -164,19 +303,33 @@ export default function UploadItem() {
         termsAndConditionsExchange: uploadItem.termsAndConditionsExchange,
         categoryId: uploadItem.categoryId,
         brandId: uploadItem.brandId,
-        desiredItem: uploadItem.desiredItem ? uploadItem.desiredItem : null,
+        desiredItem:
+          uploadItem.desiredItem?.description.length === 0
+            ? null
+            : uploadItem.desiredItem,
       };
 
-      await dispatch(uploadItemThunk(uploadItemRequest));
+      await dispatch(updateItemThunk(updateItemRequest));
     }
   }, [setUploadItem, uploadItem, dispatch]);
 
   useEffect(() => {
-    if (itemUpload !== null) {
+    if (itemUpdate !== null) {
+      dispatch(resetItemDetailState());
       setUploadItem(defaultUploadItem);
-      navigation.navigate("UploadItemSuccess");
+
+      hasConfirmedRef.current = true;
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: "MainTabs",
+            state: { routes: [{ name: "Items" }] },
+          },
+        ],
+      });
     }
-  }, [itemUpload, dispatch]);
+  }, [itemUpdate, dispatch]);
 
   const toggleCheckboxFree = useCallback(() => {
     setIsCheckedFree((prev) => {
@@ -206,17 +359,34 @@ export default function UploadItem() {
     setConfirmVisible(false);
   };
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (hasConfirmedRef.current) return;
+
+      pendingBeforeRemoveEvent.current = e;
+      e.preventDefault();
+      setExitVisible(true);
+    });
+
+    return unsubscribe;
+  }, [navigation, uploadItem]);
+
+  const handleCancelExit = () => {
+    setExitVisible(false);
+    pendingBeforeRemoveEvent.current = null;
+  };
+
+  const handleConfirmExit = async () => {
+    hasConfirmedRef.current = true;
+    setExitVisible(false);
+    if (pendingBeforeRemoveEvent.current) {
+      navigation.dispatch(pendingBeforeRemoveEvent.current.data.action);
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]" edges={["top"]}>
-      <Header
-        title="Upload your item"
-        showBackButton={
-          targetIndex > 0 && state.routes[targetIndex].name === "BrowseItems"
-            ? true
-            : false
-        }
-        showOption={false}
-      />
+      <Header title="Update your item" showOption={false} />
       {loading || isUploadingImages ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#00b0b9" />
@@ -376,7 +546,7 @@ export default function UploadItem() {
 
             <View className="py-5">
               <LoadingButton
-                title="Upload"
+                title="Update"
                 buttonClassName="p-4"
                 onPress={handleConfirm}
                 loading={loading}
@@ -388,11 +558,19 @@ export default function UploadItem() {
       )}
 
       <ConfirmModal
-        title="Confirm upload"
-        content="Are you sure you to upload this item?"
+        title="Confirm update"
+        content="Are you sure you to update this item?"
         visible={confirmVisible}
         onCancel={handleCancel}
-        onConfirm={handleCreateItem}
+        onConfirm={handleUpdateItem}
+      />
+
+      <ConfirmModal
+        title="Warning"
+        content={`You have unsaved item. ${"\n"} Do you really want to leave?`}
+        visible={exitVisible}
+        onCancel={handleCancelExit}
+        onConfirm={handleConfirmExit}
       />
     </SafeAreaView>
   );

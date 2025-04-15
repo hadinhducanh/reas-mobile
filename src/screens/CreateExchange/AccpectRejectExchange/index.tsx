@@ -79,9 +79,15 @@ const AccpectRejectExchange: React.FC = () => {
   const [rejectVisible, setRejectVisible] = useState(false);
   const [cancelVisible, setCancelVisible] = useState(false);
   const [errorVisible, setErrorVisible] = useState<boolean>(false);
+  const [errorNegotiateVisible, setErrorNegotiateVisible] =
+    useState<boolean>(false);
 
   const handleNegotiatePrice = () => {
-    const isBuyer = user?.id === exchangeDetail?.buyerItem.owner.id;
+    const isBuyer =
+      user?.id ===
+      (exchangeDetail?.buyerItem === null
+        ? exchangeDetail.paidBy.id
+        : exchangeDetail?.buyerItem.owner.id);
     const isSeller = user?.id === exchangeDetail?.sellerItem.owner.id;
     const confirmed =
       (isBuyer && exchangeDetail?.buyerConfirmation) ||
@@ -92,6 +98,8 @@ const AccpectRejectExchange: React.FC = () => {
       exchangeDetail.finalPrice !== exchangeDetail.estimatePrice
     ) {
       setErrorVisible(true);
+    } else if (exchangeDetail?.numberOfOffer === 1) {
+      setErrorNegotiateVisible(true);
     } else {
       setNegotiateVisible(true);
     }
@@ -195,6 +203,11 @@ const AccpectRejectExchange: React.FC = () => {
     }
   };
 
+  const handleNegotiateOnce = async () => {
+    setErrorNegotiateVisible(false);
+    setNegotiateVisible(true);
+  };
+
   const getMethodLabel = (method: MethodExchange | undefined): string => {
     const found = exchangeMethods.find((item) => item.value === method);
     return found ? found.label : "";
@@ -207,7 +220,11 @@ const AccpectRejectExchange: React.FC = () => {
     return found ? found.label : "";
   };
 
-  const isBuyer = user?.id === exchangeDetail?.buyerItem.owner.id; // Kiểm tra vai trò của user
+  const isBuyer =
+    user?.id ===
+    (exchangeDetail?.buyerItem === null
+      ? exchangeDetail.paidBy.id
+      : exchangeDetail?.buyerItem.owner.id);
   const isSeller = user?.id === exchangeDetail?.sellerItem.owner.id;
 
   const canNegotiate =
@@ -241,8 +258,78 @@ const AccpectRejectExchange: React.FC = () => {
             </View>
             <View className="flex-row justify-between items-center py-5">
               <View className="flex-row items-center">
-                <View className="items-center">
-                  <Icon name="person-circle-outline" size={60} color="gray" />
+                <View className="items-center mr-2">
+                  {user?.id !==
+                  (exchangeDetail?.buyerItem === null
+                    ? exchangeDetail?.paidBy.id
+                    : exchangeDetail?.buyerItem.owner.id) ? (
+                    <>
+                      {exchangeDetail?.buyerItem === null ? (
+                        <>
+                          {exchangeDetail?.paidBy.image ? (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Image
+                                source={{
+                                  uri: exchangeDetail?.paidBy.image,
+                                }}
+                                className="w-full h-full rounded-full"
+                              />
+                            </View>
+                          ) : (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Icon
+                                name="person-circle-outline"
+                                size={60}
+                                color="gray"
+                              />
+                            </View>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {exchangeDetail?.buyerItem.owner.image ? (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Image
+                                source={{
+                                  uri: exchangeDetail?.buyerItem.owner.image,
+                                }}
+                                className="w-full h-full rounded-full"
+                              />
+                            </View>
+                          ) : (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Icon
+                                name="person-circle-outline"
+                                size={60}
+                                color="gray"
+                              />
+                            </View>
+                          )}
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {exchangeDetail?.sellerItem.owner.image ? (
+                        <View className="w-16 h-16 rounded-full items-center justify-center">
+                          <Image
+                            source={{
+                              uri: exchangeDetail?.sellerItem.owner.image,
+                            }}
+                            className="w-full h-full rounded-full"
+                          />
+                        </View>
+                      ) : (
+                        <View className="w-16 h-16 rounded-full items-center justify-center">
+                          <Icon
+                            name="person-circle-outline"
+                            size={60}
+                            color="gray"
+                          />
+                        </View>
+                      )}
+                    </>
+                  )}
                 </View>
                 <View>
                   <Text className="justify-start items-center text-left text-[18px] font-medium text-black">
@@ -293,8 +380,78 @@ const AccpectRejectExchange: React.FC = () => {
                       : "@Seller"}
                   </Text>
                 </View>
-                <View className="items-center">
-                  <Icon name="person-circle-outline" size={60} color="gray" />
+                <View className="items-center ml-2">
+                  {user?.id ===
+                  (exchangeDetail?.buyerItem === null
+                    ? exchangeDetail?.paidBy.id
+                    : exchangeDetail?.buyerItem.owner.id) ? (
+                    <Text className="justify-start items-center text-left text-[16px] font-medium text-black">
+                      {exchangeDetail?.buyerItem === null ? (
+                        <>
+                          {exchangeDetail?.paidBy.image ? (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Image
+                                source={{
+                                  uri: exchangeDetail?.paidBy.image,
+                                }}
+                                className="w-full h-full rounded-full"
+                              />
+                            </View>
+                          ) : (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Icon
+                                name="person-circle-outline"
+                                size={60}
+                                color="gray"
+                              />
+                            </View>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {exchangeDetail?.buyerItem.owner.image ? (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Image
+                                source={{
+                                  uri: exchangeDetail?.buyerItem.owner.image,
+                                }}
+                                className="w-full h-full rounded-full"
+                              />
+                            </View>
+                          ) : (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Icon
+                                name="person-circle-outline"
+                                size={60}
+                                color="gray"
+                              />
+                            </View>
+                          )}
+                        </>
+                      )}
+                    </Text>
+                  ) : (
+                    <>
+                      {exchangeDetail?.sellerItem.owner.image ? (
+                        <View className="w-16 h-16 rounded-full items-center justify-center">
+                          <Image
+                            source={{
+                              uri: exchangeDetail?.sellerItem.owner.image,
+                            }}
+                            className="w-full h-full rounded-full"
+                          />
+                        </View>
+                      ) : (
+                        <View className="w-16 h-16 rounded-full items-center justify-center">
+                          <Icon
+                            name="person-circle-outline"
+                            size={60}
+                            color="gray"
+                          />
+                        </View>
+                      )}
+                    </>
+                  )}
                 </View>
               </View>
             </View>
@@ -644,12 +801,25 @@ const AccpectRejectExchange: React.FC = () => {
                   <>
                     <View className="flex-row items-center justify-between pr-5">
                       <View className="flex-row items-center">
-                        <View className="items-center">
-                          <Icon
-                            name="person-circle-outline"
-                            size={60}
-                            color="gray"
-                          />
+                        <View className="items-center mr-2">
+                          {exchangeDetail?.sellerItem.owner.image ? (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Image
+                                source={{
+                                  uri: exchangeDetail?.sellerItem.owner.image,
+                                }}
+                                className="w-full h-full rounded-full"
+                              />
+                            </View>
+                          ) : (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Icon
+                                name="person-circle-outline"
+                                size={60}
+                                color="gray"
+                              />
+                            </View>
+                          )}
                         </View>
                         <Text className="ml-2 text-lg font-medium text-black">
                           You
@@ -678,12 +848,51 @@ const AccpectRejectExchange: React.FC = () => {
 
                     <View className="flex-row items-center justify-between pr-5">
                       <View className="flex-row items-center">
-                        <View className="items-center">
-                          <Icon
-                            name="person-circle-outline"
-                            size={60}
-                            color="gray"
-                          />
+                        <View className="items-center mr-2">
+                          {exchangeDetail?.buyerItem === null ? (
+                            <>
+                              {exchangeDetail?.paidBy.image ? (
+                                <View className="w-16 h-16 rounded-full items-center justify-center">
+                                  <Image
+                                    source={{
+                                      uri: exchangeDetail?.paidBy.image,
+                                    }}
+                                    className="w-full h-full rounded-full"
+                                  />
+                                </View>
+                              ) : (
+                                <View className="w-16 h-16 rounded-full items-center justify-center">
+                                  <Icon
+                                    name="person-circle-outline"
+                                    size={60}
+                                    color="gray"
+                                  />
+                                </View>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              {exchangeDetail?.buyerItem.owner.image ? (
+                                <View className="w-16 h-16 rounded-full items-center justify-center">
+                                  <Image
+                                    source={{
+                                      uri: exchangeDetail?.buyerItem.owner
+                                        .image,
+                                    }}
+                                    className="w-full h-full rounded-full"
+                                  />
+                                </View>
+                              ) : (
+                                <View className="w-16 h-16 rounded-full items-center justify-center">
+                                  <Icon
+                                    name="person-circle-outline"
+                                    size={60}
+                                    color="gray"
+                                  />
+                                </View>
+                              )}
+                            </>
+                          )}
                         </View>
                         <Text className="ml-2 text-lg font-medium text-black">
                           {exchangeDetail?.buyerItem === null
@@ -714,12 +923,51 @@ const AccpectRejectExchange: React.FC = () => {
                   <>
                     <View className="flex-row items-center justify-between pr-5">
                       <View className="flex-row items-center">
-                        <View className="items-center">
-                          <Icon
-                            name="person-circle-outline"
-                            size={60}
-                            color="gray"
-                          />
+                        <View className="items-center mr-2">
+                          {exchangeDetail?.buyerItem === null ? (
+                            <>
+                              {exchangeDetail?.paidBy.image ? (
+                                <View className="w-16 h-16 rounded-full items-center justify-center">
+                                  <Image
+                                    source={{
+                                      uri: exchangeDetail?.paidBy.image,
+                                    }}
+                                    className="w-full h-full rounded-full"
+                                  />
+                                </View>
+                              ) : (
+                                <View className="w-16 h-16 rounded-full items-center justify-center">
+                                  <Icon
+                                    name="person-circle-outline"
+                                    size={60}
+                                    color="gray"
+                                  />
+                                </View>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              {exchangeDetail?.buyerItem.owner.image ? (
+                                <View className="w-16 h-16 rounded-full items-center justify-center">
+                                  <Image
+                                    source={{
+                                      uri: exchangeDetail?.buyerItem.owner
+                                        .image,
+                                    }}
+                                    className="w-full h-full rounded-full"
+                                  />
+                                </View>
+                              ) : (
+                                <View className="w-16 h-16 rounded-full items-center justify-center">
+                                  <Icon
+                                    name="person-circle-outline"
+                                    size={60}
+                                    color="gray"
+                                  />
+                                </View>
+                              )}
+                            </>
+                          )}
                         </View>
                         <Text className="ml-2 text-lg font-medium text-black">
                           You
@@ -748,12 +996,25 @@ const AccpectRejectExchange: React.FC = () => {
 
                     <View className="flex-row items-center justify-between pr-5">
                       <View className="flex-row items-center">
-                        <View className="items-center">
-                          <Icon
-                            name="person-circle-outline"
-                            size={60}
-                            color="gray"
-                          />
+                        <View className="items-center mr-2">
+                          {exchangeDetail?.sellerItem.owner.image ? (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Image
+                                source={{
+                                  uri: exchangeDetail?.sellerItem.owner.image,
+                                }}
+                                className="w-full h-full rounded-full"
+                              />
+                            </View>
+                          ) : (
+                            <View className="w-16 h-16 rounded-full items-center justify-center">
+                              <Icon
+                                name="person-circle-outline"
+                                size={60}
+                                color="gray"
+                              />
+                            </View>
+                          )}
                         </View>
                         <Text className="ml-2 text-lg font-medium text-black">
                           {exchangeDetail?.sellerItem.owner.fullName}
@@ -880,6 +1141,14 @@ const AccpectRejectExchange: React.FC = () => {
         content={"Please wait for other confirmation"}
         visible={errorVisible}
         onCancel={() => setErrorVisible(false)}
+      />
+
+      <ConfirmModal
+        title="Warning"
+        content={`You can only negotiate price once!`}
+        visible={errorNegotiateVisible}
+        onCancel={() => setErrorNegotiateVisible(false)}
+        onConfirm={handleNegotiateOnce}
       />
 
       {exchangeDetail?.exchangeLocation && (

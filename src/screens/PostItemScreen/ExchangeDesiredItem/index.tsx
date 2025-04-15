@@ -26,8 +26,10 @@ const ExchangeDesiredItemScreen = () => {
       : uploadItem.desiredItem?.maxPrice.toString() || ""
   );
   const [description, setDescription] = useState<string>(
-    uploadItem.desiredItem?.description || ""
+    uploadItem.desiredItem?.description.replace(/\\n/g, "\n") || ""
   );
+  const [error, setError] = useState<string>("");
+  const [isInvalid, setIsInvalid] = useState<boolean>(false);
 
   const pendingBeforeRemoveEvent = useRef<any>(null);
   const hasConfirmedRef = useRef(false);
@@ -141,6 +143,19 @@ const ExchangeDesiredItemScreen = () => {
     pendingBeforeRemoveEvent.current = null;
   };
 
+  useEffect(() => {
+    const minPriceValue = parseInt(minPrice.replace(/,/g, ""), 10) || 0;
+    const maxPriceValue = parseInt(maxPrice.replace(/,/g, ""), 10) || 0;
+
+    if (minPriceValue > maxPriceValue) {
+      setError("Min price cannot be greater than Max price");
+      setIsInvalid(true);
+    } else {
+      setError("");
+      setIsInvalid(false);
+    }
+  }, [minPrice, maxPrice]);
+
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]">
       <Header title="Your desired item for exchange" showOption={false} />
@@ -215,10 +230,15 @@ const ExchangeDesiredItemScreen = () => {
           />
         </View>
 
+        {error ? (
+          <Text className="text-red-500 text-sm mt-2">{error}</Text>
+        ) : null}
+
         <LoadingButton
           title="Done"
           onPress={handleDone}
-          buttonClassName="p-4 mt-4"
+          buttonClassName={`py-4 mt-4 ${isInvalid ? "bg-gray-200" : ""}`}
+          disable={isInvalid}
         />
       </ScrollView>
       <ConfirmModal

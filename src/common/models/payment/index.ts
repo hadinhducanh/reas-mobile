@@ -1,6 +1,7 @@
 export interface CreatePaymentLinkRequest {
   description: string;
-  subscriptionPlanId: number;
+  subscriptionPlanId?: number;
+  itemId?: number;
   returnUrl: string;
   cancelUrl: string;
 }
