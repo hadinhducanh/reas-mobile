@@ -8,9 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useNavigation, useNavigationState } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,10 +18,7 @@ import { AppDispatch, RootState } from "../../../redux/store";
 import { defaultUploadItem, useUploadItem } from "../../../context/ItemContext";
 import { uploadToCloudinary } from "../../../utils/CloudinaryImageUploader";
 import { TypeExchange } from "../../../common/enums/TypeExchange";
-import {
-  updateItemThunk,
-  uploadItemThunk,
-} from "../../../redux/thunk/itemThunks";
+import { updateItemThunk } from "../../../redux/thunk/itemThunks";
 import Header from "../../../components/Header";
 import ChooseImage from "../../../components/ChooseImage";
 import NavigationListItem from "../../../components/NavigationListItem";
@@ -41,6 +37,7 @@ import {
   setUserLocationIdState,
   setUserPlaceIdState,
 } from "../../../redux/slices/userSlice";
+import { DesiredItemDto } from "../../../common/models/item";
 
 const conditionItems = [
   { label: "Brand new", value: ConditionItem.BRAND_NEW },
@@ -96,8 +93,54 @@ export default function UpdateItem() {
   const pendingBeforeRemoveEvent = useRef<any>(null);
   const hasConfirmedRef = useRef(false);
 
+  const initialData = useRef<{
+    id: number;
+    itemName: string;
+    description: string;
+    price: number;
+    conditionItem: ConditionItem;
+    imageUrl: string;
+    methodExchanges: MethodExchange[];
+    isMoneyAccepted: boolean;
+    termsAndConditionsExchange: string | null;
+    categoryId: number;
+    brandId: number;
+    desiredItem?: DesiredItemDto | null;
+    userLocationId: number;
+  }>({
+    id: 0,
+    itemName: "",
+    description: "",
+    price: 0,
+    conditionItem: ConditionItem.NO_CONDITION,
+    imageUrl: "",
+    methodExchanges: [],
+    isMoneyAccepted: false,
+    termsAndConditionsExchange: "",
+    categoryId: 0,
+    brandId: 0,
+    desiredItem: null,
+    userLocationId: 0,
+  });
+
   useEffect(() => {
     if (itemDetail && itemDetail.desiredItem) {
+      initialData.current = {
+        id: itemDetail.id,
+        itemName: itemDetail.itemName || "",
+        description: itemDetail.description || "",
+        price: itemDetail.price || 0,
+        conditionItem: itemDetail.conditionItem,
+        imageUrl: itemDetail.imageUrl,
+        methodExchanges: itemDetail.methodExchanges,
+        isMoneyAccepted: itemDetail.moneyAccepted,
+        termsAndConditionsExchange: itemDetail.termsAndConditionsExchange,
+        categoryId: itemDetail.category.id,
+        brandId: itemDetail.brand.id,
+        desiredItem: { ...itemDetail.desiredItem },
+        userLocationId: itemDetail.userLocation.id,
+      };
+
       setPrice(itemDetail?.price.toString());
       setItemName(itemDetail.itemName);
       setDescription(itemDetail.description.replace(/\\n/g, "\n"));
@@ -167,6 +210,22 @@ export default function UpdateItem() {
             : itemDetail.desiredItem.categoryName,
       });
     } else if (itemDetail && !itemDetail.desiredItem) {
+      initialData.current = {
+        id: itemDetail.id,
+        itemName: itemDetail.itemName || "",
+        description: itemDetail.description || "",
+        price: itemDetail.price || 0,
+        conditionItem: itemDetail.conditionItem,
+        imageUrl: itemDetail.imageUrl,
+        methodExchanges: itemDetail.methodExchanges,
+        isMoneyAccepted: itemDetail.moneyAccepted,
+        termsAndConditionsExchange: itemDetail.termsAndConditionsExchange,
+        categoryId: itemDetail.category.id,
+        brandId: itemDetail.brand.id,
+        desiredItem: null,
+        userLocationId: itemDetail.userLocation.id,
+      };
+
       setPrice(itemDetail?.price.toString());
       setItemName(itemDetail.itemName);
       setDescription(itemDetail.description.replace(/\\n/g, "\n"));
@@ -301,6 +360,75 @@ export default function UpdateItem() {
     const priceItem = isCheckedFree
       ? 0
       : parseInt(price.replace(/,/g, ""), 10) || 0;
+
+    const arraysEqual = (a: any[], b: any[]) =>
+      a.length === b.length && a.every((val, idx) => val === b[idx]);
+
+    const compareDesiredItems = (
+      a: DesiredItemDto | null | undefined,
+      b: DesiredItemDto | null | undefined
+    ) => {
+      if (a === undefined || a === null) {
+        return b === undefined || b === null;
+      }
+      if (b === undefined || b === null) {
+        return false;
+      }
+
+      return (
+        a.categoryId === b.categoryId &&
+        a.conditionItem === b.conditionItem &&
+        a.brandId === b.brandId &&
+        a.minPrice === b.minPrice &&
+        a.maxPrice === b.maxPrice &&
+        a.description === b.description
+      );
+    };
+
+    const {
+      id: initId,
+      itemName: initName,
+      description: initDescription,
+      price: initPrice,
+      conditionItem: initConditionItem,
+      imageUrl: initImageUrl,
+      methodExchanges: initMethodExchanges,
+      isMoneyAccepted: initMoneyAccept,
+      termsAndConditionsExchange: initTermsAndCondition,
+      categoryId: initCategoryId,
+      brandId: initBrandId,
+      desiredItem: initDesiredItem,
+      userLocationId: initUserLoc,
+    } = initialData.current;
+
+    const hasChanged =
+      itemDetail?.id !== initId ||
+      uploadItem.itemName !== initName ||
+      uploadItem.description !== initDescription.replace(/\\n/g, "\n") ||
+      uploadItem.price !== initPrice ||
+      uploadItem.conditionItem !== initConditionItem ||
+      uploadItem.imageUrl !== initImageUrl ||
+      !arraysEqual(uploadItem.methodExchanges, initMethodExchanges) ||
+      uploadItem.isMoneyAccepted !== initMoneyAccept ||
+      uploadItem.termsAndConditionsExchange !== initTermsAndCondition ||
+      uploadItem.categoryId !== initCategoryId ||
+      uploadItem.brandId !== initBrandId ||
+      !compareDesiredItems(uploadItem.desiredItem, initDesiredItem) ||
+      userLocationId !== initUserLoc;
+
+    if (!hasChanged) {
+      hasConfirmedRef.current = true;
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: "MainTabs",
+            state: { routes: [{ name: "Items" }] },
+          },
+        ],
+      });
+      return;
+    }
 
     if (
       !images ||

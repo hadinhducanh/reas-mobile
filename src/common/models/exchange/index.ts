@@ -13,7 +13,7 @@ export interface ExchangeRequestRequest {
   exchangeLocation: string;
   estimatePrice: number;
   methodExchange: MethodExchange;
-  additionalNotes: string;
+  additionalNotes: string | null;
 }
 
 export interface ExtendExchangeRequestRequest extends ExchangeRequestRequest {
@@ -58,5 +58,5 @@ export interface ExchangeResponse {
 export interface EvidenceExchangeRequest {
   exchangeHistoryId: number;
   imageUrl: string;
-  additionalNotes: string;
+  additionalNotes: string | null;
 }

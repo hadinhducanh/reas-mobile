@@ -49,6 +49,7 @@ const SignIn: React.FC = () => {
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(true);
   const [remember, setRemember] = useState(false);
+  const [enable, setEnable] = useState<boolean>(false);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const state = useNavigationState((state) => state);
@@ -57,6 +58,9 @@ const SignIn: React.FC = () => {
     (email: string) => emailRegex.test(email),
     []
   );
+  const trimmedEmail = email.trim();
+  const isEmailValid =
+    trimmedEmail.length > 0 ? isValidEmail(trimmedEmail) : true;
 
   const validationIcon = useMemo(() => {
     const trimmedEmail = email.trim();
@@ -306,10 +310,12 @@ const SignIn: React.FC = () => {
               </View>
 
               <LoadingButton
+                disable={!isEmailValid}
                 title="Sign in"
                 onPress={handleSignIn}
                 loading={loading}
-                buttonClassName="py-4"
+                buttonClassName={`py-4 ${!isEmailValid ? "bg-gray-300" : ""}`}
+                textColor={!isEmailValid ? "text-[#00b0b9]" : "text-white"}
               />
 
               <View className="flex-row items-center my-5 px-20">

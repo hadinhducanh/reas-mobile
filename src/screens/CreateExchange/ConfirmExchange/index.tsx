@@ -47,8 +47,14 @@ const ConfirmExchange: React.FC = () => {
       exchangeLocation: exchangeItem.exchangeLocation,
       estimatePrice: exchangeItem.estimatePrice,
       methodExchange: exchangeItem.methodExchange,
-      additionalNotes: exchangeItem.additionalNotes,
+      additionalNotes:
+        exchangeItem.additionalNotes &&
+        exchangeItem.additionalNotes.length !== 0
+          ? exchangeItem.additionalNotes
+          : null,
     };
+
+    // console.log(exchangeRequestRequest);
 
     await dispatch(makeAnExchangeThunk(exchangeRequestRequest));
   };

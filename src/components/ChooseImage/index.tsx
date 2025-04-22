@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Alert,
   Image,
@@ -13,6 +13,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { useUploadItem } from "../../context/ItemContext";
+import ImagePreviewModal from "../ImagePreviewModal";
 
 interface ImagePickerProps {
   images?: string;
@@ -31,6 +32,11 @@ const SEPARATOR = ", ";
 
 const ChooseImage: React.FC<ImagePickerProps> = (props) => {
   const { setUploadItem } = useUploadItem();
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const [imagesModalVisible, setImagesModalVisible] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const {
     images = "",
@@ -263,25 +269,51 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
   const imageComponents = useMemo(
     () =>
       imagesArray.map((base64, index) => (
-        <View
+        <TouchableOpacity
           key={index}
-          className="w-32 h-44 bg-transparent border-2 border-dashed border-gray-300 rounded-lg justify-center items-center mr-2"
+          onPress={() => {
+            setSelectedIndex(index);
+            setImagesModalVisible(true);
+          }}
         >
-          <Image
-            source={{ uri: base64 }}
-            className="w-full h-full rounded-lg"
-            resizeMode="contain"
-          />
-          <TouchableOpacity
-            onPress={() => deleteImage(index)}
-            className="absolute top-0 right-0 bg-red-500 rounded-full w-6 h-6 justify-center items-center"
+          <View
+            key={index}
+            className="w-32 h-44 bg-transparent border-2 border-dashed border-gray-300 rounded-lg justify-center items-center mr-2"
           >
-            <Icon name="close" size={14} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
+            <Image
+              source={{ uri: base64 }}
+              className="w-full h-full rounded-lg"
+              resizeMode="contain"
+            />
+            <TouchableOpacity
+              onPress={() => deleteImage(index)}
+              className="absolute top-0 right-0 bg-red-500 rounded-full w-6 h-6 justify-center items-center"
+            >
+              <Icon name="close" size={14} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
       )),
     [imagesArray, deleteImage]
   );
+
+  const chooseReceivedItemImage = () => {
+    if (receivedItemImage?.length !== 0) {
+      setSelectedImage(receivedItemImage);
+      setImageModalVisible(true);
+    } else {
+      showPickerOptions(setReceivedItemImage);
+    }
+  };
+
+  const chooseTransferReceiptImage = () => {
+    if (transferReceiptImage?.length !== 0) {
+      setSelectedImage(transferReceiptImage);
+      setImageModalVisible(true);
+    } else {
+      showPickerOptions(setTransferReceiptImage);
+    }
+  };
 
   return (
     <>
@@ -289,15 +321,23 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
         // SINGLE-IMAGE UI (2 ô)
         <View className="flex-row justify-center mt-2">
           <TouchableOpacity
-            onPress={() => showPickerOptions(setReceivedItemImage)}
+            onPress={chooseReceivedItemImage}
             className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2"
           >
             {receivedItemImage ? (
-              <Image
-                source={{ uri: receivedItemImage }}
-                className="w-full h-full rounded-lg"
-                resizeMode="contain"
-              />
+              <>
+                <Image
+                  source={{ uri: receivedItemImage }}
+                  className="w-full h-full rounded-lg"
+                  resizeMode="contain"
+                />
+                <TouchableOpacity
+                  onPress={() => setReceivedItemImage("")}
+                  className="absolute top-0 right-0 bg-red-500 rounded-full w-6 h-6 justify-center items-center"
+                >
+                  <Icon name="close" size={14} color="#ffffff" />
+                </TouchableOpacity>
+              </>
             ) : (
               <>
                 <Icon name="photo-camera" size={30} color="#00b0b9" />
@@ -311,15 +351,23 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => showPickerOptions(setTransferReceiptImage)}
+            onPress={chooseTransferReceiptImage}
             className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2"
           >
             {transferReceiptImage ? (
-              <Image
-                source={{ uri: transferReceiptImage }}
-                className="w-full h-full rounded-lg"
-                resizeMode="contain"
-              />
+              <>
+                <Image
+                  source={{ uri: transferReceiptImage }}
+                  className="w-full h-full rounded-lg"
+                  resizeMode="contain"
+                />
+                <TouchableOpacity
+                  onPress={() => setTransferReceiptImage("")}
+                  className="absolute top-0 right-0 bg-red-500 rounded-full w-6 h-6 justify-center items-center"
+                >
+                  <Icon name="close" size={14} color="#ffffff" />
+                </TouchableOpacity>
+              </>
             ) : (
               <>
                 <Icon name="photo-camera" size={30} color="#00b0b9" />
@@ -399,6 +447,19 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
           </ScrollView>
         </View>
       )}
+
+      <ImagePreviewModal
+        visible={imageModalVisible}
+        onClose={() => setImageModalVisible(false)}
+        imageUrl={selectedImage}
+      />
+
+      <ImagePreviewModal
+        visible={imagesModalVisible}
+        onClose={() => setImagesModalVisible(false)}
+        initialIndex={selectedIndex}
+        imageUrls={imagesArray}
+      />
     </>
   );
 };

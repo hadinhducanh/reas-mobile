@@ -41,6 +41,7 @@ import {
 } from "../../../redux/thunk/favoriteThunk";
 import { StatusItem } from "../../../common/enums/StatusItem";
 import { TypeItem } from "../../../common/enums/TypeItem";
+import ImagePreviewModal from "../../../components/ImagePreviewModal";
 
 const { width } = Dimensions.get("window");
 
@@ -109,6 +110,8 @@ const ItemDetails: React.FC = () => {
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const [isFavorite, setIsFavorite] = useState(itemDetail?.favorite);
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const getConditionItemLabel = (status: ConditionItem | undefined): string => {
     const found = conditionItems.find((item) => item.value === status);
@@ -247,29 +250,40 @@ const ItemDetails: React.FC = () => {
     }
   }, [accessToken, dispatch, itemId, isFavorite, navigation]);
 
+  const imageUrls = itemDetail?.imageUrl
+    ? itemDetail?.imageUrl.split(", ")
+    : [];
+
   const renderImageItem = useCallback(
-    ({ item: image }: { item: string }) => (
-      <View className="relative" style={{ width: width }}>
-        <View className={`w-[${width}] h-96 bg-white`}>
-          <Image
-            source={{ uri: image }}
-            className="w-full h-full"
-            resizeMode="contain"
-          />
-        </View>
-        {accessToken && (
-          <TouchableOpacity
-            className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
-            onPress={handleFavoritePress}
-          >
-            <Icon
-              name={isFavorite ? "heart" : "heart-outline"}
-              size={24}
-              color="#ff0000"
+    ({ item: image, index }: { item: string; index: number }) => (
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedIndex(index);
+          setImageModalVisible(true);
+        }}
+      >
+        <View className="relative" style={{ width: width }}>
+          <View className={`w-[${width}] h-96 bg-white`}>
+            <Image
+              source={{ uri: image }}
+              className="w-full h-full"
+              resizeMode="contain"
             />
-          </TouchableOpacity>
-        )}
-      </View>
+          </View>
+          {accessToken && (
+            <TouchableOpacity
+              className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
+              onPress={handleFavoritePress}
+            >
+              <Icon
+                name={isFavorite ? "heart" : "heart-outline"}
+                size={24}
+                color="#ff0000"
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+      </TouchableOpacity>
     ),
     [handleFavoritePress, isFavorite]
   );
@@ -547,6 +561,13 @@ const ItemDetails: React.FC = () => {
           }
         />
       )}
+
+      <ImagePreviewModal
+        visible={imageModalVisible}
+        onClose={() => setImageModalVisible(false)}
+        initialIndex={selectedIndex}
+        imageUrls={imageUrls}
+      />
     </>
   );
 };

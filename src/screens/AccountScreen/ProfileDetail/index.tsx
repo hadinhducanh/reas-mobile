@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -31,6 +31,7 @@ import {
 import { fetchUserInfoThunk } from "../../../redux/thunk/authThunks";
 import { uploadToCloudinary } from "../../../utils/CloudinaryImageUploader";
 import { useFocusEffect } from "@react-navigation/native";
+import ImagePreviewModal from "../../../components/ImagePreviewModal";
 
 const ProfileDetail: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -51,7 +52,22 @@ const ProfileDetail: React.FC = () => {
   const [locationDetail, setLocationDetail] = useState<PlaceDetail>();
   const [isUploadingImages, setIsUploadingImages] = useState(false);
 
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   const [countryCode, setCountryCode] = useState("+84");
+
+  const initialData = useRef<{
+    fullName: string;
+    phone: string;
+    locationId: number;
+    image: string;
+  }>({
+    fullName: "",
+    phone: "",
+    locationId: 0,
+    image: "",
+  });
 
   useEffect(() => {
     if (user) {
@@ -66,6 +82,13 @@ const ProfileDetail: React.FC = () => {
       if (user.image) {
         setTransferReceiptImage(user.image);
       }
+
+      initialData.current = {
+        fullName: user.fullName,
+        phone: user.phone || "",
+        locationId: userLocationId,
+        image: user.image || "",
+      };
     }
   }, [user]);
 
@@ -137,15 +160,16 @@ const ProfileDetail: React.FC = () => {
   };
 
   useEffect(() => {
-    const isValidPhone = (phone: string) => {
-      const cleaned = phone.replace(/\D/g, "");
-      return cleaned.length === 10;
+    const isValidVietnamPhone = (phone: string): boolean => {
+      const normalized = phone.replace(/^\+84/, "0").replace(/\D/g, "");
+      const regex = /^0(3[2-9]|5[689]|7[06-9]|8[1-9]|9[0-9])\d{7}$/;
+      return regex.test(normalized);
     };
 
     const isValid =
       fullName.trim().length >= 3 &&
       isValidEmail(email) &&
-      isValidPhone(phoneNumber) &&
+      isValidVietnamPhone(phoneNumber) &&
       address.trim().length > 0;
 
     setEnable(isValid);
@@ -189,6 +213,23 @@ const ProfileDetail: React.FC = () => {
 
     setIsEditing(false);
     const cleanedPhoneNumber = phoneNumber.replace(/\D/g, "");
+    const {
+      fullName: initName,
+      phone: initPhone,
+      locationId: initLoc,
+      image: initImg,
+    } = initialData.current;
+
+    const hasChanged =
+      fullName !== initName ||
+      cleanedPhoneNumber !== initPhone ||
+      userLocationId !== initLoc ||
+      transferReceiptImage !== initImg;
+
+    if (!hasChanged) {
+      setIsEditing(false);
+      return;
+    }
 
     if (transferReceiptImage && transferReceiptImage !== user?.image) {
       setIsUploadingImages(true);
@@ -222,7 +263,6 @@ const ProfileDetail: React.FC = () => {
   useEffect(() => {
     if (userDetail) {
       dispatch(fetchUserInfoThunk());
-      dispatch(resetUser());
       setIsEditing(false);
     }
   }, [userDetail]);
@@ -273,14 +313,20 @@ const ProfileDetail: React.FC = () => {
             ) : (
               <>
                 {transferReceiptImage.length !== 0 ? (
-                  <View className="bg-[#a9b4bd] w-[180px] h-[180px] flex items-center justify-center rounded-full mb-10 relative">
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedImage(transferReceiptImage);
+                      setImageModalVisible(true);
+                    }}
+                    className="bg-[#a9b4bd] w-[180px] h-[180px] flex items-center justify-center rounded-full mb-10 relative"
+                  >
                     <View className="w-full h-full rounded-full overflow-hidden">
                       <Image
                         source={{ uri: transferReceiptImage }}
                         className="w-full h-full rounded-full"
                       />
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 ) : (
                   <View className="bg-[#a9b4bd] w-[180px] h-[180px] rounded-full mb-10 relative">
                     <Icon
@@ -304,7 +350,33 @@ const ProfileDetail: React.FC = () => {
             )}
 
             <View className="w-full h-[50px] mb-[20px]">
-              <View className="flex-row h-[50px] px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
+              <View
+                className={`flex-row h-[50px] px-[6px] items-center ${
+                  isEditing ? "bg-[#e8f3f6]" : "bg-[#e8f3f6]/10"
+                } rounded-[8px]`}
+              >
+                <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
+                  <Icon name="mail-outline" size={20} color="#ffffff" />
+                </View>
+                <TextInput
+                  placeholder="Email"
+                  placeholderTextColor="#738aa0"
+                  className={textInputStyle()}
+                  value={email}
+                  onChangeText={setEmail}
+                  editable={isEditing}
+                  readOnly
+                />
+                {renderValidationIcon()}
+              </View>
+            </View>
+
+            <View className="w-full h-[50px] mb-[20px]">
+              <View
+                className={`flex-row h-[50px] px-[6px] items-center ${
+                  isEditing ? "bg-[#e8f3f6]" : "bg-[#e8f3f6]/10"
+                } rounded-[8px]`}
+              >
                 <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
                   <Icon name="person-outline" size={20} color="#ffffff" />
                 </View>
@@ -320,24 +392,11 @@ const ProfileDetail: React.FC = () => {
             </View>
 
             <View className="w-full h-[50px] mb-[20px]">
-              <View className="flex-row h-[50px] px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
-                <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
-                  <Icon name="mail-outline" size={20} color="#ffffff" />
-                </View>
-                <TextInput
-                  placeholder="Email"
-                  placeholderTextColor="#738aa0"
-                  className={textInputStyle()}
-                  value={email}
-                  onChangeText={setEmail}
-                  editable={isEditing}
-                />
-                {renderValidationIcon()}
-              </View>
-            </View>
-
-            <View className="w-full h-[50px] mb-[20px]">
-              <View className="flex-row h-full px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
+              <View
+                className={`flex-row h-[50px] px-[6px] items-center ${
+                  isEditing ? "bg-[#e8f3f6]" : "bg-[#e8f3f6]/10"
+                } rounded-[8px]`}
+              >
                 <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center">
                   <Icon
                     name="phone-portrait-outline"
@@ -367,7 +426,11 @@ const ProfileDetail: React.FC = () => {
               onPress={() => navigation.navigate("LocationOfUser")}
               disabled={!isEditing}
             >
-              <View className="flex-row h-[60px] px-[6px] items-center bg-[#e8f3f6] rounded-[8px]">
+              <View
+                className={`flex-row h-[50px] px-[6px] items-center ${
+                  isEditing ? "bg-[#e8f3f6]" : "bg-[#e8f3f6]/10"
+                } rounded-[8px]`}
+              >
                 <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
                   <Icon name="location-outline" size={22} color={"white"} />
                 </View>
@@ -404,7 +467,6 @@ const ProfileDetail: React.FC = () => {
               </View>
             </TouchableOpacity>
 
-            {/* Nút Edit/Save */}
             <LoadingButton
               title={isEditing ? "Save change" : "Edit profile"}
               onPress={handleEditSave}
@@ -418,6 +480,11 @@ const ProfileDetail: React.FC = () => {
           </View>
         </View>
       )}
+      <ImagePreviewModal
+        visible={imageModalVisible}
+        onClose={() => setImageModalVisible(false)}
+        imageUrl={selectedImage}
+      />
     </SafeAreaView>
   );
 };

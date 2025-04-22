@@ -1,14 +1,18 @@
-import React from "react";
-import { Modal, View, Text, Image } from "react-native";
+import React, { useState } from "react";
+import { Modal, View, Text, Image, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { FeedbackResponse } from "../../common/models/feedback";
 import dayjs from "dayjs";
+import ImagePreviewModal from "../ImagePreviewModal";
 
 interface ChooseLocationModalProps {
   feedback: FeedbackResponse;
 }
 
 const FeedbackCard: React.FC<ChooseLocationModalProps> = ({ feedback }) => {
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+
   const formatPrice = (price: number | undefined): string => {
     if (price === undefined) return "0";
     return price.toLocaleString("vi-VN");
@@ -40,6 +44,8 @@ const FeedbackCard: React.FC<ChooseLocationModalProps> = ({ feedback }) => {
     }
   }
 
+  const imageUrls = feedback.imageUrl ? feedback.imageUrl.split(", ") : [];
+
   return (
     <>
       <View className=" bg-white p-5">
@@ -52,37 +58,20 @@ const FeedbackCard: React.FC<ChooseLocationModalProps> = ({ feedback }) => {
           </View>
         </View>
 
-        {feedback.imageUrl.length === 0 ? (
-          ""
-        ) : feedback.imageUrl.split(", ").length === 1 ? (
-          <View className="flex-row mt-2 justify-start">
-            <View className="w-20 h-28 rounded-lg items-center justify-center">
-              <Image
-                source={{
-                  uri: feedback.imageUrl.split(", ")[0],
+        {imageUrls.length > 0 && (
+          <View className="flex-row flex-wrap gap-2 mt-2">
+            {imageUrls.map((uri, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  setSelectedIndex(index);
+                  setImageModalVisible(true);
                 }}
-                className="w-full h-full rounded-lg"
-              />
-            </View>
-          </View>
-        ) : (
-          <View className="flex-row justify-start mt-2">
-            <View className="w-20 h-28 rounded-lg items-center justify-centers mr-2">
-              <Image
-                source={{
-                  uri: feedback.imageUrl.split(", ")[0],
-                }}
-                className="w-full h-full rounded-lg"
-              />
-            </View>
-            <View className="w-20 h-28 rounded-lg items-center justify-center">
-              <Image
-                source={{
-                  uri: feedback.imageUrl.split(", ")[1],
-                }}
-                className="w-full h-full rounded-lg"
-              />
-            </View>
+                className="w-20 h-28 rounded-lg overflow-hidden mr-2"
+              >
+                <Image source={{ uri }} className="w-full h-full rounded-lg" />
+              </TouchableOpacity>
+            ))}
           </View>
         )}
 
@@ -134,6 +123,12 @@ const FeedbackCard: React.FC<ChooseLocationModalProps> = ({ feedback }) => {
         </View>
         <View className="border-b border-gray-300 my-4" />
       </View>
+      <ImagePreviewModal
+        visible={imageModalVisible}
+        onClose={() => setImageModalVisible(false)}
+        initialIndex={selectedIndex}
+        imageUrls={imageUrls}
+      />
     </>
   );
 };
