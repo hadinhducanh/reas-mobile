@@ -153,6 +153,22 @@ const uploadExchangeEvidence = async (
   return response.data;
 };
 
+const getNumberOfSuccessfulExchangesOfUser = async (
+  month: number,
+  year: number,
+  accessToken: string
+): Promise<number> => {
+  const response = await axios.get<number>(
+    `${API_BASE_URL}/exchange/number-of-successful-exchanges-of-user?month=${month}&year=${year}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
 export default {
   makeAnExchange,
   getAllExchangesByStatusOfCurrentUser,
@@ -162,4 +178,5 @@ export default {
   reviewExchangeRequest,
   cancelExchange,
   uploadExchangeEvidence,
+  getNumberOfSuccessfulExchangesOfUser,
 };

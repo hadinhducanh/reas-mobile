@@ -5,7 +5,7 @@ import { View, Text } from "react-native";
 interface StatsCardProps {
   value: string;
   label: string;
-  percentage: string;
+  percentage?: string;
   isPositive?: boolean;
 }
 

@@ -57,3 +57,30 @@ export const searchPaymentHistoryOfUserPaginationThunk = createAsyncThunk<
     }
   }
 );
+export const getNumberOfSuccessfulTransactionOfUserThunk = createAsyncThunk<
+  number,
+  { month: number; year: number },
+  { state: RootState }
+>(
+  "payment/getNumberOfSuccessfulTransactionOfUser",
+  async ({ month, year }, thunkAPI) => {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+    if (!accessToken) {
+      return thunkAPI.rejectWithValue("No access token available");
+    }
+    try {
+      const data = await PaymentService.getNumberOfSuccessfulTransactionOfUser(
+        month,
+        year,
+        accessToken
+      );
+      return data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data ||
+          "Get number of successful transaction of user failed"
+      );
+    }
+  }
+);

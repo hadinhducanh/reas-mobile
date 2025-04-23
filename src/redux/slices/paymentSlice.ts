@@ -5,6 +5,7 @@ import {
 } from "@reduxjs/toolkit";
 import {
   createPaymentLinkThunk,
+  getNumberOfSuccessfulTransactionOfUserThunk,
   searchPaymentHistoryOfUserPaginationThunk,
 } from "../thunk/paymentThunk";
 import {
@@ -12,9 +13,11 @@ import {
   PaymentHistoryDto,
 } from "../../common/models/payment";
 import { ResponseEntityPagination } from "../../common/models/pagination";
+import { getNumberOfSuccessfulExchangesOfUserThunk } from "../thunk/exchangeThunk";
 
 export interface PaymentState {
   searchPaymentHistory: ResponseEntityPagination<PaymentHistoryDto>;
+  numberOfSuccessfulTransaction: number;
   checkoutUrl: string | null;
   loadingPayment: boolean;
   errorPayment: string | null;
@@ -29,6 +32,7 @@ const initialState: PaymentState = {
     last: false,
     content: [],
   },
+  numberOfSuccessfulTransaction: 0,
   checkoutUrl: null,
   loadingPayment: false,
   errorPayment: null,
@@ -45,6 +49,7 @@ const paymentSlice = createSlice({
   extraReducers: (builder) => {
     setCheckoutUrl(builder);
     searchPaymentHistoryOfUserPagination(builder);
+    getNumberOfSuccessfulTransactionOfUser(builder);
   },
 });
 
@@ -66,6 +71,32 @@ function setCheckoutUrl(builder: ActionReducerMapBuilder<PaymentState>) {
       (state, action: PayloadAction<any>) => {
         state.loadingPayment = false;
         state.errorPayment = action.payload || "Failed to create payment link";
+      }
+    );
+}
+
+function getNumberOfSuccessfulTransactionOfUser(
+  builder: ActionReducerMapBuilder<PaymentState>
+) {
+  builder
+    .addCase(getNumberOfSuccessfulTransactionOfUserThunk.pending, (state) => {
+      state.loadingPayment = true;
+      state.errorPayment = null;
+    })
+    .addCase(
+      getNumberOfSuccessfulTransactionOfUserThunk.fulfilled,
+      (state, action: PayloadAction<number>) => {
+        state.loadingPayment = false;
+        state.numberOfSuccessfulTransaction = action.payload;
+      }
+    )
+    .addCase(
+      getNumberOfSuccessfulTransactionOfUserThunk.rejected,
+      (state, action: PayloadAction<any>) => {
+        state.loadingPayment = false;
+        state.errorPayment =
+          action.payload ||
+          "Get number of successful transaction of user failed";
       }
     );
 }

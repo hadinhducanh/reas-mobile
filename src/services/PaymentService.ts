@@ -45,6 +45,23 @@ const searchPaymentHistoryOfUserPagination = async (
   return response.data;
 };
 
+const getNumberOfSuccessfulTransactionOfUser = async (
+  month: number,
+  year: number,
+  accessToken: string
+): Promise<number> => {
+  const response = await axios.get<number>(
+    `${API_BASE_URL}/payment-history/number-of-successful-transaction-of-user?month=${month}&year=${year}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
 export default {
   searchPaymentHistoryOfUserPagination,
+  getNumberOfSuccessfulTransactionOfUser,
 };

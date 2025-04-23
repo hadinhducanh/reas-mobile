@@ -594,7 +594,7 @@ const CriticalReport: React.FC = () => {
         )}
 
         <View className="bg-white rounded-2xl shadow p-4 mb-6">
-          <Text className="text-gray-600 mb-2 text-base text-base font-semibold">
+          <Text className="text-gray-600 mb-2 text-base font-semibold">
             Type of Report
           </Text>
           <View className="flex-row justify-between items-center bg-gray-100 rounded-lg p-3">
