@@ -281,3 +281,31 @@ export const uploadExchangeEvidenceThunk = createAsyncThunk<
     );
   }
 });
+
+export const getNumberOfSuccessfulExchangesOfUserThunk = createAsyncThunk<
+  number,
+  { month: number; year: number },
+  { state: RootState }
+>(
+  "exchange/getNumberOfSuccessfulExchangesOfUser",
+  async ({ month, year }, thunkAPI) => {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+    if (!accessToken) {
+      return thunkAPI.rejectWithValue("No access token available");
+    }
+    try {
+      const data = await ExchangeService.getNumberOfSuccessfulExchangesOfUser(
+        month,
+        year,
+        accessToken
+      );
+      return data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data ||
+          "Get number of successful exchange of user failed"
+      );
+    }
+  }
+);

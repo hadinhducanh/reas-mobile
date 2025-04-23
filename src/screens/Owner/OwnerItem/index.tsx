@@ -151,6 +151,7 @@ const OwnerItem: React.FC = () => {
         textColor="text-white"
         optionIconColor="white"
         owner={false}
+        user={userDetail!}
       />
       {loading ? (
         <View className="flex-1 justify-center items-center">

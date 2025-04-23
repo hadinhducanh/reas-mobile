@@ -76,7 +76,7 @@ const Account: React.FC = () => {
 
   useEffect(() => {
     dispatch(getCurrentSubscriptionThunk());
-  }, [dispatch]);
+  }, [dispatch, accessToken]);
 
   const accountItems = useMemo(() => {
     return [
@@ -113,6 +113,18 @@ const Account: React.FC = () => {
         iconName: "wallet-outline",
         label: "Premium",
         route: currentPlan ? "ExtendPremium" : "Premium",
+      },
+      {
+        iconName: "card-outline",
+        label: "Payment history",
+        route: "PaymentHistory",
+        requireAuth: true,
+      },
+      {
+        iconName: "clipboard-outline",
+        label: "Reported",
+        route: "ReportedHistory",
+        requireAuth: true,
       },
       {
         iconName: "information-circle-outline",

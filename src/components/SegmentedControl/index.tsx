@@ -7,29 +7,22 @@ interface SegmentedControlProps {
   onChange: (value: string) => void;
 }
 
-const segments = ["Weekly", "Monthly", "Yearly"];
+const segments = ["Monthly"];
 
 export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   selected,
   onChange,
 }) => {
   return (
-    <View className="flex-row bg-gray-200 p-1 rounded-xl w-full mb-4">
+    <View className="flex-row bg-white p-1 rounded-xl w-full mb-4">
       {segments.map((segment) => {
-        const isActive = segment === selected;
         return (
           <TouchableOpacity
             key={segment}
             onPress={() => onChange(segment)}
-            className={`flex-1 items-center py-2 rounded-xl ${
-              isActive ? "bg-white" : ""
-            }`}
+            className={`flex-1 items-center py-2 rounded-xl`}
           >
-            <Text
-              className={isActive ? "text-blue-500 font-bold" : "text-gray-500"}
-            >
-              {segment}
-            </Text>
+            <Text className="text-[#00B0B9] font-semibold">{segment}</Text>
           </TouchableOpacity>
         );
       })}

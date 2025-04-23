@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -30,15 +30,21 @@ import {
   addToFavoriteThunk,
   deleteFromFavoriteThunk,
 } from "../../../redux/thunk/favoriteThunk";
-import { resetItemDetailState } from "../../../redux/slices/itemSlice";
+import {
+  resetExtendFree,
+  resetItemDetailState,
+} from "../../../redux/slices/itemSlice";
 import {
   changeItemStatusThunk,
+  extendItemForFreeThunk,
   getItemDetailThunk,
 } from "../../../redux/thunk/itemThunks";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
 import { StatusItem } from "../../../common/enums/StatusItem";
+import { TypeItem } from "../../../common/enums/TypeItem";
+import { getCurrentSubscriptionThunk } from "../../../redux/thunk/subscriptionThunks";
 
 const { width } = Dimensions.get("window");
 
@@ -61,19 +67,106 @@ const methodExchanges = [
   { label: "Pick up", value: MethodExchange.PICK_UP_IN_PERSON },
 ];
 
+const typeItems = [
+  {
+    name: "Kitchen",
+    value: TypeItem.KITCHEN_APPLIANCES,
+  },
+  {
+    name: "Cleaning & Laundry",
+    value: TypeItem.CLEANING_LAUNDRY_APPLIANCES,
+  },
+  {
+    name: "Cooling & Heating",
+    value: TypeItem.COOLING_HEATING_APPLIANCES,
+  },
+  {
+    name: "Electric & Entertainment",
+    value: TypeItem.ELECTRONICS_ENTERTAINMENT_DEVICES,
+  },
+  {
+    name: "Lighting & Security",
+    value: TypeItem.LIGHTING_SECURITY_DEVICES,
+  },
+  {
+    name: "Living room",
+    value: TypeItem.LIVING_ROOM_APPLIANCES,
+  },
+  {
+    name: "Bedroom",
+    value: TypeItem.BEDROOM_APPLIANCES,
+  },
+  {
+    name: "Bathroom",
+    value: TypeItem.BATHROOM_APPLIANCES,
+  },
+];
+
+const statusStyles: Record<
+  StatusItem,
+  { textColor: string; backgroundColor: string }
+> = {
+  AVAILABLE: {
+    textColor: "text-[#16A34A]",
+    backgroundColor: "bg-[rgba(22,163,74,0.2)]",
+  },
+  EXPIRED: {
+    textColor: "text-[#D067BD]",
+    backgroundColor: "bg-[rgba(208,103,189,0.2)]",
+  },
+  REJECTED: {
+    textColor: "text-[#FA5555]",
+    backgroundColor: "bg-[rgba(250,85,85,0.2)]",
+  },
+  PENDING: {
+    textColor: "text-[#00b0b9]",
+    backgroundColor: "bg-[rgba(0,176,185,0.2)]",
+  },
+  NO_LONGER_FOR_EXCHANGE: {
+    textColor: "text-[#16A34A]",
+    backgroundColor: "bg-[rgba(22,163,74,0.2)]",
+  },
+  SOLD: {
+    textColor: "text-[#FFFF00]",
+    backgroundColor: "bg-[rgba(205,205,0,0.3)]",
+  },
+  IN_EXCHANGE: {
+    textColor: "text-[#FFA43D]",
+    backgroundColor: "bg-[rgba(255,164,61,0.4)]",
+  },
+};
+
+const statusItems = [
+  { label: "AVAILABLE", value: StatusItem.AVAILABLE },
+  { label: "EXPIRED", value: StatusItem.EXPIRED },
+  { label: "NLFE", value: StatusItem.NO_LONGER_FOR_EXCHANGE },
+  { label: "PENDING", value: StatusItem.PENDING },
+  { label: "REJECTED", value: StatusItem.REJECTED },
+  { label: "SOLD", value: StatusItem.SOLD },
+  { label: "IN EXCHANGE", value: StatusItem.IN_EXCHANGE },
+];
+
 const ItemExpire: React.FC = () => {
   const [deletedVisible, setDeletedVisible] = useState(false);
+  const [extendFreeVisible, setExtendFreeVisible] = useState(false);
+  const [reOpenVisible, setReOpenVisible] = useState(false);
 
   const route = useRoute<RouteProp<RootStackParamList, "ItemDetails">>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { itemId } = route.params;
   const dispatch = useDispatch<AppDispatch>();
-  const { itemDetail, itemSimilar, otherItemOfUser, loading } = useSelector(
-    (state: RootState) => state.item
-  );
+  const { itemDetail, itemSimilar, otherItemOfUser, extendFree, loading } =
+    useSelector((state: RootState) => state.item);
+  const { currentPlan } = useSelector((state: RootState) => state.subscription);
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const [isFavorite, setIsFavorite] = useState(itemDetail?.favorite);
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
+  const statusStyle = itemDetail?.statusItem
+    ? statusStyles[itemDetail.statusItem] || {
+        textColor: "text-gray-500",
+        backgroundColor: "bg-gray-200",
+      }
+    : { textColor: "text-gray-500", backgroundColor: "bg-gray-200" };
 
   const getConditionItemLabel = (status: ConditionItem | undefined): string => {
     const found = conditionItems.find((item) => item.value === status);
@@ -92,23 +185,37 @@ const ItemExpire: React.FC = () => {
       .join(", ");
   };
 
+  const getTypeItemLabel = (status: TypeItem | undefined): string => {
+    const found = typeItems.find((item) => item.value === status);
+    return found ? found.name : "";
+  };
+
+  const getStatusItemLabel = (status: StatusItem | undefined): string => {
+    const found = statusItems.find((item) => item.value === status);
+    return found ? found.label : "";
+  };
+
   const data = useMemo(
     () => [
       {
-        label: "Tình trạng",
+        label: "Condition",
         value: getConditionItemLabel(itemDetail?.conditionItem),
       },
-      { label: "Thiết bị", value: itemDetail?.category.categoryName },
-      { label: "Hãng", value: itemDetail?.brand.brandName },
       {
-        label: "Phương thức trao đổi",
+        label: "Type",
+        value: getTypeItemLabel(itemDetail?.typeItem),
+      },
+      { label: "Category", value: itemDetail?.category.categoryName },
+      { label: "Brand", value: itemDetail?.brand.brandName },
+      {
+        label: "Exchange method",
         value:
           itemDetail?.methodExchanges.length === 3
             ? "All of methods"
             : getMethodExchangeLabel(itemDetail?.methodExchanges),
       },
       {
-        label: "Loại giao dịch",
+        label: "Exchange type",
         value:
           itemDetail?.desiredItem !== null ? "Open with desired item" : "Open",
       },
@@ -148,8 +255,20 @@ const ItemExpire: React.FC = () => {
     }
   }
 
+  const formatExchangeDate = (exchangeDate: string): string => {
+    const dt = new Date(exchangeDate);
+
+    const day = dt.getDate().toString().padStart(2, "0");
+    const month = (dt.getMonth() + 1).toString().padStart(2, "0");
+    const year = dt.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+
+    return formattedDate;
+  };
+
   useFocusEffect(
     useCallback(() => {
+      dispatch(getCurrentSubscriptionThunk());
       dispatch(resetItemDetailState());
       dispatch(getItemDetailThunk(itemId));
     }, [dispatch, itemId])
@@ -178,8 +297,16 @@ const ItemExpire: React.FC = () => {
     navigation.navigate("ExtendItemPlan");
   };
 
-  const handleDelete = async () => {
+  const handleExtendFree = async () => {
+    setExtendFreeVisible(true);
+  };
+
+  const handleDeactivate = async () => {
     setDeletedVisible(true);
+  };
+
+  const handleReOpen = async () => {
+    setReOpenVisible(true);
   };
 
   const handleCancel = () => {
@@ -199,6 +326,41 @@ const ItemExpire: React.FC = () => {
     }
   };
 
+  const handleCancelReOpen = () => {
+    setReOpenVisible(false);
+  };
+
+  const handleConfirmReOpen = async () => {
+    if (itemDetail) {
+      dispatch(
+        changeItemStatusThunk({
+          itemId: itemDetail?.id,
+          statusItem: StatusItem.AVAILABLE,
+        })
+      );
+
+      setReOpenVisible(false);
+    }
+  };
+
+  const handleCancelExtendFree = () => {
+    setExtendFreeVisible(false);
+  };
+
+  const handleConfirmExtendFree = async () => {
+    if (itemDetail) {
+      await dispatch(extendItemForFreeThunk(itemId)).unwrap();
+      setExtendFreeVisible(false);
+    }
+  };
+
+  useEffect(() => {
+    if (extendFree) {
+      dispatch(resetExtendFree());
+      navigation.goBack();
+    }
+  }, [extendFree]);
+
   const renderImageItem = useCallback(
     ({ item: image }: { item: string }) => (
       <View className="relative" style={{ width: width }}>
@@ -209,18 +371,6 @@ const ItemExpire: React.FC = () => {
             resizeMode="contain"
           />
         </View>
-        {accessToken && (
-          <TouchableOpacity
-            className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
-            onPress={handleFavoritePress}
-          >
-            <Icon
-              name={isFavorite ? "heart" : "heart-outline"}
-              size={24}
-              color="#ff0000"
-            />
-          </TouchableOpacity>
-        )}
       </View>
     ),
     [handleFavoritePress, isFavorite]
@@ -239,9 +389,12 @@ const ItemExpire: React.FC = () => {
         />
 
         <View className="p-5 bg-white">
-          <Text className="text-2xl font-bold text-gray-900">
-            {itemDetail?.itemName}
-          </Text>
+          <View className="flex-row justify-between items-center">
+            <Text className="text-2xl font-bold text-gray-900">
+              {itemDetail?.itemName}
+            </Text>
+          </View>
+
           <Text className="text-2xl font-semibold text-[#00B0B9] mt-1">
             {itemDetail?.price === 0
               ? "Free"
@@ -257,8 +410,13 @@ const ItemExpire: React.FC = () => {
           )}
 
           <View className="mt-3">
+            <Text
+              className={`text-[13px] font-medium ${statusStyle.textColor} ${statusStyle.backgroundColor} rounded-full py-1 px-3 self-start`}
+            >
+              {getStatusItemLabel(itemDetail?.statusItem)}
+            </Text>
             <Pressable onPress={() => setLocationVisible(true)}>
-              <View className="flex flex-row items-center">
+              <View className="flex flex-row items-center mt-3">
                 <Icon name="location-outline" size={25} color="black" />
                 <Text
                   className="ml-1 text-gray-500 text-lg underline w-10/12"
@@ -269,11 +427,20 @@ const ItemExpire: React.FC = () => {
               </View>
             </Pressable>
 
+            {itemDetail?.expiredTime && (
+              <View className="flex flex-row items-center mt-2">
+                <Icon name="time-outline" size={25} color="black" />
+                <Text className="ml-1 text-gray-500 text-lg font-semibold">
+                  Expire {formatExchangeDate(itemDetail?.expiredTime)}
+                </Text>
+              </View>
+            )}
+
             {itemDetail?.approvedTime && (
               <View className="flex flex-row items-center mt-2">
                 <Icon name="time-outline" size={25} color="black" />
                 <Text className="ml-1 text-gray-500 text-lg">
-                  Đăng {formatRelativeTime(itemDetail?.approvedTime)}
+                  Upload {formatRelativeTime(itemDetail?.approvedTime)}
                 </Text>
               </View>
             )}
@@ -403,7 +570,7 @@ const ItemExpire: React.FC = () => {
   return (
     <>
       <SafeAreaView className="flex-1 bg-gray-100" edges={["top"]}>
-        <Header title="" />
+        <Header title="" showOption={false} />
         {loading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#00b0b9" />
@@ -424,15 +591,24 @@ const ItemExpire: React.FC = () => {
               } px-5 bg-white rounded-t-xl flex-row items-center`}
             >
               {itemDetail?.statusItem !== StatusItem.REJECTED &&
-                itemDetail?.statusItem !== StatusItem.NO_LONGER_FOR_EXCHANGE &&
                 itemDetail?.statusItem !== StatusItem.SOLD &&
-                itemDetail?.statusItem !== StatusItem.UNAVAILABLE && (
+                itemDetail?.statusItem !== StatusItem.IN_EXCHANGE && (
                   <>
                     {itemDetail?.statusItem === StatusItem.EXPIRED ? (
                       <View className="flex-1 mr-2">
                         <LoadingButton
-                          title="Extend"
-                          onPress={handleExtend}
+                          title={
+                            currentPlan &&
+                            currentPlan?.numberOfFreeExtensionLeft !== 0
+                              ? "Extend free"
+                              : "Extend"
+                          }
+                          onPress={
+                            currentPlan &&
+                            currentPlan?.numberOfFreeExtensionLeft !== 0
+                              ? handleExtendFree
+                              : handleExtend
+                          }
                           buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
                           iconName="time-outline"
                           iconSize={25}
@@ -441,34 +617,59 @@ const ItemExpire: React.FC = () => {
                           textColor="text-[#00B0B9]"
                         />
                       </View>
+                    ) : itemDetail?.statusItem ===
+                      StatusItem.NO_LONGER_FOR_EXCHANGE ? (
+                      <>
+                        <View className="flex-1 mr-2">
+                          <LoadingButton
+                            title="Re-Open"
+                            onPress={handleReOpen}
+                            buttonClassName="p-3 border-[#00B0B9] border-2"
+                            iconName="refresh-outline"
+                            iconSize={25}
+                            iconColor="white"
+                            showIcon={true}
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <LoadingButton
+                            title="Delete"
+                            onPress={handleDeactivate}
+                            buttonClassName="p-3 border-transparent border-2 bg-[rgba(250,85,85)] active:bg-[rgba(250,85,85,0.5)]"
+                            iconName="trash-outline"
+                            iconSize={25}
+                            iconColor="white"
+                            showIcon={true}
+                            textColor="text-white"
+                          />
+                        </View>
+                      </>
                     ) : (
-                      <View className="flex-1 mr-2">
-                        <LoadingButton
-                          title="Update"
-                          onPress={handleUpdate}
-                          buttonClassName="p-3 border-[#00B0B9] border-2 bg-white"
-                          iconName="reader-outline"
-                          iconSize={25}
-                          iconColor="#00B0B9"
-                          showIcon={true}
-                          textColor="text-[#00B0B9]"
-                        />
-                      </View>
-                    )}
-
-                    {itemDetail?.statusItem !== StatusItem.EXPIRED && (
-                      <View className="flex-1">
-                        <LoadingButton
-                          title="Delete"
-                          onPress={handleDelete}
-                          buttonClassName="p-3 border-transparent border-2 bg-[#00B0B9]"
-                          iconName="trash-outline"
-                          iconSize={25}
-                          iconColor="white"
-                          showIcon={true}
-                          textColor="text-white"
-                        />
-                      </View>
+                      <>
+                        <View className="flex-1 mr-2">
+                          <LoadingButton
+                            title="Update"
+                            onPress={handleUpdate}
+                            buttonClassName="p-3 border-[#00B0B9] border-2"
+                            iconName="reader-outline"
+                            iconSize={25}
+                            iconColor="white"
+                            showIcon={true}
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <LoadingButton
+                            title="Deactivate"
+                            onPress={handleDeactivate}
+                            buttonClassName="p-3 border-transparent border-2 bg-[rgba(250,85,85)] active:bg-[rgba(250,85,85,0.5)]"
+                            iconName="trash-outline"
+                            iconSize={25}
+                            iconColor="white"
+                            showIcon={true}
+                            textColor="text-white"
+                          />
+                        </View>
+                      </>
                     )}
                   </>
                 )}
@@ -490,11 +691,29 @@ const ItemExpire: React.FC = () => {
       )}
 
       <ConfirmModal
-        title="Confirm delete"
-        content="Are you sure you to delete this item?"
+        title="Confirm deactivate"
+        content="Are you sure you to deactivate this item?"
         visible={deletedVisible}
         onCancel={handleCancel}
         onConfirm={handleConfirm}
+      />
+
+      <ConfirmModal
+        title="Confirm extend"
+        content={`You have ${
+          currentPlan?.numberOfFreeExtensionLeft
+        } extend free ${"\n"} Are you sure you to reopen this item?`}
+        visible={extendFreeVisible}
+        onCancel={handleCancelExtendFree}
+        onConfirm={handleConfirmExtendFree}
+      />
+
+      <ConfirmModal
+        title="Confirm reopen"
+        content="Are you sure you to reopen this item?"
+        visible={reOpenVisible}
+        onCancel={handleCancelReOpen}
+        onConfirm={handleConfirmReOpen}
       />
     </>
   );

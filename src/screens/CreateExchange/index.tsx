@@ -40,11 +40,7 @@ import ConfirmModal from "../../components/DeleteConfirmModal";
 import { resetPlaceDetail } from "../../redux/slices/locationSlice";
 import LocationModal from "../../components/LocationModal";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import {
-  getAllItemOfCurrentUserByStatusThunk,
-  getRecommendedItemsInExchangeThunk,
-} from "../../redux/thunk/itemThunks";
-import { StatusItem } from "../../common/enums/StatusItem";
+import { getRecommendedItemsInExchangeThunk } from "../../redux/thunk/itemThunks";
 
 const CreateExchange: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "CreateExchange">>();
@@ -81,7 +77,7 @@ const CreateExchange: React.FC = () => {
   const [errorTitleInput, setErrorTitleInput] = useState<string>("");
   const [errorContentInput, setErrorContentInput] = useState<string>("");
   const [errorVisible, setErrorVisible] = useState<boolean>(false);
-  const [additionalNotes, setAdditionalNotes] = useState<string>(
+  const [additionalNotes, setAdditionalNotes] = useState<string | null>(
     exchangeItem.additionalNotes
   );
 
@@ -504,7 +500,7 @@ const CreateExchange: React.FC = () => {
                         <Text className="ml-2 underline text-[#00B0B9] font-normal text-base">
                           {selectedDateTime
                             ? formatExchangeDate(selectedDateTime.toISOString())
-                            : "Choose Schedule"}
+                            : "Choose schedule"}
                         </Text>
                       </Pressable>
                     </View>
@@ -532,7 +528,7 @@ const CreateExchange: React.FC = () => {
                       placeholderTextColor="#d1d5db"
                       multiline={true}
                       textAlignVertical="top"
-                      value={additionalNotes}
+                      value={additionalNotes ?? ""}
                       onChangeText={(text) => handleAdditionalNotes(text)}
                     />
                   </View>
@@ -641,7 +637,7 @@ const CreateExchange: React.FC = () => {
 
       <ConfirmModal
         title="Warning"
-        content={`You have unsaved item. ${"\n"} Do you really want to leave?`}
+        content={`You have unsaved exchange. ${"\n"} Do you really want to leave?`}
         visible={warningVisible}
         onCancel={handleCancel}
         onConfirm={handleConfirm}

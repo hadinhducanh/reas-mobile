@@ -1,0 +1,499 @@
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  ScrollView,
+  Modal,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
+import { AntDesign, Feather } from "@expo/vector-icons";
+import { useDispatch, useSelector } from "react-redux";
+import Header from "../../../components/Header";
+import Icon from "react-native-vector-icons/Ionicons";
+import { AppDispatch, RootState } from "../../../redux/store";
+import {
+  CriticalReportResponse,
+  SearchCriticalReportRequest,
+} from "../../../common/models/criticalReport";
+import {
+  getCriticalReportDetailThunk,
+  searchCriticalReportThunk,
+} from "../../../redux/thunk/criticalReportThunk";
+import { StatusCriticalReport } from "../../../common/enums/StatusCriticalReport";
+import { TypeCriticalReport } from "../../../common/enums/TypeCriticalReport";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+
+const formatMonthYear = (date: Date): string => {
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  return `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+};
+
+const formatCriticalReportDateTime = (creationDate: string): string => {
+  const dt = new Date(creationDate);
+
+  const day = dt.getDate().toString().padStart(2, "0");
+  const month = (dt.getMonth() + 1).toString().padStart(2, "0");
+  const year = dt.getFullYear();
+  const formattedDate = `${day}-${month}-${year}`;
+
+  const formattedTime = dt.toLocaleTimeString("en-US", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${formattedDate} ${formattedTime}`;
+};
+
+const groupByMonth = (
+  data: CriticalReportResponse[]
+): Record<string, CriticalReportResponse[]> => {
+  return data.reduce((acc, item) => {
+    const month = formatMonthYear(new Date(item.creationDate));
+    if (!acc[month]) acc[month] = [];
+    acc[month].push(item);
+    return acc;
+  }, {} as Record<string, CriticalReportResponse[]>);
+};
+
+const statusCriticalReports = [
+  { label: "REJECTED", value: StatusCriticalReport.REJECTED },
+  { label: "RESOLVED", value: StatusCriticalReport.RESOLVED },
+  { label: "PENDING", value: StatusCriticalReport.PENDING },
+];
+
+const typsCriticalReports = [
+  { label: "USER", value: TypeCriticalReport.USER },
+  { label: "FEEDBACK", value: TypeCriticalReport.FEEDBACK },
+  { label: "EXCHANGE", value: TypeCriticalReport.EXCHANGE },
+];
+
+export default function ReportedHistory(): JSX.Element {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [statusFilter, setStatusFilter] = useState<StatusCriticalReport | null>(
+    null
+  );
+  const [showStatusFilterModal, setShowStatusFilterModal] =
+    useState<boolean>(false);
+
+  const [typesFilter, setTypesFilter] = useState<TypeCriticalReport | null>(
+    null
+  );
+  const [showTypesFilterModal, setShowTypesFilterModal] =
+    useState<boolean>(false);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { criticalReportDetail, searchCriticalReport, loadingCriticalReport } =
+    useSelector((state: RootState) => state.criticalReport);
+  const { content, pageNo, last } = searchCriticalReport;
+  const isFirstRender = useRef(true);
+
+  const searchRequest: SearchCriticalReportRequest = {
+    // statusPayments: [StatusPayment.SUCCESS],
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(
+        searchCriticalReportThunk({
+          pageNo: 0,
+          request: searchRequest,
+        })
+      );
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    const delayDebounce = setTimeout(() => {
+      if (!user?.id) return;
+
+      if (statusFilter) {
+        searchRequest.statusCriticalReports = [statusFilter];
+      }
+
+      if (typesFilter) {
+        searchRequest.typeReports = [typesFilter];
+      }
+
+      dispatch(
+        searchCriticalReportThunk({
+          pageNo: 0,
+          request: searchRequest,
+        })
+      );
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
+  }, [user?.id, statusFilter, typesFilter]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!loadingCriticalReport && !last && user?.id) {
+      if (statusFilter) {
+        searchRequest.statusCriticalReports = [statusFilter];
+      }
+      if (typesFilter) {
+        searchRequest.typeReports = [typesFilter];
+      }
+
+      dispatch(
+        searchCriticalReportThunk({
+          pageNo: pageNo + 1,
+          request: {
+            ...searchRequest,
+          },
+        })
+      );
+    }
+  }, [user?.id, statusFilter, typesFilter]);
+
+  const isCloseToBottom = ({
+    layoutMeasurement,
+    contentOffset,
+    contentSize,
+  }: any) => {
+    const paddingToBottom = 80;
+    return (
+      layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom
+    );
+  };
+
+  const getStatusCriticalReportedLabel = (
+    status: StatusCriticalReport | undefined
+  ): string => {
+    const found = statusCriticalReports.find((item) => item.value === status);
+    return found ? found.label : "";
+  };
+
+  const getStatusColor = (status: StatusCriticalReport): string => {
+    return status === StatusCriticalReport.RESOLVED
+      ? "text-green-600"
+      : status === StatusCriticalReport.PENDING
+      ? "text-yellow-600"
+      : "text-red-600";
+  };
+
+  const getStatusBackground = (status: StatusCriticalReport): string => {
+    return status === StatusCriticalReport.RESOLVED
+      ? "bg-green-100"
+      : status === StatusCriticalReport.PENDING
+      ? "bg-yellow-100"
+      : "bg-red-100";
+  };
+
+  const grouped = groupByMonth(content);
+
+  const viewCriticalReportDetail = async (id: number) => {
+    try {
+      // dispatch và đợi Promise hoàn thành, unwrap() sẽ trả về payload hoặc throw error
+      const detail = await dispatch(getCriticalReportDetailThunk(id)).unwrap();
+
+      // giờ detail chính là criticalReportDetail mới
+      if (detail.typeReport === TypeCriticalReport.EXCHANGE) {
+        navigation.navigate("CriticalReport", {
+          typeOfReport: TypeCriticalReport.EXCHANGE,
+          criticalReport: detail,
+          exchangeReport: detail.exchangeRequest,
+        });
+      } else if (detail.typeReport === TypeCriticalReport.FEEDBACK) {
+        navigation.navigate("CriticalReport", {
+          typeOfReport: TypeCriticalReport.FEEDBACK,
+          criticalReport: detail,
+          feedbackReport: detail.feedback,
+        });
+      } else {
+        navigation.navigate("CriticalReport", {
+          typeOfReport: TypeCriticalReport.USER,
+          criticalReport: detail,
+          userReport: detail.user,
+        });
+      }
+    } catch (err) {
+      // bắt lỗi nếu cần
+      Alert.alert("Error", "Something error");
+    }
+  };
+
+  const renderTransaction = ({ item }: { item: CriticalReportResponse }) => (
+    <View className="bg-white rounded-2xl p-4 my-2 shadow">
+      <View className="flex-row justify-between items-center mb-2">
+        <Text className="text-lg text-gray-600">#ID: {item.id}</Text>
+        <Text
+          className={`${getStatusColor(
+            item.statusCriticalReport
+          )} ${getStatusBackground(
+            item.statusCriticalReport
+          )} py-1 px-3 rounded-full text-sm font-semibold`}
+        >
+          {getStatusCriticalReportedLabel(item.statusCriticalReport)}
+        </Text>
+      </View>
+
+      {/* Type */}
+      <Text className="text-base font-semibold text-gray-800 mb-1">
+        Type: {item.typeReport}
+      </Text>
+
+      {/* Content */}
+      <Text className="text-base text-gray-700 mb-4" numberOfLines={2}>
+        Content: {item.contentReport.split("\\n")[0]}
+      </Text>
+
+      {/* Meta info */}
+      <View className="flex-col mb-4">
+        <View className="flex-row items-center">
+          <Feather name="clock" size={20} color="#4A5568" />
+          <Text className="text-sm text-gray-600 ml-1">
+            Created:{" "}
+            <Text className="font-semibold">
+              {formatCriticalReportDateTime(item.creationDate)}
+            </Text>
+          </Text>
+        </View>
+        <View className="flex-row items-center mt-1">
+          <Feather name="user" size={20} color="#4A5568" />
+          <Text className="text-sm text-gray-600 ml-1">
+            Reporter:{" "}
+            <Text className="font-semibold">{item.reporter.fullName}</Text>
+          </Text>
+        </View>
+        {item.answerer && (
+          <View className="flex-row items-center mt-1">
+            <Feather name="user-check" size={20} color="#4A5568" />
+            <Text className="text-sm text-gray-600 ml-1">
+              Answered by:{" "}
+              <Text className="font-semibold">{item.answerer.fullName}</Text>
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Button */}
+      <TouchableOpacity
+        onPress={() => viewCriticalReportDetail(item.id)}
+        className="bg-[#00b0b9] rounded-xl py-3 items-center"
+      >
+        <Text className="text-white font-semibold">View Details</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <>
+      <View className="flex-1 bg-gray-100">
+        <Header title="Critical reports" showOption={false} />
+
+        {/* Filter UI */}
+        <View className="px-4 pt-3 pb-2 bg-white">
+          <View className="flex-row justify-between items-center my-2 px-3">
+            <View className="flex-row items-center">
+              <Feather name="alert-circle" size={20} color="#555" />
+              <Text className="ml-2 text-gray-700">Status</Text>
+            </View>
+            <TouchableOpacity
+              className="flex-row items-center"
+              onPress={() => setShowStatusFilterModal(true)}
+            >
+              <Text className="text-[#00b0b9] font-semibold mr-1">
+                {statusFilter}
+              </Text>
+              <AntDesign name="down" size={12} color="#00b0b9" />
+            </TouchableOpacity>
+          </View>
+          <View className="flex-row justify-between items-center my-2 px-3">
+            <View className="flex-row items-center">
+              <Feather name="file-text" size={20} color="#555" />
+              <Text className="ml-2 text-gray-700">Type</Text>
+            </View>
+            <TouchableOpacity
+              className="flex-row items-center"
+              onPress={() => setShowTypesFilterModal(true)}
+            >
+              <Text className="text-[#00b0b9] font-semibold mr-1">
+                {typesFilter}
+              </Text>
+              <AntDesign name="down" size={12} color="#00b0b9" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {loadingCriticalReport ? (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#00b0b9" />
+          </View>
+        ) : content.length === 0 ? (
+          <View className="flex-1 justify-center items-center">
+            <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
+            <Text className="text-gray-500">No critical reported</Text>
+          </View>
+        ) : (
+          <ScrollView
+            className="px-4 mt-2"
+            showsVerticalScrollIndicator={false}
+            onScroll={({ nativeEvent }) => {
+              if (isCloseToBottom(nativeEvent)) {
+                handleLoadMore();
+              }
+            }}
+            scrollEventThrottle={100}
+          >
+            {Object.entries(grouped).map(([month, items]) => (
+              <View key={month} className="mb-4">
+                <Text className="text-gray-500 font-semibold mb-2">
+                  {month}
+                </Text>
+                <FlatList
+                  data={items}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={renderTransaction}
+                  scrollEnabled={false}
+                />
+              </View>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+
+      <Modal
+        transparent
+        animationType="slide"
+        visible={showStatusFilterModal}
+        onRequestClose={() => setShowStatusFilterModal(false)}
+      >
+        <TouchableOpacity
+          className="flex-1 justify-end bg-black/50"
+          onPress={() => setShowStatusFilterModal(false)}
+        >
+          <View className="bg-white rounded-t-2xl p-6 relative">
+            {/* Header row: Title centered, Reset top-right */}
+            <Text className="text-center text-xl font-bold text-[#00b0b9]">
+              Select Status
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setStatusFilter(null);
+                setShowStatusFilterModal(false);
+              }}
+              className="absolute right-6 top-6"
+            >
+              <Text className="text-[#00b0b9] font-medium">Reset</Text>
+            </TouchableOpacity>
+
+            {/* Subtitle */}
+            <Text className="text-center text-base text-gray-500 mt-1">
+              Choose a status
+            </Text>
+
+            {/* List of statuses */}
+            <View className="mt-4 space-y-3">
+              {statusCriticalReports.map((status) => (
+                <TouchableOpacity
+                  key={status.label}
+                  onPress={() => {
+                    setStatusFilter(status.value);
+                    setShowStatusFilterModal(false);
+                  }}
+                  className={`py-3 px-4 rounded-lg border mb-2 ${
+                    statusFilter === status.value
+                      ? "border-[#00b0b9] bg-[#E0F7FA]"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <Text
+                    className={`${
+                      statusFilter === status.value
+                        ? "text-[#00b0b9] font-semibold"
+                        : "text-gray-800"
+                    }`}
+                  >
+                    {status.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      <Modal
+        transparent
+        animationType="slide"
+        visible={showTypesFilterModal}
+        onRequestClose={() => setShowTypesFilterModal(false)}
+      >
+        <TouchableOpacity
+          className="flex-1 justify-end bg-black/50"
+          onPress={() => setShowTypesFilterModal(false)}
+        >
+          <View className="bg-white rounded-t-2xl p-6 relative">
+            <Text className="text-center text-xl font-bold text-[#00b0b9]">
+              Select Type
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setTypesFilter(null);
+                setShowTypesFilterModal(false);
+              }}
+              className="absolute right-6 top-6"
+            >
+              <Text className="text-[#00b0b9] font-medium">Reset</Text>
+            </TouchableOpacity>
+
+            <Text className="text-center text-base text-gray-500 mt-1">
+              Choose a type
+            </Text>
+
+            <View className="mt-4 space-y-3">
+              {typsCriticalReports.map((type) => (
+                <TouchableOpacity
+                  key={type.label}
+                  onPress={() => {
+                    setTypesFilter(type.value);
+                    setShowTypesFilterModal(false);
+                  }}
+                  className={`py-3 px-4 rounded-lg border mb-2 ${
+                    typesFilter === type.value
+                      ? "border-[#00b0b9] bg-[#E0F7FA]"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <Text
+                    className={`${
+                      typesFilter === type.value
+                        ? "text-[#00b0b9] font-semibold"
+                        : "text-gray-800"
+                    }`}
+                  >
+                    {type.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
+  );
+}

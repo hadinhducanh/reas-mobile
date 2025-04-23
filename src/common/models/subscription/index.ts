@@ -14,6 +14,7 @@ export interface UserSubscriptionDto {
   startDate: string;
   endDate: string;
   subscriptionPlan: SubscriptionPlanDto;
+  numberOfFreeExtensionLeft: number;
 }
 
 export interface SubscriptionPlanDto {

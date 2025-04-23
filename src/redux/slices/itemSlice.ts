@@ -15,6 +15,7 @@ import {
   findNearbyItemsThunk,
   changeItemStatusThunk,
   updateItemThunk,
+  extendItemForFreeThunk,
 } from "../thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
@@ -41,12 +42,14 @@ interface ItemState {
   itemUpdate: ItemResponse | null;
   countsOfUser: { [key in StatusItem]?: number };
   countsOfCurrentUser: { [key in StatusItem]?: number };
+  extendFree: boolean;
   range: number;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: ItemState = {
+  extendFree: false,
   itemDetail: null,
   itemAvailable: {
     pageNo: 0,
@@ -107,6 +110,9 @@ const itemSlice = createSlice({
   reducers: {
     setRangeState: (state, action: PayloadAction<number>) => {
       state.range = action.payload;
+    },
+    resetExtendFree: (state) => {
+      state.extendFree = false;
     },
     resetItemDetailState: (state) => {
       state.itemUpload = null;
@@ -535,8 +541,29 @@ const itemSlice = createSlice({
             action.payload || "Get item counts of current user failed";
         }
       );
+
+    builder
+      .addCase(extendItemForFreeThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        extendItemForFreeThunk.fulfilled,
+        (state, action: PayloadAction<boolean>) => {
+          state.loading = false;
+          state.extendFree = action.payload;
+        }
+      )
+      .addCase(
+        extendItemForFreeThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Extend free of item failed";
+        }
+      );
   },
 });
 
-export const { resetItemDetailState, setRangeState } = itemSlice.actions;
+export const { resetItemDetailState, setRangeState, resetExtendFree } =
+  itemSlice.actions;
 export default itemSlice.reducer;

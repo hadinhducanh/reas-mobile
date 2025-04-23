@@ -25,6 +25,7 @@ export const defaultUploadItem: ExtendedUploadItem = {
   termsAndConditionsExchange: "",
   categoryId: 0,
   brandId: 0,
+  userLocationId: 0,
   desiredItem: {
     categoryId: null,
     conditionItem: null,

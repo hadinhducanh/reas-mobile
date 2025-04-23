@@ -40,6 +40,8 @@ import {
   deleteFromFavoriteThunk,
 } from "../../../redux/thunk/favoriteThunk";
 import { StatusItem } from "../../../common/enums/StatusItem";
+import { TypeItem } from "../../../common/enums/TypeItem";
+import ImagePreviewModal from "../../../components/ImagePreviewModal";
 
 const { width } = Dimensions.get("window");
 
@@ -62,6 +64,41 @@ const methodExchanges = [
   { label: "Pick up", value: MethodExchange.PICK_UP_IN_PERSON },
 ];
 
+const typeItems = [
+  {
+    name: "Kitchen",
+    value: TypeItem.KITCHEN_APPLIANCES,
+  },
+  {
+    name: "Cleaning & Laundry",
+    value: TypeItem.CLEANING_LAUNDRY_APPLIANCES,
+  },
+  {
+    name: "Cooling & Heating",
+    value: TypeItem.COOLING_HEATING_APPLIANCES,
+  },
+  {
+    name: "Electric & Entertainment",
+    value: TypeItem.ELECTRONICS_ENTERTAINMENT_DEVICES,
+  },
+  {
+    name: "Lighting & Security",
+    value: TypeItem.LIGHTING_SECURITY_DEVICES,
+  },
+  {
+    name: "Living room",
+    value: TypeItem.LIVING_ROOM_APPLIANCES,
+  },
+  {
+    name: "Bedroom",
+    value: TypeItem.BEDROOM_APPLIANCES,
+  },
+  {
+    name: "Bathroom",
+    value: TypeItem.BATHROOM_APPLIANCES,
+  },
+];
+
 const ItemDetails: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "ItemDetails">>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -73,10 +110,17 @@ const ItemDetails: React.FC = () => {
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const [isFavorite, setIsFavorite] = useState(itemDetail?.favorite);
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const getConditionItemLabel = (status: ConditionItem | undefined): string => {
     const found = conditionItems.find((item) => item.value === status);
     return found ? found.label : "";
+  };
+
+  const getTypeItemLabel = (status: TypeItem | undefined): string => {
+    const found = typeItems.find((item) => item.value === status);
+    return found ? found.name : "";
   };
 
   const getMethodExchangeLabel = (
@@ -94,20 +138,24 @@ const ItemDetails: React.FC = () => {
   const data = useMemo(
     () => [
       {
-        label: "Tình trạng",
+        label: "Condition",
         value: getConditionItemLabel(itemDetail?.conditionItem),
       },
-      { label: "Thiết bị", value: itemDetail?.category.categoryName },
-      { label: "Hãng", value: itemDetail?.brand.brandName },
       {
-        label: "Phương thức trao đổi",
+        label: "Type",
+        value: getTypeItemLabel(itemDetail?.typeItem),
+      },
+      { label: "Category", value: itemDetail?.category.categoryName },
+      { label: "Brand", value: itemDetail?.brand.brandName },
+      {
+        label: "Exchange method",
         value:
           itemDetail?.methodExchanges.length === 3
             ? "All of methods"
             : getMethodExchangeLabel(itemDetail?.methodExchanges),
       },
       {
-        label: "Loại giao dịch",
+        label: "Exchange type",
         value:
           itemDetail?.desiredItem !== null ? "Open with desired item" : "Open",
       },
@@ -202,29 +250,40 @@ const ItemDetails: React.FC = () => {
     }
   }, [accessToken, dispatch, itemId, isFavorite, navigation]);
 
+  const imageUrls = itemDetail?.imageUrl
+    ? itemDetail?.imageUrl.split(", ")
+    : [];
+
   const renderImageItem = useCallback(
-    ({ item: image }: { item: string }) => (
-      <View className="relative" style={{ width: width }}>
-        <View className={`w-[${width}] h-96 bg-white`}>
-          <Image
-            source={{ uri: image }}
-            className="w-full h-full"
-            resizeMode="contain"
-          />
-        </View>
-        {accessToken && (
-          <TouchableOpacity
-            className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
-            onPress={handleFavoritePress}
-          >
-            <Icon
-              name={isFavorite ? "heart" : "heart-outline"}
-              size={24}
-              color="#ff0000"
+    ({ item: image, index }: { item: string; index: number }) => (
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedIndex(index);
+          setImageModalVisible(true);
+        }}
+      >
+        <View className="relative" style={{ width: width }}>
+          <View className={`w-[${width}] h-96 bg-white`}>
+            <Image
+              source={{ uri: image }}
+              className="w-full h-full"
+              resizeMode="contain"
             />
-          </TouchableOpacity>
-        )}
-      </View>
+          </View>
+          {accessToken && (
+            <TouchableOpacity
+              className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
+              onPress={handleFavoritePress}
+            >
+              <Icon
+                name={isFavorite ? "heart" : "heart-outline"}
+                size={24}
+                color="#ff0000"
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+      </TouchableOpacity>
     ),
     [handleFavoritePress, isFavorite]
   );
@@ -275,7 +334,7 @@ const ItemDetails: React.FC = () => {
             <View className="flex flex-row items-center mt-2">
               <Icon name="time-outline" size={25} color="black" />
               <Text className="ml-1 text-gray-500 text-lg">
-                Đăng {formatRelativeTime(itemDetail?.approvedTime)}
+                Upload {formatRelativeTime(itemDetail?.approvedTime)}
               </Text>
             </View>
           </View>
@@ -345,7 +404,7 @@ const ItemDetails: React.FC = () => {
         </View>
 
         <View className="p-5 my-5 bg-white">
-          <Text className="text-xl font-bold mb-3">Mô tả chi tiết</Text>
+          <Text className="text-xl font-bold mb-3">Description</Text>
           <View className="mb-3">
             {itemDetail?.description.split("\\n").map((line, index) => (
               <Text className="text-lg font-normal mb-1" key={index}>
@@ -355,7 +414,7 @@ const ItemDetails: React.FC = () => {
           </View>
 
           <Text className="text-xl font-bold mt-4 mb-3">
-            Thông tin chi tiết
+            Information details
           </Text>
           <View className="border border-gray-300 rounded-md overflow-hidden">
             {data.map((info, index) => (
@@ -428,7 +487,7 @@ const ItemDetails: React.FC = () => {
   return (
     <>
       <SafeAreaView className="flex-1 bg-gray-100" edges={["top"]}>
-        <Header title="" />
+        <Header title="" user={itemDetail?.owner} />
         {loading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#00b0b9" />
@@ -502,6 +561,13 @@ const ItemDetails: React.FC = () => {
           }
         />
       )}
+
+      <ImagePreviewModal
+        visible={imageModalVisible}
+        onClose={() => setImageModalVisible(false)}
+        initialIndex={selectedIndex}
+        imageUrls={imageUrls}
+      />
     </>
   );
 };

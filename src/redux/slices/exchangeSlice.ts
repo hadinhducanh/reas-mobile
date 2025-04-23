@@ -6,6 +6,7 @@ import {
   getAllExchangesByStatusOfCurrentUserThunk,
   getExchangeCountsThunk,
   getExchangeDetailThunk,
+  getNumberOfSuccessfulExchangesOfUserThunk,
   makeAnExchangeThunk,
   reviewExchangeRequestThunk,
   updateExchangeRequestPriceThunk,
@@ -18,7 +19,8 @@ interface ExchangeState {
   exchangeRequest: ExchangeResponse | null;
   exchangeByStatus: ResponseEntityPagination<ExchangeResponse>;
   exchangeDetail: ExchangeResponse | null;
-  counts: { [key in StatusExchange]?: number }; // thêm counts
+  counts: { [key in StatusExchange]?: number };
+  numberOfSuccessfulExchange: number;
   loading: boolean;
   error: string | null;
 }
@@ -34,6 +36,7 @@ const initialState: ExchangeState = {
     last: false,
     content: [],
   },
+  numberOfSuccessfulExchange: 0,
   counts: {},
   loading: false,
   error: null,
@@ -252,6 +255,28 @@ const exchangeSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload || "Upload evidence for exchange failed";
+        }
+      );
+
+    builder
+      .addCase(getNumberOfSuccessfulExchangesOfUserThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getNumberOfSuccessfulExchangesOfUserThunk.fulfilled,
+        (state, action: PayloadAction<number>) => {
+          state.loading = false;
+          state.numberOfSuccessfulExchange = action.payload;
+        }
+      )
+      .addCase(
+        getNumberOfSuccessfulExchangesOfUserThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error =
+            action.payload ||
+            "Get number of successful exchange of user failed";
         }
       );
   },

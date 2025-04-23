@@ -1,14 +1,33 @@
-import React from "react";
-import { Modal, View, Text, Image } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+  Modal,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Pressable,
+} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { FeedbackResponse } from "../../common/models/feedback";
 import dayjs from "dayjs";
+import ImagePreviewModal from "../ImagePreviewModal";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { TypeCriticalReport } from "../../common/enums/TypeCriticalReport";
+import { RootStackParamList } from "../../navigation/AppNavigator";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 
 interface ChooseLocationModalProps {
   feedback: FeedbackResponse;
 }
 
 const FeedbackCard: React.FC<ChooseLocationModalProps> = ({ feedback }) => {
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const { accessToken } = useSelector((state: RootState) => state.auth);
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+
   const formatPrice = (price: number | undefined): string => {
     if (price === undefined) return "0";
     return price.toLocaleString("vi-VN");
@@ -40,6 +59,22 @@ const FeedbackCard: React.FC<ChooseLocationModalProps> = ({ feedback }) => {
     }
   }
 
+  const imageUrls = feedback.imageUrl ? feedback.imageUrl.split(", ") : [];
+
+  const handleNavigateCriticalReport = useCallback(() => {
+    if (!accessToken) {
+      setIsPopupVisible(false);
+      navigation.navigate("SignIn");
+    } else {
+      setIsPopupVisible(false);
+      navigation.navigate("CriticalReport", {
+        id: feedback.id,
+        typeOfReport: TypeCriticalReport.FEEDBACK,
+        feedbackReport: feedback,
+      });
+    }
+  }, [accessToken, navigation, feedback.id]);
+
   return (
     <>
       <View className=" bg-white p-5">
@@ -50,39 +85,26 @@ const FeedbackCard: React.FC<ChooseLocationModalProps> = ({ feedback }) => {
             </View>
             <Text className="text-lg font-bold">{feedback.user.fullName}</Text>
           </View>
+
+          <TouchableOpacity onPress={() => setIsPopupVisible(true)}>
+            <Icon name="ellipsis-vertical" size={20} color="gray" />
+          </TouchableOpacity>
         </View>
 
-        {feedback.imageUrl.length === 0 ? (
-          ""
-        ) : feedback.imageUrl.split(", ").length === 1 ? (
-          <View className="flex-row mt-2 justify-start">
-            <View className="w-20 h-28 rounded-lg items-center justify-center">
-              <Image
-                source={{
-                  uri: feedback.imageUrl.split(", ")[0],
+        {imageUrls.length > 0 && (
+          <View className="flex-row flex-wrap gap-2 mt-2">
+            {imageUrls.map((uri, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  setSelectedIndex(index);
+                  setImageModalVisible(true);
                 }}
-                className="w-full h-full rounded-lg"
-              />
-            </View>
-          </View>
-        ) : (
-          <View className="flex-row justify-start mt-2">
-            <View className="w-20 h-28 rounded-lg items-center justify-centers mr-2">
-              <Image
-                source={{
-                  uri: feedback.imageUrl.split(", ")[0],
-                }}
-                className="w-full h-full rounded-lg"
-              />
-            </View>
-            <View className="w-20 h-28 rounded-lg items-center justify-center">
-              <Image
-                source={{
-                  uri: feedback.imageUrl.split(", ")[1],
-                }}
-                className="w-full h-full rounded-lg"
-              />
-            </View>
+                className="w-20 h-28 rounded-lg overflow-hidden mr-2"
+              >
+                <Image source={{ uri }} className="w-full h-full rounded-lg" />
+              </TouchableOpacity>
+            ))}
           </View>
         )}
 
@@ -134,6 +156,33 @@ const FeedbackCard: React.FC<ChooseLocationModalProps> = ({ feedback }) => {
         </View>
         <View className="border-b border-gray-300 my-4" />
       </View>
+      <ImagePreviewModal
+        visible={imageModalVisible}
+        onClose={() => setImageModalVisible(false)}
+        initialIndex={selectedIndex}
+        imageUrls={imageUrls}
+      />
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isPopupVisible}
+        onRequestClose={() => setIsPopupVisible(false)}
+      >
+        <Pressable
+          className="flex-1 bg-[rgba(0,0,0,0.2)]"
+          onPress={() => setIsPopupVisible(false)}
+        >
+          <View className="mt-auto ">
+            <Pressable
+              className="flex-row items-center bg-white p-5 active:bg-gray-100"
+              onPress={handleNavigateCriticalReport}
+            >
+              <Icon name="warning-outline" size={24} color="black" />
+              <Text className="ml-2 text-base">Report this feedback</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </>
   );
 };

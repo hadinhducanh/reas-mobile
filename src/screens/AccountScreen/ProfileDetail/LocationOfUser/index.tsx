@@ -74,8 +74,8 @@ const LocationOfUser: React.FC = () => {
   }, [user?.userLocations.length, shouldReloadLocations]);
 
   const handleSelectLocation = (userLocationId: number, place_id: string) => {
-    dispatch(setUserLocationIdState(userLocationId));
     setSelectedLocationId(place_id);
+    dispatch(setUserLocationIdState(userLocationId));
     navigation.goBack();
   };
 

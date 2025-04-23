@@ -44,6 +44,12 @@ import {
   LIGHTING_TYPE_IMAGE,
   LIVINGROOM_TYPE_IMAGE,
 } from "../../common/constant";
+import { getAllByTypeItemThunk } from "../../redux/thunk/categoryThunk";
+import CategoryModal from "../../components/CategoryModal";
+import { CategoryDto } from "../../common/models/category";
+import { BrandDto } from "../../common/models/brand";
+import BrandModal from "../../components/BrandModal";
+import { getAllBrandThunk } from "../../redux/thunk/brandThunks";
 
 type HomeScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -58,13 +64,21 @@ const SearchResult: React.FC = () => {
   const { searchTextParam, itemType } = route.params;
 
   const [isSortModalVisible, setIsSortModalVisible] = useState<boolean>(false);
+  const [isSelectedCategory, setIsSelectedCategory] = useState<boolean>(false);
+  const [isSelectedBrand, setIsSelectedBrand] = useState<boolean>(false);
   const [isFilterPriceModalVisible, setIsFilterPriceModalVisible] =
     useState<boolean>(false);
 
   const [selectedSort, setSelectedSort] = useState<string>("new");
+  const [selectedCategories, setSelectedCategories] = useState<CategoryDto[]>(
+    []
+  );
+  const [selectedBrands, setSelectedBrands] = useState<BrandDto[]>([]);
+
   const { itemSearch, range, loading } = useSelector(
     (state: RootState) => state.item
   );
+
   const { content, pageNo, last } = itemSearch;
 
   const [minPrice, setMinPrice] = useState<string>("0");
@@ -123,6 +137,7 @@ const SearchResult: React.FC = () => {
 
   useEffect(() => {
     dispatch(resetItemDetailState());
+    dispatch(getAllBrandThunk());
     if (searchTextParam !== undefined) {
       setSearchText(searchTextParam);
       dispatch(
@@ -164,6 +179,8 @@ const SearchResult: React.FC = () => {
           pageNo: 0,
           request: {
             ...searchRequest,
+            categoryIds: selectedCategories.map((cate) => cate.id) || undefined,
+            brandIds: selectedBrands.map((brand) => brand.id) || undefined,
             typeItems: typeItem || undefined,
             itemName: searchText || undefined,
             fromPrice: fromPrice || undefined,
@@ -175,7 +192,17 @@ const SearchResult: React.FC = () => {
       );
     }, 500);
     return () => clearTimeout(deplayDebounce);
-  }, [dispatch, searchText, typeItem, fromPrice, toPrice, sortBy, sortDir]);
+  }, [
+    dispatch,
+    searchText,
+    typeItem,
+    fromPrice,
+    toPrice,
+    sortBy,
+    sortDir,
+    selectedCategories,
+    selectedBrands,
+  ]);
 
   const handleLoadMore = useCallback(() => {
     if (!loading && !last) {
@@ -184,6 +211,9 @@ const SearchResult: React.FC = () => {
           pageNo: pageNo + 1,
           request: {
             ...searchRequest,
+            categoryIds: selectedCategories.map((cate) => cate.id) || undefined,
+            brandIds: selectedBrands.map((brand) => brand.id) || undefined,
+            typeItems: typeItem || undefined,
             itemName: searchText || undefined,
             fromPrice: fromPrice || undefined,
             toPrice: toPrice || undefined,
@@ -204,7 +234,15 @@ const SearchResult: React.FC = () => {
     toPrice,
     sortBy,
     sortDir,
+    selectedCategories,
+    selectedBrands,
   ]);
+
+  useEffect(() => {
+    if (typeItem) {
+      dispatch(getAllByTypeItemThunk(typeItem[0]));
+    }
+  }, [typeItem, dispatch]);
 
   const handleApplyPrice = (min: string, max: string) => {
     dispatch(setRangeState(0));
@@ -220,7 +258,7 @@ const SearchResult: React.FC = () => {
     { label: "Giá cao trước", value: "highPrice" },
   ];
 
-  const categories = [
+  const typeItems = [
     {
       id: 1,
       name: "Kitchen",
@@ -368,7 +406,13 @@ const SearchResult: React.FC = () => {
                 onPress={() => setIsFilterPriceModalVisible(true)}
               >
                 <Text className="text-base text-[#00B0B9] ">
-                  {`Giá: ${formatPrice(minPrice)}đ - ${formatPrice(maxPrice)}đ`}
+                  {`Giá: ${formatPrice(minPrice)}đ${
+                    maxPrice === "0"
+                      ? " - ∞"
+                      : maxPrice !== minPrice
+                      ? ` - ${formatPrice(maxPrice)}đ`
+                      : ""
+                  }`}
                 </Text>
                 <Icon
                   name="chevron-down-outline"
@@ -381,9 +425,6 @@ const SearchResult: React.FC = () => {
             {minPrice === "0" && maxPrice === "0" ? (
               <View className="relative ml-2">
                 <Icon name="funnel-outline" size={25} color="black" />
-                <View className="absolute -top-1 -right-1 w-4 h-4 bg-black rounded-full items-center justify-center">
-                  <Icon name="checkmark" size={10} color="#fff" />
-                </View>
               </View>
             ) : (
               <View className="relative ml-2">
@@ -398,12 +439,29 @@ const SearchResult: React.FC = () => {
 
         <View className="px-2 bg-gray-100">
           <View className="relative rounded-lg mt-5 p-3 bg-white">
-            <Text className="text-[#0b1d2d] text-lg font-bold capitalize mb-3">
-              Explore Category
-            </Text>
+            <View className="flex-row items-center justify-between mb-5">
+              <Text className="text-[#0b1d2d] text-xl font-bold capitalize ">
+                Explore Category
+              </Text>
+              <Pressable
+                className="bg-[rgba(0,176,185,0.2)] flex-row items-center border border-[#00B0B9] rounded-full px-3 py-1 active:bg-[rgba(0,176,185,0.3)]"
+                onPress={() => setIsSortModalVisible(true)}
+              >
+                <Text className="text-base text-[#00B0B9]">
+                  {sortOptions.find((o) => o.value === selectedSort)?.label}
+                </Text>
+                <Icon
+                  name="chevron-down-outline"
+                  size={14}
+                  color="#00B0B9"
+                  style={{ marginLeft: 4 }}
+                />
+              </Pressable>
+            </View>
+
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View className="flex flex-row px-3">
-                {categories.map((category) => (
+                {typeItems.map((category) => (
                   <TouchableOpacity
                     key={category.id}
                     className="flex flex-col items-center mr-6"
@@ -439,21 +497,45 @@ const SearchResult: React.FC = () => {
                 ))}
               </View>
             </ScrollView>
+            <View className="flex-row ml-auto mt-3 space-x-2">
+              {typeItem.length !== 0 && (
+                <Pressable
+                  className="bg-[rgba(0,176,185,0.2)] flex-row items-center border border-[#00B0B9] rounded-full px-3 py-1 active:bg-[rgba(0,176,185,0.3)] w-44 justify-center"
+                  onPress={() => setIsSelectedCategory(true)}
+                >
+                  <Text className="text-base text-[#00B0B9]" numberOfLines={1}>
+                    {selectedCategories.length === 0
+                      ? "Choose categories"
+                      : selectedCategories
+                          .map((cate) => cate.categoryName)
+                          .join(", ")}
+                  </Text>
+                  <Icon
+                    name="chevron-down-outline"
+                    size={14}
+                    color="#00B0B9"
+                    className="ml-0"
+                  />
+                </Pressable>
+              )}
 
-            <Pressable
-              className="bg-[rgba(0,176,185,0.2)] flex-row items-center border border-[#00B0B9] rounded-full px-3 py-1 mt-3 ml-auto active:bg-[rgba(0,176,185,0.3)]"
-              onPress={() => setIsSortModalVisible(true)}
-            >
-              <Text className="text-base text-[#00B0B9]">
-                {sortOptions.find((o) => o.value === selectedSort)?.label}
-              </Text>
-              <Icon
-                name="chevron-down-outline"
-                size={14}
-                color="#00B0B9"
-                style={{ marginLeft: 4 }}
-              />
-            </Pressable>
+              <Pressable
+                className="bg-[rgba(0,176,185,0.2)] flex-row items-center border border-[#00B0B9] rounded-full px-3 py-1 active:bg-[rgba(0,176,185,0.3)] w-36 justify-center ml-1"
+                onPress={() => setIsSelectedBrand(true)}
+              >
+                <Text className="text-base text-[#00B0B9]" numberOfLines={1}>
+                  {selectedBrands.length === 0
+                    ? "Choose brands"
+                    : selectedBrands.map((brand) => brand.brandName).join(", ")}
+                </Text>
+                <Icon
+                  name="chevron-down-outline"
+                  size={14}
+                  color="#00B0B9"
+                  className="ml-0"
+                />
+              </Pressable>
+            </View>
           </View>
         </View>
 
@@ -516,19 +598,44 @@ const SearchResult: React.FC = () => {
         </Pressable>
       </Modal>
 
+      {/* Search Categories */}
       <Modal
         animationType="fade"
         transparent={true}
-        visible={isSortModalVisible}
-        onRequestClose={() => setIsSortModalVisible(false)}
+        visible={isSelectedCategory}
+        onRequestClose={() => setIsSelectedCategory(false)}
       >
         <Pressable
           className="flex-1 bg-[rgba(0,0,0,0.2)]"
-          onPress={() => setIsSortModalVisible(false)}
+          onPress={() => setIsSelectedCategory(false)}
         >
-          <SortModal
-            selectedSort={selectedSort}
-            onSelectSort={handleSelectSort}
+          <CategoryModal
+            selectedCategories={selectedCategories}
+            onSelectCategory={(categories) => {
+              setSelectedCategories(categories);
+              setIsSelectedCategory(false);
+            }}
+          />
+        </Pressable>
+      </Modal>
+
+      {/* Search Brands */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isSelectedBrand}
+        onRequestClose={() => setIsSelectedBrand(false)}
+      >
+        <Pressable
+          className="flex-1 bg-[rgba(0,0,0,0.2)]"
+          onPress={() => setIsSelectedBrand(false)}
+        >
+          <BrandModal
+            selectedBrands={selectedBrands}
+            onSelectBrands={(brands) => {
+              setSelectedBrands(brands);
+              setIsSelectedBrand(false);
+            }}
           />
         </Pressable>
       </Modal>

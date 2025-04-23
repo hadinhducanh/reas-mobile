@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Image,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import LoadingButton from "../LoadingButton";
 import ChooseImage from "../ChooseImage";
@@ -19,6 +20,7 @@ import { RootStackParamList } from "../../navigation/AppNavigator";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 import { StatusExchange } from "../../common/enums/StatusExchange";
+import ImagePreviewModal from "../ImagePreviewModal";
 
 interface EvidenceModalProps {
   isSeller: boolean;
@@ -46,6 +48,8 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
   );
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [additionalNotes, setAdditionalNotes] = useState<string>("");
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const combinedImages = [receivedItemImage, transferReceiptImage]
     .filter((img) => img.trim() !== "")
@@ -81,7 +85,10 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
         uploadExchangeEvidenceThunk({
           exchangeHistoryId: exchangeDetail?.exchangeHistory.id!,
           imageUrl: processedImages,
-          additionalNotes: additionalNotes.replace(/\n/g, "\\n"),
+          additionalNotes:
+            additionalNotes.length === 0
+              ? null
+              : additionalNotes.replace(/\n/g, "\\n"),
         })
       );
       onCancel();
@@ -95,13 +102,16 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
     [setAdditionalNotes]
   );
 
+  const evidenceOfSellerUrls = exchangeDetail?.exchangeHistory.sellerImageUrl
+    ? exchangeDetail?.exchangeHistory.sellerImageUrl.split(", ")
+    : [];
+
+  const evidenceOfBuyerUrls = exchangeDetail?.exchangeHistory.buyerImageUrl
+    ? exchangeDetail?.exchangeHistory.buyerImageUrl.split(", ")
+    : [];
+
   return (
-    <Modal
-      transparent
-      visible={visible}
-      animationType="fade"
-      onRequestClose={onCancel}
-    >
+    <Modal transparent visible={visible} animationType="fade">
       <Pressable className="flex-1 bg-[rgba(0,0,0,0.2)]" onPress={onCancel}>
         <View className="absolute inset-0 flex justify-center items-center">
           {isUploadingImages || loading ? (
@@ -115,10 +125,12 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
                   <Text className="text-center text-xl font-bold text-[#00B0B9]">
                     {title}
                   </Text>
-                  <Text className="text-center text-sm text-gray-500 mt-1">
-                    Please input your evidence {"\n"} confirming completing your
-                    exchange
-                  </Text>
+                  {!exchangeDetail?.exchangeHistory.sellerConfirmation && (
+                    <Text className="text-center text-sm text-gray-500 mt-1">
+                      Please input your evidence {"\n"} confirming completing
+                      your exchange
+                    </Text>
+                  )}
 
                   {!exchangeDetail?.exchangeHistory.sellerConfirmation &&
                   exchangeDetail?.statusExchangeRequest ===
@@ -132,10 +144,20 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
                     />
                   ) : (
                     <>
-                      {exchangeDetail?.exchangeHistory.sellerImageUrl.split(
+                      {/* {exchangeDetail?.exchangeHistory.sellerImageUrl.split(
                         ", "
                       ).length === 1 ? (
-                        <View className="flex-row mt-2 justify-center">
+                        <TouchableOpacity
+                          onPress={() => {
+                            setSelectedImage(
+                              exchangeDetail?.exchangeHistory?.sellerImageUrl.split(
+                                ", "
+                              )[0]
+                            );
+                            setImageModalVisible(true);
+                          }}
+                          className="flex-row mt-2 justify-center"
+                        >
                           <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
                             <Image
                               source={{
@@ -146,43 +168,46 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
                               className="w-full h-full rounded-lg"
                             />
                           </View>
-                        </View>
+                        </TouchableOpacity>
                       ) : (
+                        
+                      )} */}
+                      {evidenceOfSellerUrls.length > 0 && (
                         <View className="flex-row justify-center mt-2">
-                          <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
-                            <Image
-                              source={{
-                                uri: exchangeDetail?.exchangeHistory?.sellerImageUrl.split(
-                                  ", "
-                                )[0],
+                          {evidenceOfSellerUrls.map((uri, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() => {
+                                setSelectedIndex(index);
+                                setImageModalVisible(true);
                               }}
-                              className="w-full h-full rounded-lg"
-                            />
-                          </View>
-                          <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
-                            <Image
-                              source={{
-                                uri: exchangeDetail?.exchangeHistory?.sellerImageUrl.split(
-                                  ", "
-                                )[1],
-                              }}
-                              className="w-full h-full rounded-lg"
-                            />
-                          </View>
+                              className="flex-row mt-2 justify-center"
+                            >
+                              <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
+                                <Image
+                                  source={{
+                                    uri,
+                                  }}
+                                  className="w-full h-full rounded-lg"
+                                />
+                              </View>
+                            </TouchableOpacity>
+                          ))}
                         </View>
                       )}
                     </>
                   )}
 
-                  <View className="my-5">
-                    <Text className="font-bold text-base text-gray-500">
-                      Note (Optional)
-                    </Text>
+                  {exchangeDetail?.exchangeHistory.sellerAdditionalNotes ===
+                    null &&
+                  !exchangeDetail.exchangeHistory.sellerConfirmation &&
+                  exchangeDetail.statusExchangeRequest ===
+                    StatusExchange.APPROVED ? (
+                    <View className="my-5">
+                      <Text className="font-bold text-base text-gray-500">
+                        Note (Optional)
+                      </Text>
 
-                    {exchangeDetail?.exchangeHistory.sellerAdditionalNotes ===
-                      null &&
-                    exchangeDetail.statusExchangeRequest ===
-                      StatusExchange.APPROVED ? (
                       <View className="w-full h-40 bg-gray-100 rounded-lg mt-4 px-5 py-3">
                         <TextInput
                           className="flex-1 text-base font-normal text-gray-500"
@@ -194,7 +219,14 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
                           onChangeText={(text) => handleAdditionalNotes(text)}
                         />
                       </View>
-                    ) : (
+                    </View>
+                  ) : exchangeDetail?.exchangeHistory.sellerAdditionalNotes !==
+                    null ? (
+                    <View className="my-5">
+                      <Text className="font-bold text-base text-gray-500">
+                        Note
+                      </Text>
+
                       <View className="bg-white mt-2 rounded-lg p-4 h-fit">
                         {exchangeDetail?.exchangeHistory.sellerAdditionalNotes
                           .split("\\n")
@@ -207,8 +239,8 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
                             </Text>
                           ))}
                       </View>
-                    )}
-                  </View>
+                    </View>
+                  ) : null}
 
                   {!exchangeDetail?.exchangeHistory.sellerConfirmation &&
                     exchangeDetail?.statusExchangeRequest ===
@@ -237,10 +269,12 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
                   <Text className="text-center text-xl font-bold text-[#00B0B9]">
                     {title}
                   </Text>
-                  <Text className="text-center text-sm text-gray-500 mt-1">
-                    Please input your evidence {"\n"} confirming completing your
-                    exchange
-                  </Text>
+                  {!exchangeDetail?.exchangeHistory.buyerConfirmation && (
+                    <Text className="text-center text-sm text-gray-500 mt-1">
+                      Please input your evidence {"\n"} confirming completing
+                      your exchange
+                    </Text>
+                  )}
 
                   {!exchangeDetail?.exchangeHistory?.buyerConfirmation &&
                   exchangeDetail?.statusExchangeRequest ===
@@ -254,84 +288,75 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
                     />
                   ) : (
                     <>
-                      {exchangeDetail?.exchangeHistory.buyerImageUrl.split(", ")
-                        .length === 1 ? (
-                        <View className="flex-row mt-2 justify-center">
-                          <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
-                            <Image
-                              source={{
-                                uri: exchangeDetail?.exchangeHistory?.buyerImageUrl.split(
-                                  ", "
-                                )[0],
+                      {evidenceOfBuyerUrls.length > 0 && (
+                        <View className="flex-row justify-center mt-2">
+                          {evidenceOfBuyerUrls.map((uri, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() => {
+                                setSelectedIndex(index);
+                                setImageModalVisible(true);
                               }}
-                              className="w-full h-full rounded-lg"
-                            />
-                          </View>
-                        </View>
-                      ) : (
-                        <View className="flex-row mt-2 justify-center">
-                          <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
-                            <Image
-                              source={{
-                                uri: exchangeDetail?.exchangeHistory?.buyerImageUrl.split(
-                                  ", "
-                                )[0],
-                              }}
-                              className="w-full h-full rounded-lg"
-                            />
-                          </View>
-                          <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
-                            <Image
-                              source={{
-                                uri: exchangeDetail?.exchangeHistory?.buyerImageUrl.split(
-                                  ", "
-                                )[1],
-                              }}
-                              className="w-full h-full rounded-lg"
-                            />
-                          </View>
+                              className="flex-row mt-2 justify-center"
+                            >
+                              <View className="w-40 h-56 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center m-2">
+                                <Image
+                                  source={{
+                                    uri,
+                                  }}
+                                  className="w-full h-full rounded-lg"
+                                />
+                              </View>
+                            </TouchableOpacity>
+                          ))}
                         </View>
                       )}
                     </>
                   )}
 
-                  {exchangeDetail?.exchangeHistory.buyerAdditionalNotes && (
+                  {exchangeDetail?.exchangeHistory.buyerAdditionalNotes ===
+                    null &&
+                  !exchangeDetail.exchangeHistory.buyerConfirmation &&
+                  exchangeDetail.statusExchangeRequest ===
+                    StatusExchange.APPROVED ? (
                     <View className="my-5">
                       <Text className="font-bold text-base text-gray-500">
                         Note (Optional)
                       </Text>
 
-                      {exchangeDetail?.exchangeHistory?.buyerAdditionalNotes ===
-                        null &&
-                      exchangeDetail.statusExchangeRequest ===
-                        StatusExchange.APPROVED ? (
-                        <View className="w-full h-40 bg-gray-100 rounded-lg mt-4 px-5 py-3">
-                          <TextInput
-                            className="flex-1 text-base font-normal text-gray-500"
-                            placeholder="Aaaaa"
-                            placeholderTextColor="#d1d5db"
-                            multiline={true}
-                            textAlignVertical="top"
-                            value={additionalNotes}
-                            onChangeText={(text) => handleAdditionalNotes(text)}
-                          />
-                        </View>
-                      ) : (
-                        <View className="bg-white mt-2 rounded-lg p-4 h-fit">
-                          {exchangeDetail?.exchangeHistory?.buyerAdditionalNotes
-                            .split("\\n")
-                            .map((line, index) => (
-                              <Text
-                                className="text-base text-gray-500"
-                                key={index}
-                              >
-                                {line}
-                              </Text>
-                            ))}
-                        </View>
-                      )}
+                      <View className="w-full h-40 bg-gray-100 rounded-lg mt-4 px-5 py-3">
+                        <TextInput
+                          className="flex-1 text-base font-normal text-gray-500"
+                          placeholder="Aaaaa"
+                          placeholderTextColor="#d1d5db"
+                          multiline={true}
+                          textAlignVertical="top"
+                          value={additionalNotes}
+                          onChangeText={(text) => handleAdditionalNotes(text)}
+                        />
+                      </View>
                     </View>
-                  )}
+                  ) : exchangeDetail?.exchangeHistory.buyerAdditionalNotes !==
+                    null ? (
+                    <View className="my-5">
+                      <Text className="font-bold text-base text-gray-500">
+                        Note
+                      </Text>
+
+                      <View className="bg-white mt-2 rounded-lg p-4 h-fit">
+                        {exchangeDetail?.exchangeHistory.buyerAdditionalNotes
+                          .split("\\n")
+                          .map((line, index) => (
+                            <Text
+                              className="text-base text-gray-500"
+                              key={index}
+                            >
+                              {line}
+                            </Text>
+                          ))}
+                      </View>
+                    </View>
+                  ) : null}
 
                   {!exchangeDetail?.exchangeHistory?.buyerConfirmation &&
                     exchangeDetail?.statusExchangeRequest ===
@@ -360,6 +385,12 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
           )}
         </View>
       </Pressable>
+      <ImagePreviewModal
+        visible={imageModalVisible}
+        onClose={() => setImageModalVisible(false)}
+        initialIndex={selectedIndex}
+        imageUrls={isSeller ? evidenceOfSellerUrls : evidenceOfBuyerUrls}
+      />
     </Modal>
   );
 };

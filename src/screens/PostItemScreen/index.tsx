@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,12 +22,19 @@ import ChooseImage from "../../components/ChooseImage";
 import LoadingButton from "../../components/LoadingButton";
 import { defaultUploadItem, useUploadItem } from "../../context/ItemContext";
 import { TypeExchange } from "../../common/enums/TypeExchange";
-import { uploadItemThunk } from "../../redux/thunk/itemThunks";
 import NavigationListItem from "../../components/NavigationListItem";
 import Toggle from "../../components/Toggle";
 import ConfirmModal from "../../components/DeleteConfirmModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { uploadToCloudinary } from "../../utils/CloudinaryImageUploader";
+import LocationService from "../../services/LocationService";
+import {
+  resetLocation,
+  setUserLocationIdState,
+  setUserPlaceIdState,
+} from "../../redux/slices/userSlice";
+import { PlaceDetail } from "../../common/models/location";
+import { uploadItemThunk } from "../../redux/thunk/itemThunks";
 
 export default function UploadItem() {
   const navigation =
@@ -36,6 +44,7 @@ export default function UploadItem() {
   const targetIndex = state.index - 1;
 
   const { user } = useSelector((state: RootState) => state.auth);
+  const { userLocationId } = useSelector((state: RootState) => state.user);
   const { itemUpload, loading } = useSelector((state: RootState) => state.item);
   const dispatch = useDispatch<AppDispatch>();
   const { uploadItem, setUploadItem } = useUploadItem();
@@ -51,24 +60,27 @@ export default function UploadItem() {
   const [description, setDescription] = useState<string>(
     uploadItem.description
   );
-  const [termCondition, setTermCondition] = useState<string>(
+  const [termCondition, setTermCondition] = useState<string | null>(
     uploadItem.termsAndConditionsExchange
   );
   const [images, setImages] = useState<string>(uploadItem.imageUrl);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [locationDetail, setLocationDetail] = useState<PlaceDetail>();
 
   useEffect(() => {
     setPrice(uploadItem.price.toString());
     setItemName(uploadItem.itemName);
     setDescription(uploadItem.description.replace(/\\n/g, "\n"));
     setTermCondition(
-      uploadItem.termsAndConditionsExchange.replace(/\\n/g, "\n")
+      uploadItem.termsAndConditionsExchange
+        ? uploadItem.termsAndConditionsExchange.replace(/\\n/g, "\n")
+        : ""
     );
     setImages(uploadItem.imageUrl);
     setIsCheckedFree(uploadItem.isCheckedFree);
     setIsMoneyAccepted(uploadItem.isMoneyAccepted);
-  }, [uploadItem.itemName]);
+  }, [uploadItem]);
 
   const handleFieldChange = useCallback(
     (
@@ -155,24 +167,30 @@ export default function UploadItem() {
 
       const uploadItemRequest = {
         itemName: uploadItem.itemName.trim(),
-        description: uploadItem.description,
+        description: uploadItem.description.trim(),
         price: uploadItem.price,
         conditionItem: uploadItem.conditionItem,
         imageUrl: processedImages,
         methodExchanges: uploadItem.methodExchanges,
         isMoneyAccepted: uploadItem.isMoneyAccepted,
-        termsAndConditionsExchange: uploadItem.termsAndConditionsExchange,
+        termsAndConditionsExchange:
+          uploadItem.termsAndConditionsExchange &&
+          uploadItem.termsAndConditionsExchange.trim().length !== 0
+            ? uploadItem.termsAndConditionsExchange.trim()
+            : null,
         categoryId: uploadItem.categoryId,
         brandId: uploadItem.brandId,
         desiredItem: uploadItem.desiredItem ? uploadItem.desiredItem : null,
+        userLocationId: userLocationId,
       };
 
-      await dispatch(uploadItemThunk(uploadItemRequest));
+      await dispatch(uploadItemThunk(uploadItemRequest)).unwrap();
     }
-  }, [setUploadItem, uploadItem, dispatch]);
+  }, [setUploadItem, uploadItem, userLocationId, dispatch]);
 
   useEffect(() => {
     if (itemUpload !== null) {
+      dispatch(resetLocation());
       setUploadItem(defaultUploadItem);
       navigation.navigate("UploadItemSuccess");
     }
@@ -198,6 +216,45 @@ export default function UploadItem() {
     });
   }, [setUploadItem]);
 
+  useEffect(() => {
+    const fetchLocationDetails = async () => {
+      if (user && user.userLocations && user.userLocations.length) {
+        let targetLocation = null;
+
+        if (userLocationId !== 0) {
+          targetLocation = user.userLocations.find(
+            (loc) => loc.id === userLocationId
+          );
+        }
+
+        if (!targetLocation) {
+          const primaryLocations = user.userLocations.filter(
+            (loc) => loc.primary
+          );
+          if (primaryLocations.length > 0) {
+            targetLocation = primaryLocations[0];
+          }
+        }
+
+        if (targetLocation) {
+          try {
+            const details =
+              await LocationService.getPlaceDetailsByReverseGeocode(
+                `${targetLocation.latitude},${targetLocation.longitude}`
+              );
+            dispatch(setUserPlaceIdState(details.place_id));
+            dispatch(setUserLocationIdState(targetLocation.id));
+            setLocationDetail(details);
+          } catch (error) {
+            console.error("Error fetching location details:", error);
+          }
+        }
+      }
+    };
+
+    fetchLocationDetails();
+  }, [user, userLocationId]);
+
   const handleConfirm = async () => {
     setConfirmVisible(true);
   };
@@ -210,11 +267,7 @@ export default function UploadItem() {
     <SafeAreaView className="flex-1 bg-[#F6F9F9]" edges={["top"]}>
       <Header
         title="Upload your item"
-        showBackButton={
-          targetIndex > 0 && state.routes[targetIndex].name === "BrowseItems"
-            ? true
-            : false
-        }
+        showBackButton={false}
         showOption={false}
       />
       {loading || isUploadingImages ? (
@@ -268,6 +321,31 @@ export default function UploadItem() {
               route="MethodOfExchangeScreen"
               defaultValue="Select methods"
             />
+
+            <TouchableOpacity
+              className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
+              onPress={() => navigation.navigate("LocationOfUser")}
+            >
+              <View className="w-[40px] h-[40px] bg-[#00b0b9] rounded-[8px] justify-center items-center mr-[10px]">
+                <Icon name="location-on" size={22} color={"white"} />
+              </View>
+              <View className="flex-col items-start justify-start flex-1 w-full">
+                <Text
+                  className={`text-lg font-semibold text-black`}
+                  numberOfLines={1}
+                >
+                  {locationDetail?.name}
+                </Text>
+                <Text
+                  className={`text-base text-black w-full flex-wrap`}
+                  numberOfLines={1}
+                >
+                  {locationDetail?.formatted_address}
+                </Text>
+              </View>
+
+              <Icon name="arrow-forward-ios" size={24} color={"gray"} />
+            </TouchableOpacity>
 
             <Toggle
               label="I want to give it for free"
@@ -365,7 +443,7 @@ export default function UploadItem() {
                 className="flex-1 text-lg font-normal text-black"
                 placeholder="Aaaaa"
                 placeholderTextColor="#d1d5db"
-                value={termCondition}
+                value={termCondition!}
                 onChangeText={(text) =>
                   handleFieldChange("termsAndConditionsExchange", text)
                 }

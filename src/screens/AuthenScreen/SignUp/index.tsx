@@ -76,12 +76,18 @@ const SignUp: React.FC = () => {
   const [hasDigit, setHasDigit] = useState(false);
   const [hasSpecialChar, setHasSpecialChar] = useState(false);
 
-  // Mẫu regex để bắt các ký tự đặc biệt có thể tùy chỉnh thêm
+  const isValidEmail = useCallback(
+    (email: string) => emailRegex.test(email),
+    []
+  );
+  const trimmedEmail = email.trim();
+  const isEmailValid =
+    trimmedEmail.length > 0 ? isValidEmail(trimmedEmail) : true;
 
   const validationIcon = useMemo(() => {
     const trimmedEmail = email.trim();
-    if (!trimmedEmail) return null;
-    return emailRegex.test(email) ? (
+    if (trimmedEmail.length === 0) return null;
+    return isValidEmail(trimmedEmail) ? (
       <Icon
         name="checkmark-outline"
         size={20}
@@ -96,7 +102,7 @@ const SignUp: React.FC = () => {
         style={{ marginLeft: 10 }}
       />
     );
-  }, [email]);
+  }, [email, isValidEmail]);
 
   const handleSignUp = useCallback(async () => {
     const trimmedEmail = email.trim();
@@ -400,10 +406,34 @@ const SignUp: React.FC = () => {
 
               {/* Sign Up Button */}
               <LoadingButton
+                disable={
+                  !isEmailValid ||
+                  (password.length > 0 &&
+                    ((!hasUpperCase && !hasLowerCase && !hasDigit) ||
+                      !isLengthValid ||
+                      !hasSpecialChar))
+                }
                 title="Sign up"
                 onPress={handleSignUp}
                 loading={loading}
-                buttonClassName="py-4"
+                buttonClassName={`py-4 ${
+                  !isEmailValid ||
+                  (password.length > 0 &&
+                    ((!hasUpperCase && !hasLowerCase && !hasDigit) ||
+                      !isLengthValid ||
+                      !hasSpecialChar))
+                    ? "bg-gray-300"
+                    : ""
+                }`}
+                textColor={
+                  !isEmailValid ||
+                  (password.length > 0 &&
+                    ((!hasUpperCase && !hasLowerCase && !hasDigit) ||
+                      !isLengthValid ||
+                      !hasSpecialChar))
+                    ? "text-[#00b0b9]"
+                    : "text-white"
+                }
               />
 
               <View className="flex-row items-center my-5 px-20">
@@ -415,13 +445,6 @@ const SignUp: React.FC = () => {
               </View>
 
               <View className="items-center">
-                {/* <Pressable
-                  className="w-3/12 py-3 bg-red-400 rounded-full justify-center items-center active:bg-red-300"
-                  // onPress={handleGoogleSignIn}
-                >
-                  <Icon name="logo-google" size={25} color="white" />
-                </Pressable> */}
-
                 <Auth />
               </View>
 

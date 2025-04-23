@@ -160,7 +160,9 @@ const ExtendPremium: React.FC = () => {
                     {currentPlan.subscriptionPlan.name}
                   </Text>
                 </View>
-
+                <Text className="text-sm text-gray-500 mt-1">
+                  Start date: {formatExchangeDate(currentPlan.startDate)}
+                </Text>
                 <Text className="text-sm text-gray-500 mt-1">
                   Next billing date: {formatExchangeDate(currentPlan.endDate)}
                 </Text>

@@ -1,3 +1,8 @@
+import { MethodPayment } from "../../enums/MethodPayment";
+import { StatusEntity } from "../../enums/StatusEntity";
+import { StatusPayment } from "../../enums/StatusPayment";
+import { TypeSubscriptionPlan } from "../../enums/TypeSubscriptionPlan";
+
 export interface CreatePaymentLinkRequest {
   description: string;
   subscriptionPlanId?: number;
@@ -19,4 +24,32 @@ export interface CheckoutResponseData {
   expiredAt?: number;
   checkoutUrl: string;
   qrCode: string;
+}
+
+export interface PaymentHistoryDto {
+  id: number;
+  transactionId: number;
+  amount: number;
+  description: string;
+  transactionDateTime: Date;
+  statusPayment: StatusPayment;
+  methodPayment: MethodPayment;
+  startDate: string;
+  endDate: string;
+  planName: string;
+  typeSubscriptionPlan: TypeSubscriptionPlan;
+  duration: number;
+}
+
+export interface SearchPaymentHistoryRequest {
+  userId?: number;
+  transactionId?: number;
+  price?: number;
+  fromPrice?: number;
+  toPrice?: number;
+  statusPayments?: StatusPayment[];
+  methodPayments?: MethodPayment[];
+  statusEntities?: StatusEntity[];
+  fromTransactionDate?: Date;
+  toTransactionDate?: Date;
 }
