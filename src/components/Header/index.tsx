@@ -1,14 +1,17 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, Text, Pressable, Modal } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { StatusExchange } from "../../common/enums/StatusExchange";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../redux/store";
 import { getAllExchangesByStatusOfCurrentUserThunk } from "../../redux/thunk/exchangeThunk";
+import { TypeCriticalReport } from "../../common/enums/TypeCriticalReport";
+import { UserResponse } from "../../common/models/auth";
 
 interface HeaderProps {
+  user?: UserResponse;
   title?: string;
   backgroundColor?: string;
   textColor?: string;
@@ -30,6 +33,7 @@ const statusExchanges = [
 ];
 
 const Header: React.FC<HeaderProps> = ({
+  user = null,
   title = "Title",
   backgroundColor = "bg-[#F6F9F9]",
   textColor = "text-back",
@@ -46,8 +50,10 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
+  const { accessToken } = useSelector((state: RootState) => state.auth);
 
   const [isPopupVisible, setIsPopupVisible] = useState(false);
+
   const [isFilterVisible, setFilterVisible] = useState(false);
   const [selectedStatusExchangeLocal, setSelectedStatusExchangeLocal] =
     useState<StatusExchange>(StatusExchange.PENDING);
@@ -83,6 +89,20 @@ const Header: React.FC<HeaderProps> = ({
     }
     setFilterVisible(false);
   };
+
+  const handleNavigateCriticalReport = useCallback(() => {
+    if (!accessToken) {
+      setIsPopupVisible(false);
+      navigation.navigate("SignIn");
+    } else {
+      setIsPopupVisible(false);
+      navigation.navigate("CriticalReport", {
+        id: user?.id,
+        typeOfReport: TypeCriticalReport.USER,
+        userReport: user,
+      });
+    }
+  }, [accessToken, navigation, user?.id]);
 
   return (
     <>
@@ -128,7 +148,7 @@ const Header: React.FC<HeaderProps> = ({
           <View className="mt-auto ">
             <Pressable
               className="flex-row items-center bg-white p-5 active:bg-gray-100"
-              onPress={() => {}}
+              onPress={handleNavigateCriticalReport}
             >
               <Icon name="warning-outline" size={24} color="black" />
               {owner ? (
@@ -137,15 +157,6 @@ const Header: React.FC<HeaderProps> = ({
                 <Text className="ml-2 text-base">Báo cáo người dùng</Text>
               )}
             </Pressable>
-            {/* {owner && (
-              <Pressable
-                className="flex-row items-center bg-white p-5 active:bg-gray-100 border-t-[1px] border-b-[1px] border-gray-200"
-                onPress={setFavorites}
-              >
-                <Icon name="heart-outline" size={24} color="black" />
-                <Text className="text-base ml-2">Lưu tin</Text>
-              </Pressable>
-            )} */}
 
             <Pressable
               className="flex-row items-center bg-white p-5 active:bg-gray-100"

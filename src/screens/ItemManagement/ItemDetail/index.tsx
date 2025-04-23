@@ -487,7 +487,7 @@ const ItemDetails: React.FC = () => {
   return (
     <>
       <SafeAreaView className="flex-1 bg-gray-100" edges={["top"]}>
-        <Header title="" />
+        <Header title="" user={itemDetail?.owner} />
         {loading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#00b0b9" />

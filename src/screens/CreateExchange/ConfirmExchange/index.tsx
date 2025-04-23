@@ -54,7 +54,7 @@ const ConfirmExchange: React.FC = () => {
           : null,
     };
 
-    // console.log(exchangeRequestRequest);
+    console.log(exchangeRequestRequest);
 
     await dispatch(makeAnExchangeThunk(exchangeRequestRequest));
   };
@@ -103,7 +103,7 @@ const ConfirmExchange: React.FC = () => {
         <Header title="Exchange details" showOption={false} />
         <ScrollView className="px-5">
           <View className="flex-row justify-between items-center py-5">
-            <View className="flex-row items-center">
+            <View className="flex-row items-center flex-1">
               <View className="items-center mr-2">
                 {itemDetail?.owner.image ? (
                   <View className="w-16 h-16 rounded-full items-center justify-center">
@@ -120,8 +120,11 @@ const ConfirmExchange: React.FC = () => {
                   </View>
                 )}
               </View>
-              <View>
-                <Text className="justify-start items-center text-left text-[18px] font-medium text-black">
+              <View className="flex-1">
+                <Text
+                  className="justify-start items-center text-left text-[18px] font-medium text-black"
+                  numberOfLines={1}
+                >
                   {itemDetail?.owner.fullName}
                 </Text>
                 <Text className="justify-start items-center text-left text-[14px] font-normal text-[#6b7280]">
@@ -138,9 +141,12 @@ const ConfirmExchange: React.FC = () => {
               />
               <Icon name="swap-horizontal-outline" size={26} color="#00B0B9" />
             </View>
-            <View className="flex-row items-center">
-              <View>
-                <Text className="justify-start items-center text-right text-[18px] font-medium text-black">
+            <View className="flex-row items-center flex-1">
+              <View className="flex-1">
+                <Text
+                  className="justify-start items-center text-right text-[18px] font-medium text-black "
+                  numberOfLines={1}
+                >
                   {user?.fullName}
                 </Text>
                 <Text className="justify-start items-center text-right text-[14px] font-normal text-[#6b7280]">

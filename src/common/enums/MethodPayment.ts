@@ -1,0 +1,10 @@
+export enum MethodPayment {
+  CASH = "CASH",
+  BANK_TRANSFER = "BANK_TRANSFER",
+  CREDIT_CARD = "CREDIT_CARD",
+  PAYPAL = "PAYPAL",
+  APPLE_PAY = "APPLE_PAY",
+  VISA = "  VISA",
+  MASTER_CARD = "MASTER_CARD",
+  OTHER = "OTHER",
+}

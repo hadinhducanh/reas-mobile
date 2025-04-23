@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Image,
   Platform,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -26,6 +27,7 @@ import LocationModal from "../../../components/LocationModal";
 import LoadingButton from "../../../components/LoadingButton";
 import ConfirmModal from "../../../components/DeleteConfirmModal";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { TypeCriticalReport } from "../../../common/enums/TypeCriticalReport";
 
 const statusStyles: Record<
   StatusExchange,
@@ -170,7 +172,7 @@ const ExchangeDetail: React.FC = () => {
               </Text>
             </View>
             <View className="flex-row justify-between items-center py-5">
-              <View className="flex-row items-center">
+              <View className="flex-row flex-1 items-center">
                 <View className="items-center mr-2">
                   {user?.id !==
                   (exchangeDetail?.buyerItem === null
@@ -244,8 +246,11 @@ const ExchangeDetail: React.FC = () => {
                     </>
                   )}
                 </View>
-                <View>
-                  <Text className="justify-start items-center text-left text-[18px] font-medium text-black">
+                <View className="flex-1">
+                  <Text
+                    className="justify-start items-center text-left text-[18px] font-medium text-black"
+                    numberOfLines={1}
+                  >
                     {user?.id !== exchangeDetail?.sellerItem.owner.id
                       ? exchangeDetail?.sellerItem.owner.fullName
                       : exchangeDetail?.buyerItem === null
@@ -272,9 +277,12 @@ const ExchangeDetail: React.FC = () => {
                   color="#00B0B9"
                 />
               </View>
-              <View className="flex-row items-center">
-                <View>
-                  <Text className="justify-start items-center text-right text-[18px] font-medium text-black">
+              <View className="flex-row items-center flex-1">
+                <View className="flex-1">
+                  <Text
+                    className="justify-start items-center text-right text-[18px] font-medium text-black"
+                    numberOfLines={1}
+                  >
                     {user?.id ===
                     (exchangeDetail?.buyerItem === null
                       ? exchangeDetail.paidBy.id
@@ -685,6 +693,26 @@ const ExchangeDetail: React.FC = () => {
 
             {exchangeDetail?.exchangeHistory !== null && (
               <UploadEvidence status={statusDetail} />
+            )}
+
+            {exchangeDetail?.statusExchangeRequest ===
+              StatusExchange.APPROVED && (
+              <View className="flex-row items-center justify-center mb-5">
+                <Icon name="flag-outline" size={20} color="#00B0B9" />
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("CriticalReport", {
+                      id: exchangeDetail?.id,
+                      typeOfReport: TypeCriticalReport.EXCHANGE,
+                      exchangeReport: exchangeDetail,
+                    })
+                  }
+                >
+                  <Text className="font-semibold text-lg text-gray-500 ml-2 underline">
+                    Report exchange
+                  </Text>
+                </TouchableOpacity>
+              </View>
             )}
           </ScrollView>
         )}

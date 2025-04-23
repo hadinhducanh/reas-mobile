@@ -115,6 +115,18 @@ const Account: React.FC = () => {
         route: currentPlan ? "ExtendPremium" : "Premium",
       },
       {
+        iconName: "card-outline",
+        label: "Payment history",
+        route: "PaymentHistory",
+        requireAuth: true,
+      },
+      {
+        iconName: "clipboard-outline",
+        label: "Reported",
+        route: "ReportedHistory",
+        requireAuth: true,
+      },
+      {
         iconName: "information-circle-outline",
         label: "About",
         route: "About",

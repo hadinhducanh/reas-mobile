@@ -43,7 +43,7 @@ import ExtendPremium from "../screens/AccountScreen/SubscriptionPlan/ExtendSubsc
 import Statistics from "../screens/AccountScreen/Statistics";
 import ItemDetails from "../screens/ItemManagement/ItemDetail";
 import FilterMap from "../screens/SearchResult/FilterMap";
-import { SignupDto } from "../common/models/auth";
+import { SignupDto, UserResponse } from "../common/models/auth";
 import { defaultUploadItem, useUploadItem } from "../context/ItemContext";
 import ConfirmModal from "../components/DeleteConfirmModal";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -61,6 +61,14 @@ import UpdateItem from "../screens/ItemManagement/UpdateItem";
 import UpdateItemFlow from "./UpdateItemFlow";
 import LocationOfUser from "../screens/AccountScreen/ProfileDetail/LocationOfUser";
 import { resetLocation } from "../redux/slices/userSlice";
+import PaymentHistoryScreen from "../screens/AccountScreen/PaymentHistory";
+import PaymentHistory from "../screens/AccountScreen/PaymentHistory";
+import ReportedHistory from "../screens/AccountScreen/ReportedHistory";
+import CriticalReport from "../screens/AccountScreen/CriticalReport";
+import { TypeCriticalReport } from "../common/enums/TypeCriticalReport";
+import { FeedbackResponse } from "../common/models/feedback";
+import { ExchangeResponse } from "../common/models/exchange";
+import { CriticalReportResponse } from "../common/models/criticalReport";
 
 export type ItemType = {
   id: number;
@@ -131,6 +139,16 @@ export type RootStackParamList = {
   OrderSuccess: undefined;
   UpdateItem: undefined;
   LocationOfUser: undefined;
+  PaymentHistory: undefined;
+  ReportedHistory: undefined;
+  CriticalReport: {
+    id: number;
+    typeOfReport: TypeCriticalReport;
+    userReport?: UserResponse;
+    feedbackReport?: FeedbackResponse;
+    exchangeReport?: ExchangeResponse;
+    criticalReport?: CriticalReportResponse;
+  };
 };
 
 const TabArr = [
@@ -298,6 +316,8 @@ export default function RootNavigator() {
         <Stack.Screen name="ChatHistory" component={ChatHistoryScreen} />
         <Stack.Screen name="ChatDetails" component={ChatDetailsScreen} />
         <Stack.Screen name="Statistics" component={Statistics} />
+        <Stack.Screen name="ReportedHistory" component={ReportedHistory} />
+        <Stack.Screen name="PaymentHistory" component={PaymentHistory} />
         <Stack.Screen name="OTP" component={OTPScreen} />
         <Stack.Screen name="SignUpSuccess" component={SignUpSuccessScreen} />
         <Stack.Screen name="ItemDetails" component={ItemDetails} />
@@ -317,6 +337,7 @@ export default function RootNavigator() {
         <Stack.Screen name="About" component={About} />
         <Stack.Screen name="UploadItemSuccess" component={UploadItemSuccess} />
         <Stack.Screen name="BrowseItems" component={BrowseItems} />
+        <Stack.Screen name="CriticalReport" component={CriticalReport} />
         <Stack.Screen name="ConfirmExchange" component={ConfirmExchange} />
         <Stack.Screen name="UploadScreen" component={UploadItem} />
         <Stack.Screen name="UpdateItem" component={UpdateItemFlow} />

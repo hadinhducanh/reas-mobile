@@ -11,6 +11,7 @@ import feebackReducer from "./slices/feedbackSlice";
 import notificationReducer from "./slices/notificationSlice";
 import userReducer from "./slices/userSlice";
 import paymentReducer from "./slices/paymentSlice";
+import criticalReportReducer from "./slices/criticalReportSlice";
 
 const store = configureStore({
   reducer: {
@@ -26,6 +27,7 @@ const store = configureStore({
     notification: notificationReducer,
     user: userReducer,
     payment: paymentReducer,
+    criticalReport: criticalReportReducer,
   },
 });
 
