@@ -41,6 +41,7 @@ import { resetPlaceDetail } from "../../redux/slices/locationSlice";
 import LocationModal from "../../components/LocationModal";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { getRecommendedItemsInExchangeThunk } from "../../redux/thunk/itemThunks";
+import dayjs from "dayjs";
 
 const CreateExchange: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "CreateExchange">>();
@@ -314,6 +315,19 @@ const CreateExchange: React.FC = () => {
       default:
         return "Set location";
     }
+  };
+
+  const handleSelectDateTime = (picked: Date) => {
+    if (picked.getTime() < Date.now()) {
+      Alert.alert(
+        "Invalid Date",
+        "Please select a date and time in the future."
+      );
+      return;
+    }
+
+    setSelectedDateTime(picked);
+    setCalendarVisible(false);
   };
 
   return (
@@ -632,7 +646,7 @@ const CreateExchange: React.FC = () => {
       <CalendarModal
         visible={calendarVisible}
         onClose={() => setCalendarVisible(false)}
-        onSelectDateTime={(date) => setSelectedDateTime(date)}
+        onSelectDateTime={handleSelectDateTime}
       />
 
       <ConfirmModal

@@ -7,11 +7,11 @@ interface SortModalProps {
   onSelectSort: (value: string) => void;
 }
 
-const options = [
-  { label: "Tin mới trước", value: "new" },
-  { label: "Tin gần tôi trước", value: "near" },
-  { label: "Giá thấp trước", value: "lowPrice" },
-  { label: "Giá cao trước", value: "highPrice" },
+const sortOptions = [
+  { label: "Newest first", value: "new" },
+  { label: "Closest to me", value: "near" },
+  { label: "Price: Low to High", value: "lowPrice" },
+  { label: "Price: High to Low", value: "highPrice" },
 ];
 
 const SortModal: React.FC<SortModalProps> = ({
@@ -30,7 +30,7 @@ const SortModal: React.FC<SortModalProps> = ({
       </Text>
 
       <View className="pb-4">
-        {options.map((item) => {
+        {sortOptions.map((item) => {
           const isSelected = item.value === selectedSort;
           return (
             <TouchableOpacity

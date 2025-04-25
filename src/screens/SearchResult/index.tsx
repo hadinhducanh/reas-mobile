@@ -81,8 +81,8 @@ const SearchResult: React.FC = () => {
 
   const { content, pageNo, last } = itemSearch;
 
-  const [minPrice, setMinPrice] = useState<string>("0");
-  const [maxPrice, setMaxPrice] = useState<string>("0");
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
   const [searchText, setSearchText] = useState<string>("");
   const [typeItem, setTypeItem] = useState<TypeItem[]>([]);
   const isFirstRender = useRef(true);
@@ -252,10 +252,10 @@ const SearchResult: React.FC = () => {
   };
 
   const sortOptions = [
-    { label: "Tin mới trước", value: "new" },
-    { label: "Tin gần tôi trước", value: "near" },
-    { label: "Giá thấp trước", value: "lowPrice" },
-    { label: "Giá cao trước", value: "highPrice" },
+    { label: "Newest first", value: "new" },
+    { label: "Closest to me", value: "near" },
+    { label: "Price: Low to High", value: "lowPrice" },
+    { label: "Price: High to Low", value: "highPrice" },
   ];
 
   const typeItems = [
@@ -329,6 +329,17 @@ const SearchResult: React.FC = () => {
       : "";
   };
 
+  const formatPriceRange = () => {
+    const min = minPrice.length === 0 ? "0" : formatPrice(minPrice);
+    if (maxPrice.length === 0) {
+      return `${min} - ∞`;
+    }
+    if (maxPrice !== minPrice) {
+      return `${min} - ${formatPrice(maxPrice)}đ`;
+    }
+    return `${min}đ`;
+  };
+
   return (
     <>
       <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
@@ -387,12 +398,12 @@ const SearchResult: React.FC = () => {
           </Pressable>
 
           <View className="flex-row items-center">
-            {minPrice === "0" && maxPrice === "0" ? (
+            {minPrice.length === 0 && maxPrice.length === 0 ? (
               <Pressable
                 className="flex-row items-center border border-black rounded-full px-3 py-1 active:bg-gray-100"
                 onPress={() => setIsFilterPriceModalVisible(true)}
               >
-                <Text className="text-base text-black">Giá Tiền</Text>
+                <Text className="text-base text-black">Price</Text>
                 <Icon
                   name="chevron-down-outline"
                   size={14}
@@ -406,13 +417,7 @@ const SearchResult: React.FC = () => {
                 onPress={() => setIsFilterPriceModalVisible(true)}
               >
                 <Text className="text-base text-[#00B0B9] ">
-                  {`Giá: ${formatPrice(minPrice)}đ${
-                    maxPrice === "0"
-                      ? " - ∞"
-                      : maxPrice !== minPrice
-                      ? ` - ${formatPrice(maxPrice)}đ`
-                      : ""
-                  }`}
+                  {`Price: ${formatPriceRange()}`}
                 </Text>
                 <Icon
                   name="chevron-down-outline"
@@ -655,8 +660,8 @@ const SearchResult: React.FC = () => {
           initialMaxPrice={maxPrice}
           onApply={handleApplyPrice}
           onClear={() => {
-            setMinPrice("0");
-            setMaxPrice("0");
+            setMinPrice("");
+            setMaxPrice("");
           }}
         />
       </Modal>

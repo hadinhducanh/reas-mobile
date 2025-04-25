@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useDispatch, useSelector } from "react-redux";
@@ -39,10 +38,6 @@ import { uploadItemThunk } from "../../redux/thunk/itemThunks";
 export default function UploadItem() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const state = useNavigationState((state) => state);
-
-  const targetIndex = state.index - 1;
-
   const { user } = useSelector((state: RootState) => state.auth);
   const { userLocationId } = useSelector((state: RootState) => state.user);
   const { itemUpload, loading } = useSelector((state: RootState) => state.item);
@@ -55,7 +50,9 @@ export default function UploadItem() {
   const [isMoneyAccepted, setIsMoneyAccepted] = useState(
     uploadItem.isMoneyAccepted
   );
-  const [price, setPrice] = useState<string>(uploadItem.price.toString());
+  const [price, setPrice] = useState<string>(
+    uploadItem.price === null ? "" : uploadItem.price.toString() || ""
+  );
   const [itemName, setItemName] = useState<string>(uploadItem.itemName);
   const [description, setDescription] = useState<string>(
     uploadItem.description
@@ -69,18 +66,26 @@ export default function UploadItem() {
   const [locationDetail, setLocationDetail] = useState<PlaceDetail>();
 
   useEffect(() => {
-    setPrice(uploadItem.price.toString());
-    setItemName(uploadItem.itemName);
-    setDescription(uploadItem.description.replace(/\\n/g, "\n"));
+    if (!uploadItem) return;
+
+    setPrice(uploadItem.price != null ? uploadItem.price.toString() : "");
+    setItemName(uploadItem.itemName || "");
+    setDescription((uploadItem.description || "").replace(/\\n/g, "\n"));
     setTermCondition(
-      uploadItem.termsAndConditionsExchange
-        ? uploadItem.termsAndConditionsExchange.replace(/\\n/g, "\n")
-        : ""
+      (uploadItem.termsAndConditionsExchange || "").replace(/\\n/g, "\n")
     );
-    setImages(uploadItem.imageUrl);
-    setIsCheckedFree(uploadItem.isCheckedFree);
-    setIsMoneyAccepted(uploadItem.isMoneyAccepted);
-  }, [uploadItem]);
+    setImages(uploadItem.imageUrl || "");
+    setIsCheckedFree(!!uploadItem.isCheckedFree);
+    setIsMoneyAccepted(!!uploadItem.isMoneyAccepted);
+  }, [
+    uploadItem.price === null,
+    uploadItem.itemName.length === 0,
+    uploadItem.description.length === 0,
+    uploadItem.termsAndConditionsExchange?.length === 0,
+    uploadItem.imageUrl.length === 0,
+    uploadItem.isCheckedFree,
+    uploadItem.isMoneyAccepted,
+  ]);
 
   const handleFieldChange = useCallback(
     (

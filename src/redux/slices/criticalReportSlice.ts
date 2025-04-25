@@ -100,7 +100,7 @@ function createCriticalReport(
       createCriticalReportThunk.fulfilled,
       (state, action: PayloadAction<CriticalReportResponse>) => {
         state.loadingCriticalReport = false;
-        state.criticalReportDetail = action.payload;
+        state.criticalReportCreate = action.payload;
       }
     )
     .addCase(

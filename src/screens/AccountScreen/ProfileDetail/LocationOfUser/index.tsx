@@ -96,7 +96,7 @@ const LocationOfUser: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-[#F6F9F9]" edges={["top"]}>
       <Header
-        title="Personal information"
+        title="User location"
         showOption={false}
         showUserLocation={true}
         onAddLocation={() => setLocationVisible(true)}

@@ -11,7 +11,7 @@ const Splash: React.FC = () => {
           <View className="w-[200px] h-[200px] rounded-full overflow-hidden">
             <Image
               source={{
-                uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1739892939/REAS/Logo/Logo.png",
+                uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1744177339/REAS/Logo/Reas-logo.png",
               }}
               style={{ width: "100%", height: "100%" }}
               resizeMode="cover"

@@ -10,6 +10,7 @@ import { defaultUploadItem, useUploadItem } from "../../../context/ItemContext";
 import NavigationListItem from "../../../components/NavigationListItem";
 import ConfirmModal from "../../../components/DeleteConfirmModal";
 import { ConditionItem } from "../../../common/enums/ConditionItem";
+import { TypeItem } from "../../../common/enums/TypeItem";
 
 const ExchangeDesiredItemScreen = () => {
   const { uploadItem, setUploadItem } = useUploadItem();
@@ -18,11 +19,13 @@ const ExchangeDesiredItemScreen = () => {
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const [minPrice, setMinPrice] = useState<string>(
-    uploadItem.desiredItem?.minPrice.toString() || ""
+    uploadItem.desiredItem?.minPrice === null
+      ? ""
+      : uploadItem.desiredItem?.minPrice.toString() || ""
   );
   const [maxPrice, setMaxPrice] = useState<string>(
     uploadItem.desiredItem?.maxPrice === null
-      ? "0"
+      ? ""
       : uploadItem.desiredItem?.maxPrice.toString() || ""
   );
   const [description, setDescription] = useState<string>(
@@ -81,7 +84,7 @@ const ExchangeDesiredItemScreen = () => {
 
   const handleFieldChange = useCallback(
     (field: "minPrice" | "maxPrice" | "description", value: string) => {
-      const priceValue = parseInt(value.replace(/,/g, ""), 10) || 0;
+      const priceValue = parseInt(value.replace(/,/g, ""), 10) || null;
 
       if (field === "maxPrice") {
         setMaxPrice(value);
@@ -113,6 +116,9 @@ const ExchangeDesiredItemScreen = () => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
       if (hasConfirmedRef.current) return;
 
+      console.log(uploadItem.desiredItem?.minPrice);
+      console.log(defaultUploadItem.desiredItem?.minPrice);
+
       if (
         JSON.stringify(uploadItem.desiredItem) !==
         JSON.stringify(defaultUploadItem.desiredItem)
@@ -131,7 +137,19 @@ const ExchangeDesiredItemScreen = () => {
     setConfirmVisible(false);
     setUploadItem((prev) => ({
       ...prev,
-      desiredItem: defaultUploadItem.desiredItem,
+      desiredItem: {
+        ...prev.desiredItem!,
+        categoryId: null,
+        conditionItem: null,
+        brandId: null,
+        minPrice: null,
+        maxPrice: null,
+        description: "",
+      },
+      typeItemDesire: TypeItem.NO_TYPE,
+      conditionDesiredItemName: "",
+      categoryDesiredItemName: "",
+      brandDesiredItemName: "",
     }));
     if (pendingBeforeRemoveEvent.current) {
       navigation.dispatch(pendingBeforeRemoveEvent.current.data.action);
@@ -147,7 +165,7 @@ const ExchangeDesiredItemScreen = () => {
     const minPriceValue = parseInt(minPrice.replace(/,/g, ""), 10) || 0;
     const maxPriceValue = parseInt(maxPrice.replace(/,/g, ""), 10) || 0;
 
-    if (minPriceValue > maxPriceValue) {
+    if (minPriceValue > maxPriceValue && maxPriceValue !== 0) {
       setError("Min price cannot be greater than Max price");
       setIsInvalid(true);
     } else {
@@ -243,7 +261,7 @@ const ExchangeDesiredItemScreen = () => {
       </ScrollView>
       <ConfirmModal
         title="Warning"
-        content={`You have unsaved item. ${"\n"} Do you really want to leave?`}
+        content={`You have unsaved desired item. ${"\n"} Do you really want to leave?`}
         visible={confirmVisible}
         onCancel={handleCancel}
         onConfirm={handleConfirm}

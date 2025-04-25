@@ -305,16 +305,39 @@ export const changeItemStatusThunk = createAsyncThunk<
 >("item/changeItemStatus", async ({ itemId, statusItem }, thunkAPI) => {
   const state = thunkAPI.getState();
   const accessToken = state.auth.accessToken;
+  if (!accessToken) {
+    return thunkAPI.rejectWithValue("No access token available");
+  }
   try {
     const data = await ItemService.changeItemStatus(
       itemId,
       statusItem,
-      accessToken!
+      accessToken
     );
     return data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
       error.response.data || "Change item status failed"
+    );
+  }
+});
+
+export const deleteItemThunk = createAsyncThunk<
+  boolean,
+  number,
+  { state: RootState }
+>("item/deleteItem", async (id, thunkAPI) => {
+  const state = thunkAPI.getState();
+  const accessToken = state.auth.accessToken;
+  if (!accessToken) {
+    return thunkAPI.rejectWithValue("No access token available");
+  }
+  try {
+    const data = await ItemService.deleteItem(id, accessToken);
+    return data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response.data || "Delete item failed"
     );
   }
 });

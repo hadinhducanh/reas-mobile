@@ -36,6 +36,7 @@ import {
 } from "../../../redux/slices/itemSlice";
 import {
   changeItemStatusThunk,
+  deleteItemThunk,
   extendItemForFreeThunk,
   getItemDetailThunk,
 } from "../../../redux/thunk/itemThunks";
@@ -123,11 +124,11 @@ const statusStyles: Record<
     backgroundColor: "bg-[rgba(0,176,185,0.2)]",
   },
   NO_LONGER_FOR_EXCHANGE: {
-    textColor: "text-[#16A34A]",
-    backgroundColor: "bg-[rgba(22,163,74,0.2)]",
+    textColor: "text-[#748BA0]",
+    backgroundColor: "bg-[rgba(116,139,160,0.2)]",
   },
   SOLD: {
-    textColor: "text-[#FFFF00]",
+    textColor: "text-[#B2B200]",
     backgroundColor: "bg-[rgba(205,205,0,0.3)]",
   },
   IN_EXCHANGE: {
@@ -148,6 +149,7 @@ const statusItems = [
 
 const ItemExpire: React.FC = () => {
   const [deletedVisible, setDeletedVisible] = useState(false);
+  const [deactivateVisible, setDeactivateVisible] = useState(false);
   const [extendFreeVisible, setExtendFreeVisible] = useState(false);
   const [reOpenVisible, setReOpenVisible] = useState(false);
 
@@ -208,7 +210,7 @@ const ItemExpire: React.FC = () => {
       { label: "Category", value: itemDetail?.category.categoryName },
       { label: "Brand", value: itemDetail?.brand.brandName },
       {
-        label: "Exchange method",
+        label: "Description",
         value:
           itemDetail?.methodExchanges.length === 3
             ? "All of methods"
@@ -222,6 +224,29 @@ const ItemExpire: React.FC = () => {
     ],
     [itemDetail]
   );
+
+  const dataDesired = useMemo(() => {
+    const desired = itemDetail?.desiredItem;
+    if (!desired) {
+      return [];
+    }
+
+    const allFields = [
+      {
+        label: "Condition",
+        value: getConditionItemLabel(desired.conditionItem),
+      },
+      {
+        label: "Type",
+        value: getTypeItemLabel(desired.typeItem),
+      },
+      { label: "Category", value: desired.categoryName },
+      { label: "Brand", value: desired.brandName },
+      { label: "Description", value: desired.description },
+    ];
+
+    return allFields.filter(({ value }) => value != null && value !== "");
+  }, [itemDetail]);
 
   const imageArray = useMemo(() => {
     return itemDetail?.imageUrl ? itemDetail.imageUrl.split(", ") : [];
@@ -302,6 +327,10 @@ const ItemExpire: React.FC = () => {
   };
 
   const handleDeactivate = async () => {
+    setDeactivateVisible(true);
+  };
+
+  const handleDelete = async () => {
     setDeletedVisible(true);
   };
 
@@ -309,20 +338,46 @@ const ItemExpire: React.FC = () => {
     setReOpenVisible(true);
   };
 
-  const handleCancel = () => {
+  const handleCancelDelete = () => {
     setDeletedVisible(false);
   };
 
-  const handleConfirm = () => {
-    if (itemDetail) {
-      dispatch(
+  const handleConfirmDelete = async () => {
+    if (!itemDetail) return;
+
+    try {
+      const result = await dispatch(deleteItemThunk(itemDetail?.id)).unwrap();
+
+      if (result) {
+        setDeletedVisible(false);
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Could not delete item:", error);
+    }
+  };
+
+  const handleCancelDeactivate = () => {
+    setDeactivateVisible(false);
+  };
+
+  const handleConfirmDeactivate = async () => {
+    if (!itemDetail) return;
+
+    try {
+      const result = await dispatch(
         changeItemStatusThunk({
           itemId: itemDetail?.id,
           statusItem: StatusItem.NO_LONGER_FOR_EXCHANGE,
         })
-      );
+      ).unwrap();
 
-      setDeletedVisible(false);
+      if (result) {
+        setDeactivateVisible(false);
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Could not deactivate item:", error);
     }
   };
 
@@ -331,15 +386,22 @@ const ItemExpire: React.FC = () => {
   };
 
   const handleConfirmReOpen = async () => {
-    if (itemDetail) {
-      dispatch(
+    if (!itemDetail) return;
+
+    try {
+      const result = await dispatch(
         changeItemStatusThunk({
-          itemId: itemDetail?.id,
+          itemId: itemDetail.id,
           statusItem: StatusItem.AVAILABLE,
         })
-      );
+      ).unwrap();
 
-      setReOpenVisible(false);
+      if (result) {
+        setReOpenVisible(false);
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Could not reopen item:", error);
     }
   };
 
@@ -405,7 +467,7 @@ const ItemExpire: React.FC = () => {
               className="text-gray-500 font-bold text-base mt-1"
               style={{ fontStyle: "italic" }}
             >
-              *Có nhận trao đổi bằng tiền
+              *Accept exchange with cash
             </Text>
           )}
 
@@ -474,14 +536,17 @@ const ItemExpire: React.FC = () => {
                   {itemDetail?.owner.fullName}
                 </Text>
                 <Text className="text-gray-500 my-1">
-                  Sản phẩm:{" "}
+                  Items:{" "}
                   <Text className="underline text-black">
-                    {itemDetail?.owner.numOfExchangedItems} đã bán
+                    {itemDetail?.owner.numOfExchangedItems} exchange
                   </Text>
                 </Text>
                 <View className="flex-row items-center">
                   <View className="w-3 h-3 bg-[#738aa0] rounded-full mr-1" />
-                  <Text className="text-gray-500">Hoạt động 2 giờ trước</Text>
+                  <Text className="text-gray-500">
+                    Paricipant:{" "}
+                    {formatRelativeTime(itemDetail?.owner.creationDate)}
+                  </Text>
                 </View>
               </View>
             </Pressable>
@@ -504,14 +569,14 @@ const ItemExpire: React.FC = () => {
                 <Icon name="star" size={20} color="yellow" />
               </View>
               <Text className="underline">
-                {itemDetail?.owner.numOfFeedbacks} đánh giá
+                {itemDetail?.owner.numOfFeedbacks} feedbacks
               </Text>
             </Pressable>
           </View>
         </View>
 
         <View className="p-5 my-5 bg-white">
-          <Text className="text-xl font-bold mb-3">Mô tả chi tiết</Text>
+          <Text className="text-xl font-bold mb-3">Description</Text>
           <View className="mb-3">
             {itemDetail?.description.split("\\n").map((line, index) => (
               <Text className="text-lg font-normal mb-1" key={index}>
@@ -521,7 +586,7 @@ const ItemExpire: React.FC = () => {
           </View>
 
           <Text className="text-xl font-bold mt-4 mb-3">
-            Thông tin chi tiết
+            Information details
           </Text>
           <View className="border border-gray-300 rounded-md overflow-hidden">
             {data.map((info, index) => (
@@ -537,6 +602,29 @@ const ItemExpire: React.FC = () => {
               </View>
             ))}
           </View>
+
+          {itemDetail?.desiredItem && (
+            <>
+              <Text className="text-xl font-bold mt-4 mb-3">Desired item</Text>
+              <View className="border border-gray-300 rounded-md overflow-hidden">
+                {dataDesired.map((info, index) => (
+                  <View
+                    key={index}
+                    className="flex-row border-b border-gray-300"
+                  >
+                    <View className="w-[40%] px-2 py-4 bg-gray-200">
+                      <Text className="text-base font-semibold text-gray-500">
+                        {info.label}
+                      </Text>
+                    </View>
+                    <View className="px-2 py-4">
+                      <Text className="text-base">{info.value}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
 
           {itemDetail?.termsAndConditionsExchange && (
             <View className="mt-5">
@@ -644,6 +732,32 @@ const ItemExpire: React.FC = () => {
                           />
                         </View>
                       </>
+                    ) : itemDetail?.statusItem === StatusItem.PENDING ? (
+                      <>
+                        <View className="flex-1 mr-2">
+                          <LoadingButton
+                            title="Update"
+                            onPress={handleUpdate}
+                            buttonClassName="p-3 border-[#00B0B9] border-2"
+                            iconName="reader-outline"
+                            iconSize={25}
+                            iconColor="white"
+                            showIcon={true}
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <LoadingButton
+                            title="Delete"
+                            onPress={handleDelete}
+                            buttonClassName="p-3 border-transparent border-2 bg-[rgba(250,85,85)] active:bg-[rgba(250,85,85,0.5)]"
+                            iconName="trash-outline"
+                            iconSize={25}
+                            iconColor="white"
+                            showIcon={true}
+                            textColor="text-white"
+                          />
+                        </View>
+                      </>
                     ) : (
                       <>
                         <View className="flex-1 mr-2">
@@ -693,16 +807,24 @@ const ItemExpire: React.FC = () => {
       <ConfirmModal
         title="Confirm deactivate"
         content="Are you sure you to deactivate this item?"
+        visible={deactivateVisible}
+        onCancel={handleCancelDeactivate}
+        onConfirm={handleConfirmDeactivate}
+      />
+
+      <ConfirmModal
+        title="Confirm delete"
+        content="Are you sure you to delete this item?"
         visible={deletedVisible}
-        onCancel={handleCancel}
-        onConfirm={handleConfirm}
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
       />
 
       <ConfirmModal
         title="Confirm extend"
         content={`You have ${
           currentPlan?.numberOfFreeExtensionLeft
-        } extend free ${"\n"} Are you sure you to reopen this item?`}
+        } extend free ${"\n"} Are you sure you to extend this item?`}
         visible={extendFreeVisible}
         onCancel={handleCancelExtendFree}
         onConfirm={handleConfirmExtendFree}

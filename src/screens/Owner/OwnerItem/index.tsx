@@ -143,7 +143,7 @@ const OwnerItem: React.FC = () => {
   const rows = chunkArray(content, 2);
 
   return (
-    <SafeAreaView className="bg-[#00B0B9] flex-1" edges={["top"]}>
+    <SafeAreaView className="flex-1" edges={["top"]}>
       <Header
         title={userDetail?.fullName}
         backgroundColor="bg-[#00B0B9]"

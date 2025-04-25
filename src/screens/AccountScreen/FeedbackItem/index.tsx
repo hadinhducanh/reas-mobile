@@ -30,6 +30,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ConfirmModal from "../../../components/DeleteConfirmModal";
 import { resetFeedback } from "../../../redux/slices/feedbackSlice";
 import { StatusExchange } from "../../../common/enums/StatusExchange";
+import { fetchUserInfoThunk } from "../../../redux/thunk/authThunks";
 
 const FeedbackItem: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -108,6 +109,7 @@ const FeedbackItem: React.FC = () => {
         })
       );
       dispatch(resetFeedback());
+      dispatch(fetchUserInfoThunk());
       setReceivedItemImage("");
       setTransferReceiptImage("");
       setRating(5);
