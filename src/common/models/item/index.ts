@@ -12,7 +12,7 @@ import { StatusEntity } from "../../enums/StatusEntity";
 export interface UploadItemRequest {
   itemName: string;
   description: string;
-  price: number;
+  price: number | null;
   conditionItem: ConditionItem;
   imageUrl: string;
   methodExchanges: MethodExchange[];
@@ -44,7 +44,7 @@ export interface DesiredItemDto {
   categoryId: number | null;
   conditionItem: ConditionItem | null;
   brandId: number | null;
-  minPrice: number;
+  minPrice: number | null;
   maxPrice: number | null;
   description: string;
 }

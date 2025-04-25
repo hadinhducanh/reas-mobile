@@ -16,6 +16,7 @@ import {
   changeItemStatusThunk,
   updateItemThunk,
   extendItemForFreeThunk,
+  deleteItemThunk,
 } from "../thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
@@ -35,6 +36,7 @@ interface ItemState {
   itemByStatusOfUser: ResponseEntityPagination<ItemResponse>;
   itemFavorite: ResponseEntityPagination<FavoriteResponse>;
   itemRecommnand: ItemResponse[];
+  itemDeleted: boolean;
   itemSimilar: ItemResponse[];
   otherItemOfUser: ItemResponse[];
   itemSuggested: ItemResponse[];
@@ -51,6 +53,7 @@ interface ItemState {
 const initialState: ItemState = {
   extendFree: false,
   itemDetail: null,
+  itemDeleted: false,
   itemAvailable: {
     pageNo: 0,
     pageSize: 10,
@@ -113,6 +116,9 @@ const itemSlice = createSlice({
     },
     resetExtendFree: (state) => {
       state.extendFree = false;
+    },
+    resetItemDelete: (state) => {
+      state.itemDeleted = false;
     },
     resetItemDetailState: (state) => {
       state.itemUpload = null;
@@ -561,9 +567,33 @@ const itemSlice = createSlice({
           state.error = action.payload || "Extend free of item failed";
         }
       );
+
+    builder
+      .addCase(deleteItemThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        deleteItemThunk.fulfilled,
+        (state, action: PayloadAction<boolean>) => {
+          state.loading = false;
+          state.itemDeleted = action.payload;
+        }
+      )
+      .addCase(
+        deleteItemThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Delete item failed";
+        }
+      );
   },
 });
 
-export const { resetItemDetailState, setRangeState, resetExtendFree } =
-  itemSlice.actions;
+export const {
+  resetItemDetailState,
+  setRangeState,
+  resetExtendFree,
+  resetItemDelete,
+} = itemSlice.actions;
 export default itemSlice.reducer;

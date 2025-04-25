@@ -151,17 +151,29 @@ const getItemDetail = async (
 const changeItemStatus = async (
   itemId: number,
   statusItem: StatusItem,
-  accessToken?: string
+  accessToken: string
 ): Promise<ItemResponse> => {
   const response = await axios.put<ItemResponse>(
     `${API_BASE_URL}/item/status?itemId=${itemId}&statusItem=${statusItem}`,
     null,
     {
       headers: {
-        Authorization: accessToken ? `Bearer ${accessToken}` : null,
+        Authorization: `Bearer ${accessToken}`,
       },
     }
   );
+  return response.data;
+};
+
+const deleteItem = async (
+  id: number,
+  accessToken: string
+): Promise<boolean> => {
+  const response = await axios.delete<boolean>(`${API_BASE_URL}/item/${id}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
   return response.data;
 };
 
@@ -208,4 +220,5 @@ export default {
   findNearbyItems,
   changeItemStatus,
   extendItemForFree,
+  deleteItem,
 };

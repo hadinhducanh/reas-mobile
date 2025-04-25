@@ -202,7 +202,7 @@ const ExtendPremium: React.FC = () => {
 
                   <View className="mt-5">
                     <LoadingButton
-                      title="Extend now"
+                      title="Subscribe now"
                       onPress={handleSubscribe}
                       buttonClassName="p-4"
                       loading={loadingPayment}

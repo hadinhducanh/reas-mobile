@@ -210,7 +210,7 @@ const HomeScreen: React.FC = () => {
         <View>
           <Image
             source={{
-              uri: "https://res.cloudinary.com/dnslrwedn/image/upload/v1740407613/52c61b29-1200_628_1_deautx.png",
+              uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1745427623/REAS/Banner/banner1.jpg",
             }}
             className="w-full h-60"
           />
@@ -270,7 +270,7 @@ const HomeScreen: React.FC = () => {
           <View className="my-8">
             <Image
               source={{
-                uri: "https://cdn.chotot.com/admincentre/sZAVd-1sX7QEWxhi_hCWw5MbfVkTaBj80jUdAMPJNSs/preset:raw/plain/40d5af2875486372da8349afd2b4a157-2882896384210177312.jpg",
+                uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1745427561/REAS/Banner/banner2.png",
               }}
               style={{ width: width, height: 155 }}
               resizeMode="cover"
@@ -284,7 +284,7 @@ const HomeScreen: React.FC = () => {
             <View className="mx-3 mt-5">
               {rows.map((row, rowIndex) => (
                 <View key={rowIndex} className="flex flex-row gap-x-2">
-                  {row.map((item) => (
+                  {row.map((item, index) => (
                     <View key={item.id} className="flex-1">
                       <ItemCard
                         item={item}

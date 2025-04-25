@@ -92,7 +92,12 @@ const ExchangeHistory: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-[#f6f9f9]">
       <View>
-        <Header showBackButton={false} title="Exchange" showOption={false} />
+        <Header
+          showBackButton={false}
+          title="Exchange"
+          showOption={false}
+          showFilter={true}
+        />
         <TabHeader
           owner={false}
           tabs={tabs}

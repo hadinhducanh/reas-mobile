@@ -36,6 +36,11 @@ const ConfirmExchange: React.FC = () => {
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const handleConfirmExchange = async () => {
+    const offsetMinutes = new Date().getTimezoneOffset();
+    const adjusted = new Date(
+      exchangeItem.exchangeDateExtend.getTime() - offsetMinutes * 60000
+    );
+
     const exchangeRequestRequest = {
       sellerItemId: exchangeItem.sellerItemId,
       buyerItemId:
@@ -43,7 +48,7 @@ const ConfirmExchange: React.FC = () => {
           ? null
           : exchangeItem.selectedItem.id,
       paidByUserId: exchangeItem.paidByUserId,
-      exchangeDate: exchangeItem.exchangeDateExtend.toISOString(),
+      exchangeDate: adjusted.toISOString(),
       exchangeLocation: exchangeItem.exchangeLocation,
       estimatePrice: exchangeItem.estimatePrice,
       methodExchange: exchangeItem.methodExchange,
@@ -53,8 +58,6 @@ const ConfirmExchange: React.FC = () => {
           ? exchangeItem.additionalNotes
           : null,
     };
-
-    console.log(exchangeRequestRequest);
 
     await dispatch(makeAnExchangeThunk(exchangeRequestRequest));
   };

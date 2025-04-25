@@ -70,28 +70,38 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
     if (!receivedItemImage) {
       Alert.alert("Invalid information", "All fields are required.");
       return;
-    } else {
-      setIsUploadingImages(true);
-      const processedImages = await processImages();
-      setIsUploadingImages(false);
+    }
 
-      if (
-        !exchangeDetail?.exchangeHistory?.buyerConfirmation &&
-        !exchangeDetail?.exchangeHistory?.buyerConfirmation
-      ) {
-        navigation.navigate("MainTabs", { screen: "Exchanges" });
+    setIsUploadingImages(true);
+    const processedImages = await processImages();
+    setIsUploadingImages(false);
+
+    if (
+      !exchangeDetail?.exchangeHistory?.buyerConfirmation &&
+      !exchangeDetail?.exchangeHistory?.buyerConfirmation
+    ) {
+      navigation.navigate("MainTabs", { screen: "Exchanges" });
+    }
+
+    const request = {
+      exchangeHistoryId: exchangeDetail?.exchangeHistory.id!,
+      imageUrl: processedImages,
+      additionalNotes:
+        additionalNotes.length === 0
+          ? null
+          : additionalNotes.replace(/\n/g, "\\n"),
+    };
+
+    try {
+      const resultAction = await dispatch(uploadExchangeEvidenceThunk(request));
+      if (uploadExchangeEvidenceThunk.fulfilled.match(resultAction)) {
+        onCancel();
+      } else {
+        Alert.alert("Error", "Failed to upload exchange evidence.");
       }
-      await dispatch(
-        uploadExchangeEvidenceThunk({
-          exchangeHistoryId: exchangeDetail?.exchangeHistory.id!,
-          imageUrl: processedImages,
-          additionalNotes:
-            additionalNotes.length === 0
-              ? null
-              : additionalNotes.replace(/\n/g, "\\n"),
-        })
-      );
-      onCancel();
+    } catch (error) {
+      console.error("Dispatch error:", error);
+      Alert.alert("Error", "Something went wrong.");
     }
   };
 

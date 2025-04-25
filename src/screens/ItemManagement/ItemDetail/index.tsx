@@ -16,7 +16,6 @@ import {
   RouteProp,
   useNavigation,
   NavigationProp,
-  useFocusEffect,
 } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -195,12 +194,10 @@ const ItemDetails: React.FC = () => {
     }
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      dispatch(resetItemDetailState());
-      dispatch(getItemDetailThunk(itemId));
-    }, [dispatch, itemId])
-  );
+  useEffect(() => {
+    dispatch(resetItemDetailState());
+    dispatch(getItemDetailThunk(itemId));
+  }, [dispatch, itemId]);
 
   useEffect(() => {
     if (itemDetail) {
@@ -227,13 +224,13 @@ const ItemDetails: React.FC = () => {
   const handleChat = useCallback(() => {
     if (!accessToken) {
       navigation.navigate("SignIn");
-    } else {
+    } else if (itemDetail) {
       navigation.navigate("ChatDetails", {
         receiverUsername: itemDetail!.owner.userName,
         receiverFullName: itemDetail!.owner.fullName,
       });
     }
-  }, [accessToken, navigation, itemId]);
+  }, [accessToken, navigation, itemDetail, itemId]);
 
   const handleFavoritePress = useCallback(() => {
     if (!accessToken) {
@@ -314,7 +311,7 @@ const ItemDetails: React.FC = () => {
               className="text-gray-500 font-bold text-base mt-1"
               style={{ fontStyle: "italic" }}
             >
-              *Có nhận trao đổi bằng tiền
+              *Accept exchange with cash
             </Text>
           )}
 
@@ -367,14 +364,17 @@ const ItemDetails: React.FC = () => {
                   {itemDetail?.owner.fullName}
                 </Text>
                 <Text className="text-gray-500 my-1">
-                  Sản phẩm:{" "}
+                  Items:{" "}
                   <Text className="underline text-black">
-                    {itemDetail?.owner.numOfExchangedItems} đã bán
+                    {itemDetail?.owner.numOfExchangedItems} exchange
                   </Text>
                 </Text>
                 <View className="flex-row items-center">
                   <View className="w-3 h-3 bg-[#738aa0] rounded-full mr-1" />
-                  <Text className="text-gray-500">Hoạt động 2 giờ trước</Text>
+                  <Text className="text-gray-500">
+                    Paricipant:{" "}
+                    {formatRelativeTime(itemDetail?.owner.creationDate)}
+                  </Text>
                 </View>
               </View>
             </Pressable>
@@ -397,7 +397,7 @@ const ItemDetails: React.FC = () => {
                 <Icon name="star" size={20} color="yellow" />
               </View>
               <Text className="underline">
-                {itemDetail?.owner.numOfFeedbacks} đánh giá
+                {itemDetail?.owner.numOfFeedbacks} feedbacks
               </Text>
             </Pressable>
           </View>
@@ -434,7 +434,7 @@ const ItemDetails: React.FC = () => {
           {itemDetail?.termsAndConditionsExchange && (
             <View className="mt-5">
               <Text className="text-xl font-semibold mb-1">
-                Điều khoản và điều kiện trao đổi:
+                Terms and conditions:
               </Text>
               {itemDetail?.termsAndConditionsExchange
                 .split("\\n")
@@ -451,7 +451,7 @@ const ItemDetails: React.FC = () => {
           <>
             {otherItemOfUser.length !== 0 && (
               <HorizontalSection
-                title={`Bài đăng khác của ${itemDetail?.owner.fullName}`}
+                title={`Other item of ${itemDetail?.owner.fullName}`}
                 data={otherItemOfUser}
                 navigation={navigation}
               />
@@ -459,7 +459,7 @@ const ItemDetails: React.FC = () => {
 
             {itemSimilar.length !== 0 && (
               <HorizontalSection
-                title="Bài đăng tương tự"
+                title="Item similar"
                 data={itemSimilar}
                 navigation={navigation}
               />
