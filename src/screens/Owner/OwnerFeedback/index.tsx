@@ -160,12 +160,13 @@ const OwnerFeedback: React.FC = () => {
   return (
     <SafeAreaView className="flex-1" edges={["top"]}>
       <Header
-        title="Chi tiết đánh giá"
+        title="Feedback detail"
         backgroundColor="bg-[#00B0B9]"
         backIconColor="white"
         textColor="text-white"
         optionIconColor="white"
         owner={false}
+        showOption={false}
       />
 
       {loading ? (
@@ -213,7 +214,7 @@ const OwnerFeedback: React.FC = () => {
                   />
                 ))}
                 <Text className="ml-1 text-base font-semibold text-[#00B0B9]">
-                  ({userDetail?.numOfFeedbacks} đánh giá)
+                  ({userDetail?.numOfFeedbacks} feedback)
                 </Text>
               </View>
               <View className="flex-row items-center mt-2 w-3/4">
@@ -222,7 +223,7 @@ const OwnerFeedback: React.FC = () => {
                   className="text-base text-gray-500 ml-1"
                   numberOfLines={1}
                 >
-                  Địa chỉ:{" "}
+                  Location:{" "}
                   <Text
                     className="text-black underline "
                     onPress={() => setLocationVisible(true)}
@@ -234,7 +235,7 @@ const OwnerFeedback: React.FC = () => {
               <View className="flex-row items-center mt-1">
                 <Icon name="time-outline" size={20} color="#738AA0" />
                 <Text className="text-base text-gray-600 ml-1">
-                  Đã tham gia:{" "}
+                  Paticipant:{" "}
                   <Text className="text-black">
                     {formatRelativeTime(userDetail?.creationDate)}
                   </Text>

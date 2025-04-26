@@ -59,7 +59,7 @@ const OrderFailed: React.FC = () => {
 
         {/* Title */}
         <Text className="text-[22px] font-bold leading-[30.8px] text-[#0b1d2d] text-center mt-[10px]">
-          Sorry! Your Subscription{"\n"}Has Failed!
+          Oops! Your Subscription{"\n"}Has Failed!
         </Text>
 
         {/* Subtitle */}

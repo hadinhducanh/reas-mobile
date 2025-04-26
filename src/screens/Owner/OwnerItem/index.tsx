@@ -102,7 +102,7 @@ const OwnerItem: React.FC = () => {
       count: countsOfUser.AVAILABLE!,
     },
     {
-      header: "EXCHANGE",
+      header: "EXCHANGED",
       label: "SOLD",
       count: countsOfUser.SOLD!,
     },
@@ -202,7 +202,7 @@ const OwnerItem: React.FC = () => {
                   }
                 >
                   <Text className="ml-1 text-sm font-semibold text-[#00B0B9] underline">
-                    ({userDetail?.numOfFeedbacks} đánh giá)
+                    ({userDetail?.numOfFeedbacks} feedback)
                   </Text>
                 </Pressable>
               </View>
@@ -213,7 +213,7 @@ const OwnerItem: React.FC = () => {
                   className="text-base text-gray-500 ml-1"
                   numberOfLines={1}
                 >
-                  Địa chỉ:{" "}
+                  Location:{" "}
                   <Text
                     className="text-black underline "
                     onPress={() => setLocationVisible(true)}
@@ -226,7 +226,7 @@ const OwnerItem: React.FC = () => {
               <View className="flex-row items-center mt-1">
                 <Icon name="time-outline" size={20} color="#738AA0" />
                 <Text className="text-base text-gray-600 ml-1">
-                  Đã tham gia:{" "}
+                  Paticipant:{" "}
                   <Text className="text-black">
                     {formatRelativeTime(userDetail?.creationDate)}
                   </Text>{" "}

@@ -62,12 +62,12 @@ const OrderSuccess: React.FC = () => {
 
         {/* Title */}
         <Text className="text-[22px] font-bold leading-[30.8px] text-[#0b1d2d] text-center mt-[10px]">
-          Thank You For{"\n"}Your Order!
+          Thank you for{"\n"}subscription!
         </Text>
 
         {/* Subtitle */}
         <Text className="text-[16px] font-bold leading-[24px] text-[#738aa0] text-center mt-[10px]">
-          Your order will be delivered ontime.{"\n"}Thank you!
+          Hope you enjoy our app
         </Text>
       </View>
       <View className="py-4">

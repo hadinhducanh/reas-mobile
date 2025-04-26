@@ -37,16 +37,16 @@ const ExchangeHistory: React.FC = () => {
       count: counts.APPROVED!,
     },
     {
+      label: StatusExchange.SUCCESSFUL,
+      count: counts.SUCCESSFUL!,
+    },
+    {
       label: StatusExchange.REJECTED,
       count: counts.REJECTED!,
     },
     {
       label: StatusExchange.CANCELLED,
       count: counts.CANCELLED!,
-    },
-    {
-      label: StatusExchange.SUCCESSFUL,
-      count: counts.SUCCESSFUL!,
     },
     {
       label: StatusExchange.FAILED,
@@ -96,7 +96,7 @@ const ExchangeHistory: React.FC = () => {
           showBackButton={false}
           title="Exchange"
           showOption={false}
-          showFilter={true}
+          showFilter={selectedStatus === StatusExchange.APPROVED}
         />
         <TabHeader
           owner={false}

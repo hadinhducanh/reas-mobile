@@ -331,7 +331,7 @@ const ItemDetails: React.FC = () => {
             <View className="flex flex-row items-center mt-2">
               <Icon name="time-outline" size={25} color="black" />
               <Text className="ml-1 text-gray-500 text-lg">
-                Upload {formatRelativeTime(itemDetail?.approvedTime)}
+                Approved {formatRelativeTime(itemDetail?.approvedTime)}
               </Text>
             </View>
           </View>

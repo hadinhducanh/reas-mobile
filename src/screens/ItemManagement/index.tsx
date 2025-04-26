@@ -70,30 +70,32 @@ const ItemManagement: React.FC = () => {
       count: countsOfCurrentUser.AVAILABLE!,
     },
     {
-      label: getStatusItemLabel(StatusItem.EXPIRED),
-      count: countsOfCurrentUser.EXPIRED!,
-    },
-    {
       label: getStatusItemLabel(StatusItem.PENDING),
       count: countsOfCurrentUser.PENDING!,
     },
     {
-      label: getStatusItemLabel(StatusItem.REJECTED),
-      count: countsOfCurrentUser.REJECTED!,
-    },
-    {
-      header: "NO LONGER FOR EXCHANGE",
-      label: getStatusItemLabel(StatusItem.NO_LONGER_FOR_EXCHANGE),
-      count: countsOfCurrentUser.NO_LONGER_FOR_EXCHANGE!,
-    },
-    {
-      label: getStatusItemLabel(StatusItem.SOLD),
-      count: countsOfCurrentUser.SOLD!,
+      label: getStatusItemLabel(StatusItem.EXPIRED),
+      count: countsOfCurrentUser.EXPIRED!,
     },
     {
       header: "IN EXCHANGE",
       label: getStatusItemLabel(StatusItem.IN_EXCHANGE),
       count: countsOfCurrentUser.IN_EXCHANGE!,
+    },
+
+    {
+      label: getStatusItemLabel(StatusItem.REJECTED),
+      count: countsOfCurrentUser.REJECTED!,
+    },
+    {
+      header: "DEACTIVATED",
+      label: getStatusItemLabel(StatusItem.NO_LONGER_FOR_EXCHANGE),
+      count: countsOfCurrentUser.NO_LONGER_FOR_EXCHANGE!,
+    },
+    {
+      header: "EXCHANGED",
+      label: getStatusItemLabel(StatusItem.SOLD),
+      count: countsOfCurrentUser.SOLD!,
     },
   ];
 

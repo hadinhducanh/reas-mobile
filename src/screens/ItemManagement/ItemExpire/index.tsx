@@ -507,7 +507,7 @@ const ItemExpire: React.FC = () => {
               <View className="flex flex-row items-center mt-2">
                 <Icon name="time-outline" size={25} color="black" />
                 <Text className="ml-1 text-gray-500 text-lg font-semibold">
-                  Expire {formatExchangeDate(itemDetail?.expiredTime)}
+                  Expire: {formatExchangeDate(itemDetail?.expiredTime)}
                 </Text>
               </View>
             )}
@@ -516,7 +516,7 @@ const ItemExpire: React.FC = () => {
               <View className="flex flex-row items-center mt-2">
                 <Icon name="time-outline" size={25} color="black" />
                 <Text className="ml-1 text-gray-500 text-lg">
-                  Upload {formatRelativeTime(itemDetail?.approvedTime)}
+                  Approved {formatRelativeTime(itemDetail?.approvedTime)}
                 </Text>
               </View>
             )}
@@ -820,7 +820,7 @@ const ItemExpire: React.FC = () => {
 
       <ConfirmModal
         title="Confirm deactivate"
-        content="Are you sure you to deactivate this item?"
+        content="Are you sure to deactivate this item?"
         visible={deactivateVisible}
         onCancel={handleCancelDeactivate}
         onConfirm={handleConfirmDeactivate}
@@ -828,7 +828,7 @@ const ItemExpire: React.FC = () => {
 
       <ConfirmModal
         title="Confirm delete"
-        content="Are you sure you to delete this item?"
+        content="Are you sure to delete this item?"
         visible={deletedVisible}
         onCancel={handleCancelDelete}
         onConfirm={handleConfirmDelete}
@@ -838,7 +838,7 @@ const ItemExpire: React.FC = () => {
         title="Confirm extend"
         content={`You have ${
           currentPlan?.numberOfFreeExtensionLeft
-        } extend free ${"\n"} Are you sure you to extend this item?`}
+        } extend free ${"\n"} Are you sure to extend this item?`}
         visible={extendFreeVisible}
         onCancel={handleCancelExtendFree}
         onConfirm={handleConfirmExtendFree}
@@ -846,7 +846,7 @@ const ItemExpire: React.FC = () => {
 
       <ConfirmModal
         title="Confirm reopen"
-        content="Are you sure you to reopen this item?"
+        content="Are you sure to reopen this item?"
         visible={reOpenVisible}
         onCancel={handleCancelReOpen}
         onConfirm={handleConfirmReOpen}

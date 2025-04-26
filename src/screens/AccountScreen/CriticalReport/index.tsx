@@ -725,7 +725,7 @@ const CriticalReport: React.FC = () => {
 
       <ErrorModal
         title={"Notification"}
-        content={"Critical report was send successful!"}
+        content={"Critical report was sent successful!"}
         visible={errorVisible}
         onCancel={() => {
           setErrorVisible(false);
