@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
@@ -9,38 +9,75 @@ import Header from "../../../components/Header";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
-import { getNumberOfSuccessfulExchangesOfUserThunk } from "../../../redux/thunk/exchangeThunk";
+import {
+  getMonthlyRevenueOfUserInOneYearFromExchangesThunk,
+  getNumberOfSuccessfulExchangesOfUserThunk,
+  getRevenueOfUserInOneYearFromExchangesThunk,
+} from "../../../redux/thunk/exchangeThunk";
 import { getNumberOfSuccessfulTransactionOfUserThunk } from "../../../redux/thunk/paymentThunk";
+
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 const Statistics: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
-  const { numberOfSuccessfulExchange, loading } = useSelector(
-    (state: RootState) => state.exchange
-  );
-  const { numberOfSuccessfulTransaction, loadingPayment } = useSelector(
+  const {
+    numberOfSuccessfulExchange,
+    revenueOfUserFromExchanges,
+    monthlyRevenueOfUserFromExchanges,
+  } = useSelector((state: RootState) => state.exchange);
+  const { numberOfSuccessfulTransaction } = useSelector(
     (state: RootState) => state.payment
   );
-  // State quản lý chế độ Weekly / Monthly / Yearly
   const [selectedSegment, setSelectedSegment] = useState("Monthly");
 
-  const monthlyData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [{ data: [80, 45, 28, 80, 99, 43] }],
-  };
-
-  // Lấy dữ liệu tương ứng với lựa chọn
-  let chartData;
-  chartData = monthlyData;
+  const [month] = useState(() => new Date().getMonth() + 1);
+  const [year] = useState(() => new Date().getFullYear());
 
   useEffect(() => {
-    dispatch(
-      getNumberOfSuccessfulExchangesOfUserThunk({ month: 4, year: 2025 })
-    );
-    dispatch(
-      getNumberOfSuccessfulTransactionOfUserThunk({ month: 4, year: 2025 })
-    );
-  }, [numberOfSuccessfulExchange, numberOfSuccessfulTransaction]);
+    dispatch(getNumberOfSuccessfulExchangesOfUserThunk({ month, year }));
+    dispatch(getNumberOfSuccessfulTransactionOfUserThunk({ month, year }));
+    dispatch(getRevenueOfUserInOneYearFromExchangesThunk(year));
+    dispatch(getMonthlyRevenueOfUserInOneYearFromExchangesThunk(year));
+  }, [dispatch, month, year]);
+
+  const chartData = useMemo(() => {
+    if (selectedSegment === "Monthly") {
+      const data = MONTH_LABELS.map(
+        (_, idx) =>
+          // truy xuất plain object với key là số tháng
+          monthlyRevenueOfUserFromExchanges[idx + 1] ?? 0
+      );
+      return { labels: MONTH_LABELS, datasets: [{ data }] };
+    } else {
+      return {
+        labels: [year.toString()],
+        datasets: [{ data: [revenueOfUserFromExchanges ?? 0] }],
+      };
+    }
+  }, [
+    selectedSegment,
+    monthlyRevenueOfUserFromExchanges,
+    revenueOfUserFromExchanges,
+    year,
+  ]);
+
+  const formatPrice = (price: number | undefined): string => {
+    return price !== undefined ? price.toLocaleString("vi-VN") : "0";
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]">
@@ -80,7 +117,7 @@ const Statistics: React.FC = () => {
           />
 
           <StatsCard
-            value="VND 3000"
+            value={formatPrice(revenueOfUserFromExchanges)}
             label="Revenue"
             percentage="-2.5%"
             isPositive={false}

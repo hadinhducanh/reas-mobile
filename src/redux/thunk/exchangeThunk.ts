@@ -309,3 +309,52 @@ export const getNumberOfSuccessfulExchangesOfUserThunk = createAsyncThunk<
     }
   }
 );
+
+export const getRevenueOfUserInOneYearFromExchangesThunk = createAsyncThunk<
+  number,
+  number,
+  { state: RootState }
+>("exchange/getRevenueOfUserInOneYearFromExchanges", async (year, thunkAPI) => {
+  const state = thunkAPI.getState();
+  const accessToken = state.auth.accessToken;
+  if (!accessToken) {
+    return thunkAPI.rejectWithValue("No access token available");
+  }
+  try {
+    const data = await ExchangeService.getRevenueOfUserInOneYearFromExchanges(
+      year,
+      accessToken
+    );
+    return data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data ||
+        "Get revenure of user in one year from exchanges failed"
+    );
+  }
+});
+
+export const getMonthlyRevenueOfUserInOneYearFromExchangesThunk =
+  createAsyncThunk<Record<number, number>, number, { state: RootState }>(
+    "exchange/getMonthlyRevenueOfUserInOneYearFromExchanges",
+    async (year, thunkAPI) => {
+      const state = thunkAPI.getState();
+      const accessToken = state.auth.accessToken;
+      if (!accessToken) {
+        return thunkAPI.rejectWithValue("No access token available");
+      }
+      try {
+        const data =
+          await ExchangeService.getMonthlyRevenueOfUserInOneYearFromExchanges(
+            year,
+            accessToken
+          );
+        return data;
+      } catch (error: any) {
+        return thunkAPI.rejectWithValue(
+          error.response?.data ||
+            "Get monthly revenure of user in one year from exchanges failed"
+        );
+      }
+    }
+  );

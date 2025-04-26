@@ -169,6 +169,36 @@ const getNumberOfSuccessfulExchangesOfUser = async (
   return response.data;
 };
 
+const getRevenueOfUserInOneYearFromExchanges = async (
+  year: number,
+  accessToken: string
+): Promise<number> => {
+  const response = await axios.get<number>(
+    `${API_BASE_URL}/exchange/revenue-of-user-in-one-year-from-exchanges?year=${year}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+const getMonthlyRevenueOfUserInOneYearFromExchanges = async (
+  year: number,
+  accessToken: string
+): Promise<Record<number, number>> => {
+  const response = await axios.get<Record<number, number>>(
+    `${API_BASE_URL}/exchange/monthly-revenue-of-user-in-one-year-from-exchanges?year=${year}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
 export default {
   makeAnExchange,
   getAllExchangesByStatusOfCurrentUser,
@@ -179,4 +209,6 @@ export default {
   cancelExchange,
   uploadExchangeEvidence,
   getNumberOfSuccessfulExchangesOfUser,
+  getRevenueOfUserInOneYearFromExchanges,
+  getMonthlyRevenueOfUserInOneYearFromExchanges,
 };

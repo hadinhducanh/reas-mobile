@@ -173,7 +173,7 @@ export default function UploadItem() {
       const uploadItemRequest = {
         itemName: uploadItem.itemName.trim(),
         description: uploadItem.description.trim(),
-        price: uploadItem.price,
+        price: uploadItem.price === null ? 0 : uploadItem.price,
         conditionItem: uploadItem.conditionItem,
         imageUrl: processedImages,
         methodExchanges: uploadItem.methodExchanges,
