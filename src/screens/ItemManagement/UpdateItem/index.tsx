@@ -421,11 +421,6 @@ export default function UpdateItem() {
       !compareDesiredItems(uploadItem.desiredItem, initDesiredItem) ||
       userLocationId !== initUserLoc;
 
-    console.log(
-      "desiredItem changed:",
-      !compareDesiredItems(uploadItem.desiredItem, initDesiredItem)
-    );
-
     if (!hasChanged) {
       hasConfirmedRef.current = true;
       navigation.reset({
