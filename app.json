@@ -4,13 +4,13 @@
     "slug": "REAS",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo-bg.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash-composed.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#00B0B9"
     },
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
@@ -32,7 +32,7 @@
     "android": {
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logo-bg.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -50,7 +50,7 @@
         }
       }
     },
-    "plugins": [
+    "plugins": [   
       "@react-native-firebase/app",
       "@react-native-google-signin/google-signin"
     ],

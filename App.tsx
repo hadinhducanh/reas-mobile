@@ -14,19 +14,6 @@ import { useDispatch } from "react-redux";
 import { setRegistrationTokenThunk } from "./src/redux/thunk/notificationThunk";
 
 const App: React.FC = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <SplashScreen />;
-  }
-
   return (
     <Provider store={store}>
       <SafeAreaProvider style={styles.container}>

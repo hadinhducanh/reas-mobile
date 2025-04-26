@@ -45,18 +45,17 @@ const ExchangeDesiredItemScreen = () => {
   };
 
   const handleDone = async () => {
-    const min = parseInt(minPrice.replace(/,/g, ""), 10) || 0;
-    const max = parseInt(maxPrice.replace(/,/g, ""), 10) || 0;
+    const min = parseInt(minPrice.replace(/,/g, ""), 10) || null;
+    const max = parseInt(maxPrice.replace(/,/g, ""), 10) || null;
 
     if (!minPrice || !description) {
       Alert.alert("Missing Information", "All fields is required.");
       return;
-    } else if (max <= min && max !== 0) {
+    } else if (max && min && max <= min && max !== 0) {
       Alert.alert("Invalid", "Max price must be greater than min price.");
       return;
     } else {
       hasConfirmedRef.current = true;
-
       setUploadItem({
         ...uploadItem,
         desiredItem: {
@@ -73,8 +72,8 @@ const ExchangeDesiredItemScreen = () => {
             uploadItem.desiredItem?.conditionItem === ConditionItem.NO_CONDITION
               ? null
               : uploadItem.desiredItem?.conditionItem!,
-          maxPrice: max === 0 ? null : max,
-          minPrice: min,
+          maxPrice: max === null ? null : max,
+          minPrice: min === null ? 0 : min,
         },
       });
 
@@ -115,9 +114,6 @@ const ExchangeDesiredItemScreen = () => {
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
       if (hasConfirmedRef.current) return;
-
-      console.log(uploadItem.desiredItem?.minPrice);
-      console.log(defaultUploadItem.desiredItem?.minPrice);
 
       if (
         JSON.stringify(uploadItem.desiredItem) !==
@@ -162,10 +158,15 @@ const ExchangeDesiredItemScreen = () => {
   };
 
   useEffect(() => {
-    const minPriceValue = parseInt(minPrice.replace(/,/g, ""), 10) || 0;
-    const maxPriceValue = parseInt(maxPrice.replace(/,/g, ""), 10) || 0;
+    const minPriceValue = parseInt(minPrice.replace(/,/g, ""), 10) || null;
+    const maxPriceValue = parseInt(maxPrice.replace(/,/g, ""), 10) || null;
 
-    if (minPriceValue > maxPriceValue && maxPriceValue !== 0) {
+    if (
+      minPriceValue &&
+      maxPriceValue &&
+      minPriceValue > maxPriceValue &&
+      maxPriceValue !== 0
+    ) {
       setError("Min price cannot be greater than Max price");
       setIsInvalid(true);
     } else {

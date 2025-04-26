@@ -76,13 +76,15 @@ export default function UpdateItem() {
   const [isMoneyAccepted, setIsMoneyAccepted] = useState(
     uploadItem.isMoneyAccepted
   );
-  const [price, setPrice] = useState<string>(uploadItem.price.toString());
+  const [price, setPrice] = useState<string>(
+    uploadItem.price === null ? "" : uploadItem.price.toString()
+  );
   const [itemName, setItemName] = useState<string>(uploadItem.itemName);
   const [description, setDescription] = useState<string>(
     uploadItem.description
   );
   const [termCondition, setTermCondition] = useState<string>(
-    uploadItem.termsAndConditionsExchange
+    uploadItem.termsAndConditionsExchange || ""
   );
   const [images, setImages] = useState<string>(uploadItem.imageUrl);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
@@ -175,20 +177,23 @@ export default function UpdateItem() {
           ...uploadItem,
           categoryId:
             itemDetail.desiredItem.categoryId === null
-              ? 0
+              ? null
               : itemDetail.desiredItem.categoryId,
           conditionItem:
             itemDetail.desiredItem.conditionItem === null
-              ? ConditionItem.NO_CONDITION
+              ? null
               : itemDetail.desiredItem.conditionItem,
           brandId:
             itemDetail.desiredItem.brandId === null
-              ? 0
+              ? null
               : itemDetail.desiredItem.brandId,
-          minPrice: itemDetail.desiredItem.minPrice,
+          minPrice:
+            itemDetail.desiredItem.minPrice === null
+              ? 0
+              : itemDetail.desiredItem.minPrice,
           maxPrice:
             itemDetail.desiredItem.maxPrice === null
-              ? 0
+              ? null
               : itemDetail.desiredItem.maxPrice,
           description: itemDetail.desiredItem.description,
         },
@@ -467,7 +472,7 @@ export default function UpdateItem() {
         id: itemDetail?.id!,
         itemName: uploadItem.itemName.trim(),
         description: uploadItem.description.trim(),
-        price: uploadItem.price,
+        price: uploadItem.price === null ? 0 : uploadItem.price,
         conditionItem: uploadItem.conditionItem,
         imageUrl: processedImages,
         methodExchanges: uploadItem.methodExchanges,

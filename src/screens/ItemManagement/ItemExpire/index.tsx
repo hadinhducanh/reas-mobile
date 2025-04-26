@@ -197,6 +197,10 @@ const ItemExpire: React.FC = () => {
     return found ? found.label : "";
   };
 
+  const formatPrice = (price: number | undefined): string => {
+    return price !== undefined ? price.toLocaleString("vi-VN") : "0";
+  };
+
   const data = useMemo(
     () => [
       {
@@ -242,6 +246,20 @@ const ItemExpire: React.FC = () => {
       },
       { label: "Category", value: desired.categoryName },
       { label: "Brand", value: desired.brandName },
+      {
+        label: "Min price",
+        value:
+          desired.minPrice != null
+            ? `${formatPrice(desired.minPrice)} VND`
+            : "",
+      },
+      {
+        label: "Max price",
+        value:
+          desired.maxPrice != null
+            ? `${formatPrice(desired.maxPrice)} VND`
+            : "",
+      },
       { label: "Description", value: desired.description },
     ];
 
@@ -251,10 +269,6 @@ const ItemExpire: React.FC = () => {
   const imageArray = useMemo(() => {
     return itemDetail?.imageUrl ? itemDetail.imageUrl.split(", ") : [];
   }, [itemDetail?.imageUrl]);
-
-  const formatPrice = (price: number | undefined): string => {
-    return price !== undefined ? price.toLocaleString("vi-VN") : "0";
-  };
 
   function formatRelativeTime(timeStr: Date | undefined): string {
     const givenTime = dayjs(timeStr);

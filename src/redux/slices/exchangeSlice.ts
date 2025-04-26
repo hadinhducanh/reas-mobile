@@ -6,7 +6,9 @@ import {
   getAllExchangesByStatusOfCurrentUserThunk,
   getExchangeCountsThunk,
   getExchangeDetailThunk,
+  getMonthlyRevenueOfUserInOneYearFromExchangesThunk,
   getNumberOfSuccessfulExchangesOfUserThunk,
+  getRevenueOfUserInOneYearFromExchangesThunk,
   makeAnExchangeThunk,
   reviewExchangeRequestThunk,
   updateExchangeRequestPriceThunk,
@@ -21,6 +23,8 @@ interface ExchangeState {
   exchangeDetail: ExchangeResponse | null;
   counts: { [key in StatusExchange]?: number };
   numberOfSuccessfulExchange: number;
+  revenueOfUserFromExchanges: number;
+  monthlyRevenueOfUserFromExchanges: Record<number, number>;
   loading: boolean;
   error: string | null;
 }
@@ -28,6 +32,8 @@ interface ExchangeState {
 const initialState: ExchangeState = {
   exchangeRequest: null,
   exchangeDetail: null,
+  revenueOfUserFromExchanges: 0,
+  monthlyRevenueOfUserFromExchanges: {},
   exchangeByStatus: {
     pageNo: 0,
     pageSize: 10,
@@ -277,6 +283,54 @@ const exchangeSlice = createSlice({
           state.error =
             action.payload ||
             "Get number of successful exchange of user failed";
+        }
+      );
+
+    builder
+      .addCase(getRevenueOfUserInOneYearFromExchangesThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getRevenueOfUserInOneYearFromExchangesThunk.fulfilled,
+        (state, action: PayloadAction<number>) => {
+          state.loading = false;
+          state.revenueOfUserFromExchanges = action.payload;
+        }
+      )
+      .addCase(
+        getRevenueOfUserInOneYearFromExchangesThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error =
+            action.payload ||
+            "Get revenure of user in one year from exchanges failed";
+        }
+      );
+
+    builder
+      .addCase(
+        getMonthlyRevenueOfUserInOneYearFromExchangesThunk.pending,
+        (state) => {
+          state.loading = true;
+          state.error = null;
+        }
+      )
+      .addCase(
+        getMonthlyRevenueOfUserInOneYearFromExchangesThunk.fulfilled,
+        (state, action: PayloadAction<Record<number, number>>) => {
+          state.loading = false;
+          // action.payload vốn đã là Record<number, number>
+          state.monthlyRevenueOfUserFromExchanges = action.payload;
+        }
+      )
+      .addCase(
+        getMonthlyRevenueOfUserInOneYearFromExchangesThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error =
+            action.payload ||
+            "Get monthly revenure of user in one year from exchanges failed";
         }
       );
   },
