@@ -342,6 +342,26 @@ export const deleteItemThunk = createAsyncThunk<
   }
 });
 
+export const isReachMaxOfUploadItemThisMonthThunk = createAsyncThunk<
+  boolean,
+  void,
+  { state: RootState }
+>("item/isReachMaxOfUploadItemThisMonth", async (_, thunkAPI) => {
+  const state = thunkAPI.getState();
+  const accessToken = state.auth.accessToken;
+  if (!accessToken) {
+    return thunkAPI.rejectWithValue("No access token available");
+  }
+  try {
+    const data = await ItemService.isReachMaxOfUploadItemThisMonth(accessToken);
+    return data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response.data || "Check max of upload item failed"
+    );
+  }
+});
+
 export const extendItemForFreeThunk = createAsyncThunk<
   boolean,
   number,
@@ -367,7 +387,7 @@ export const getItemCountsOfUserThunk = createAsyncThunk<
   number
 >("item/getItemCountsOfUser", async (userId, thunkAPI) => {
   try {
-    const statuses = [StatusItem.AVAILABLE, StatusItem.SOLD];
+    const statuses = [StatusItem.AVAILABLE, StatusItem.EXCHANGED];
 
     const requests = statuses.map((status) => {
       return ItemService.getAllItemOfUserByStatus(0, userId, status);
@@ -405,7 +425,7 @@ export const getItemCountsOfCurrentUserThunk = createAsyncThunk<
       StatusItem.PENDING,
       StatusItem.REJECTED,
       StatusItem.NO_LONGER_FOR_EXCHANGE,
-      StatusItem.SOLD,
+      StatusItem.EXCHANGED,
       StatusItem.IN_EXCHANGE,
     ];
 

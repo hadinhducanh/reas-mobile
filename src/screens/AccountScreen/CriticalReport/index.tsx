@@ -112,7 +112,7 @@ const CriticalReport: React.FC = () => {
         typeReport: typesReport,
         contentReport: comment.replace(/\n/g, "\\n").trim(),
         imageUrl,
-        userId: id,
+        residentId: id,
       };
       dispatch(createCriticalReportThunk(request));
     } else if (typeOfReport === TypeCriticalReport.EXCHANGE) {

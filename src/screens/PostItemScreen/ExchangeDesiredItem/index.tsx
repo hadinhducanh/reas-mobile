@@ -180,14 +180,14 @@ const ExchangeDesiredItemScreen = () => {
       <Header title="Your desired item for exchange" showOption={false} />
       <ScrollView className="flex-1 mx-5">
         <NavigationListItem
-          title="Type of item(Optional)"
+          title="Type of item"
           value={uploadItem.categoryDesiredItemName}
           route="TypeOfItemScreen"
           defaultValue="Select type"
         />
 
         <NavigationListItem
-          title="Brand(Optional)"
+          title="Brand"
           value={uploadItem.brandDesiredItemName}
           route="BrandSelectionScreen"
           defaultValue="Select brand"
@@ -196,7 +196,7 @@ const ExchangeDesiredItemScreen = () => {
         <View className="flex-row justify-center gap-4 mt-4">
           <View className="flex-1 rounded-lg border-2 border-[#00B0B9] bg-white p-2">
             <Text className="text-[#00b0b9] text-base font-bold">
-              Min price*
+              Min price<Text className="text-red-500">*</Text>
             </Text>
             <View className="flex-row justify-between items-center mt-1">
               <TextInput
@@ -213,7 +213,7 @@ const ExchangeDesiredItemScreen = () => {
 
           <View className="flex-1 rounded-lg border-2 border-[#00B0B9] bg-white p-2">
             <Text className="text-[#00b0b9] text-base font-bold">
-              Max price(Optional)
+              Max price
             </Text>
             <View className="flex-row justify-between items-center mt-1">
               <TextInput
@@ -230,14 +230,16 @@ const ExchangeDesiredItemScreen = () => {
         </View>
 
         <NavigationListItem
-          title="Condition(Optional)"
+          title="Condition"
           value={uploadItem.conditionDesiredItemName}
           route="ItemConditionScreen"
           defaultValue="Select condition"
         />
 
         <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
-          <Text className="text-black text-base">Description*</Text>
+          <Text className="text-black text-base">
+            Description<Text className="text-red-500">*</Text>
+          </Text>
           <TextInput
             className="flex-1 text-lg font-normal text-black"
             placeholder="Aaaaa"

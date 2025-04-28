@@ -30,7 +30,7 @@ const statusItems = [
     label: "NO_LONGER_FOR_EXCHANGE",
     value: StatusItem.NO_LONGER_FOR_EXCHANGE,
   },
-  { label: "SOLD", value: StatusItem.SOLD },
+  { label: "EXCHANGED", value: StatusItem.EXCHANGED },
   { label: "IN_EXCHANGE", value: StatusItem.IN_EXCHANGE },
 ];
 
@@ -94,8 +94,8 @@ const ItemManagement: React.FC = () => {
     },
     {
       header: "EXCHANGED",
-      label: getStatusItemLabel(StatusItem.SOLD),
-      count: countsOfCurrentUser.SOLD!,
+      label: getStatusItemLabel(StatusItem.EXCHANGED),
+      count: countsOfCurrentUser.EXCHANGED!,
     },
   ];
 

@@ -177,6 +177,20 @@ const deleteItem = async (
   return response.data;
 };
 
+const isReachMaxOfUploadItemThisMonth = async (
+  accessToken: string
+): Promise<boolean> => {
+  const response = await axios.get<boolean>(
+    `${API_BASE_URL}/item/check-upload-item-reach-limit`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
 const findNearbyItems = async (
   pageNo: number,
   latitude: number,
@@ -221,4 +235,5 @@ export default {
   changeItemStatus,
   extendItemForFree,
   deleteItem,
+  isReachMaxOfUploadItemThisMonth,
 };

@@ -5,12 +5,14 @@ import { Text, TouchableOpacity, View } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 interface NavigationListItemProps {
+  require?: boolean;
   title: string;
   value?: string;
   route: keyof RootStackParamList;
   defaultValue?: string;
 }
 const NavigationListItem = ({
+  require,
   title,
   value,
   route,
@@ -24,7 +26,10 @@ const NavigationListItem = ({
       className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
     >
       <View>
-        <Text className="text-base text-black">{title}</Text>
+        <Text className="text-base text-black">
+          {title}
+          {require && <Text className="text-red-500">*</Text>}
+        </Text>
         <Text
           className={`text-lg font-semibold ${
             value ? "text-[#00b0b9]" : "text-black"

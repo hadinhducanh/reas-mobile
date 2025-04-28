@@ -102,9 +102,8 @@ const OwnerItem: React.FC = () => {
       count: countsOfUser.AVAILABLE!,
     },
     {
-      header: "EXCHANGED",
-      label: "SOLD",
-      count: countsOfUser.SOLD!,
+      label: "EXCHANGED",
+      count: countsOfUser.EXCHANGED!,
     },
   ];
 
