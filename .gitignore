@@ -40,5 +40,5 @@ yarn-error.*
 # ios
 ios/
 
-# # android
-# android/
+# android
+android/
