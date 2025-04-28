@@ -142,7 +142,7 @@ export type RootStackParamList = {
   PaymentHistory: undefined;
   ReportedHistory: undefined;
   CriticalReport: {
-    id: number;
+    id?: number;
     typeOfReport: TypeCriticalReport;
     userReport?: UserResponse;
     feedbackReport?: FeedbackResponse;

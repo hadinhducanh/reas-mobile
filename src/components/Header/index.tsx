@@ -96,11 +96,13 @@ const Header: React.FC<HeaderProps> = ({
       navigation.navigate("SignIn");
     } else {
       setIsPopupVisible(false);
-      navigation.navigate("CriticalReport", {
-        id: user?.id,
-        typeOfReport: TypeCriticalReport.USER,
-        userReport: user,
-      });
+      if (user) {
+        navigation.navigate("CriticalReport", {
+          id: user?.id,
+          typeOfReport: TypeCriticalReport.RESIDENT,
+          userReport: user,
+        });
+      }
     }
   }, [accessToken, navigation, user?.id]);
 

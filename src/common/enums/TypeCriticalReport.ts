@@ -1,5 +1,5 @@
 export enum TypeCriticalReport {
-  USER = "USER",
+  RESIDENT = "RESIDENT",
   FEEDBACK = "FEEDBACK",
   EXCHANGE = "EXCHANGE",
 }
