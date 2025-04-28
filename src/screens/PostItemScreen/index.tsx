@@ -297,28 +297,32 @@ export default function UploadItem() {
             />
 
             <NavigationListItem
-              title="Type of item*"
+              title="Type of item"
+              require
               value={uploadItem.categoryName}
               route="TypeOfItemScreen"
               defaultValue="Select type"
             />
 
             <NavigationListItem
-              title="Brand*"
+              title="Brand"
+              require
               value={uploadItem.brandName}
               route="BrandSelectionScreen"
               defaultValue="Select brand"
             />
 
             <NavigationListItem
-              title="Condition*"
+              title="Condition"
+              require
               value={uploadItem.conditionItemName}
               route="ItemConditionScreen"
               defaultValue="Select condition"
             />
 
             <NavigationListItem
-              title="Method of exchange*"
+              title="Method of exchange"
+              require
               value={
                 uploadItem.methodExchanges.length === 3
                   ? "All method exchanges"
@@ -363,7 +367,9 @@ export default function UploadItem() {
 
             {!isCheckedFree && (
               <View className="w-full bg-white rounded-lg mt-4 px-5 py-3">
-                <Text className="text-black text-base">Price*</Text>
+                <Text className="text-black text-base">
+                  Price<Text className="text-red-500">*</Text>
+                </Text>
                 <View className="flex-row justify-between items-center mt-1">
                   <TextInput
                     className="flex-1 text-lg font-normal text-black py-2"
@@ -379,7 +385,9 @@ export default function UploadItem() {
             )}
 
             <View className="w-full bg-white rounded-lg mt-4 px-5 py-3">
-              <Text className="text-black text-base">Name*</Text>
+              <Text className="text-black text-base">
+                Name<Text className="text-red-500">*</Text>
+              </Text>
               <View className="mt-1">
                 <TextInput
                   className="flex-1 text-lg font-normal text-black py-2"
@@ -393,7 +401,7 @@ export default function UploadItem() {
 
             <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
               <Text className="text-black text-base">
-                Description*{" "}
+                Description<Text className="text-red-500">*</Text>{" "}
                 <Text className="text-[#00b0b9] font-semibold">
                   (at least 20 characters)
                 </Text>

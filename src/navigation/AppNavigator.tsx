@@ -69,6 +69,8 @@ import { TypeCriticalReport } from "../common/enums/TypeCriticalReport";
 import { FeedbackResponse } from "../common/models/feedback";
 import { ExchangeResponse } from "../common/models/exchange";
 import { CriticalReportResponse } from "../common/models/criticalReport";
+import { isReachMaxOfUploadItemThisMonthThunk } from "../redux/thunk/itemThunks";
+import ErrorModal from "../components/ErrorModal";
 
 export type ItemType = {
   id: number;
@@ -142,7 +144,7 @@ export type RootStackParamList = {
   PaymentHistory: undefined;
   ReportedHistory: undefined;
   CriticalReport: {
-    id: number;
+    id?: number;
     typeOfReport: TypeCriticalReport;
     userReport?: UserResponse;
     feedbackReport?: FeedbackResponse;
@@ -191,9 +193,12 @@ function BottomTabs() {
     JSON.stringify(uploadItem) !== JSON.stringify(defaultUploadItem);
 
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [confirmUploadMaxVisible, setConfirmUploadMaxVisible] = useState(false);
   const [pendingTabName, setPendingTabName] = useState<
     keyof MainTabsParamList | null
   >(null);
+  const [previousTab, setPreviousTab] =
+    useState<keyof MainTabsParamList>("Home");
 
   const handleConfirm = async () => {
     setConfirmVisible(false);
@@ -210,6 +215,11 @@ function BottomTabs() {
   const handleCancel = () => {
     setConfirmVisible(false);
     setPendingTabName(null);
+  };
+
+  const handleCancelUploadMax = () => {
+    setConfirmUploadMaxVisible(false);
+    navigation.navigate("MainTabs", { screen: previousTab });
   };
 
   return (
@@ -230,8 +240,8 @@ function BottomTabs() {
             key={index}
             name={item.route}
             component={item.component}
-            listeners={({ navigation }) => ({
-              tabPress: (e) => {
+            listeners={({ navigation: tabNav }) => ({
+              tabPress: async (e) => {
                 if (
                   !accessToken &&
                   item.route !== "Account" &&
@@ -239,6 +249,18 @@ function BottomTabs() {
                 ) {
                   e.preventDefault();
                   navigation.navigate("SignIn");
+                } else if (item.route === "Upload") {
+                  const { index, routes } = tabNav.getState();
+                  setPreviousTab(routes[index].name as keyof MainTabsParamList);
+
+                  const isMax = await dispatch(
+                    isReachMaxOfUploadItemThisMonthThunk()
+                  ).unwrap();
+
+                  if (isMax) {
+                    e.preventDefault();
+                    setConfirmUploadMaxVisible(true);
+                  }
                 } else if (hasUnsavedData && item.route !== "Upload") {
                   e.preventDefault();
                   setPendingTabName(item.route as keyof MainTabsParamList);
@@ -292,6 +314,12 @@ function BottomTabs() {
         visible={confirmVisible}
         onCancel={handleCancel}
         onConfirm={handleConfirm}
+      />
+      <ErrorModal
+        content={`You have reached the upload limit.${"\n"}Please upgrade your subscription to upload more.`}
+        title="Warning"
+        visible={confirmUploadMaxVisible}
+        onCancel={handleCancelUploadMax}
       />
     </>
   );

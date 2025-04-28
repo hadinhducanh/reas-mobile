@@ -17,6 +17,7 @@ import {
   updateItemThunk,
   extendItemForFreeThunk,
   deleteItemThunk,
+  isReachMaxOfUploadItemThisMonthThunk,
 } from "../thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
@@ -37,6 +38,7 @@ interface ItemState {
   itemFavorite: ResponseEntityPagination<FavoriteResponse>;
   itemRecommnand: ItemResponse[];
   itemDeleted: boolean;
+  itemUploadMax: boolean;
   itemSimilar: ItemResponse[];
   otherItemOfUser: ItemResponse[];
   itemSuggested: ItemResponse[];
@@ -54,6 +56,7 @@ const initialState: ItemState = {
   extendFree: false,
   itemDetail: null,
   itemDeleted: false,
+  itemUploadMax: false,
   itemAvailable: {
     pageNo: 0,
     pageSize: 10,
@@ -119,6 +122,9 @@ const itemSlice = createSlice({
     },
     resetItemDelete: (state) => {
       state.itemDeleted = false;
+    },
+    resetItemUploadMax: (state) => {
+      state.itemUploadMax = false;
     },
     resetItemDetailState: (state) => {
       state.itemUpload = null;
@@ -587,6 +593,26 @@ const itemSlice = createSlice({
           state.error = action.payload || "Delete item failed";
         }
       );
+
+    builder
+      .addCase(isReachMaxOfUploadItemThisMonthThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        isReachMaxOfUploadItemThisMonthThunk.fulfilled,
+        (state, action: PayloadAction<boolean>) => {
+          state.loading = false;
+          state.itemUploadMax = action.payload;
+        }
+      )
+      .addCase(
+        isReachMaxOfUploadItemThisMonthThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = action.payload || "Check max of upload item failed";
+        }
+      );
   },
 });
 
@@ -595,5 +621,6 @@ export const {
   setRangeState,
   resetExtendFree,
   resetItemDelete,
+  resetItemUploadMax,
 } = itemSlice.actions;
 export default itemSlice.reducer;

@@ -9,7 +9,7 @@ export interface CriticalReportResidentRequest {
   typeReport: TypeCriticalReport;
   contentReport: string;
   imageUrl: string;
-  userId?: number;
+  residentId?: number;
   feedbackId?: number;
   exchangeId?: number;
 }

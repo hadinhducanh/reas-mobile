@@ -107,12 +107,12 @@ const CriticalReport: React.FC = () => {
     setIsUploadingImages(false);
 
     // Build typed request based on mode
-    if (typeOfReport === TypeCriticalReport.USER) {
+    if (typeOfReport === TypeCriticalReport.RESIDENT) {
       const request: CriticalReportResidentRequest = {
         typeReport: typesReport,
         contentReport: comment.replace(/\n/g, "\\n").trim(),
         imageUrl,
-        userId: id,
+        residentId: id,
       };
       dispatch(createCriticalReportThunk(request));
     } else if (typeOfReport === TypeCriticalReport.EXCHANGE) {
@@ -200,20 +200,20 @@ const CriticalReport: React.FC = () => {
               <Text className="text-gray-500 font-medium" numberOfLines={1}>
                 Comment:{" "}
                 <Text className="text-gray-500">
-                  {feedbackReport.comment.split("\\n")[0]}
+                  {feedbackReport?.comment.split("\\n")[0]}
                 </Text>
               </Text>
               <Text className="text-gray-500 font-medium">
                 Feedback by:{" "}
                 <Text className="text-[#00b0b9]">
-                  {feedbackReport.user.fullName}
+                  {feedbackReport?.user.fullName}
                 </Text>
               </Text>
             </View>
           </View>
         )}
 
-        {typeOfReport === TypeCriticalReport.USER && (
+        {typeOfReport === TypeCriticalReport.RESIDENT && (
           <View className="border-2 py-2 border-gray-300 rounded-xl my-4 flex-row justify-between">
             <View className="flex-row items-center">
               {userReport?.image ? (

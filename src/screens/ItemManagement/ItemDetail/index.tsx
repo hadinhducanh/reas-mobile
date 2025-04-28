@@ -502,7 +502,7 @@ const ItemDetails: React.FC = () => {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ flexGrow: 1 }}
             />
-            {itemDetail?.statusItem !== StatusItem.SOLD && (
+            {itemDetail?.statusItem !== StatusItem.EXCHANGED && (
               <View
                 className={`${
                   Platform.OS === "ios" ? "pt-4 pb-7" : "py-5"

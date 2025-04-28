@@ -79,7 +79,7 @@ const statusCriticalReports = [
 ];
 
 const typsCriticalReports = [
-  { label: "USER", value: TypeCriticalReport.USER },
+  { label: "RESIDENT", value: TypeCriticalReport.RESIDENT },
   { label: "FEEDBACK", value: TypeCriticalReport.FEEDBACK },
   { label: "EXCHANGE", value: TypeCriticalReport.EXCHANGE },
 ];
@@ -210,7 +210,6 @@ export default function ReportedHistory(): JSX.Element {
       // dispatch và đợi Promise hoàn thành, unwrap() sẽ trả về payload hoặc throw error
       const detail = await dispatch(getCriticalReportDetailThunk(id)).unwrap();
 
-      // giờ detail chính là criticalReportDetail mới
       if (detail.typeReport === TypeCriticalReport.EXCHANGE) {
         navigation.navigate("CriticalReport", {
           typeOfReport: TypeCriticalReport.EXCHANGE,
@@ -225,7 +224,7 @@ export default function ReportedHistory(): JSX.Element {
         });
       } else {
         navigation.navigate("CriticalReport", {
-          typeOfReport: TypeCriticalReport.USER,
+          typeOfReport: TypeCriticalReport.RESIDENT,
           criticalReport: detail,
           userReport: detail.user,
         });

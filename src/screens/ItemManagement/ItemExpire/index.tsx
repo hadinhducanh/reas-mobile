@@ -127,7 +127,7 @@ const statusStyles: Record<
     textColor: "text-[#748BA0]",
     backgroundColor: "bg-[rgba(116,139,160,0.2)]",
   },
-  SOLD: {
+  EXCHANGED: {
     textColor: "text-[#B2B200]",
     backgroundColor: "bg-[rgba(205,205,0,0.3)]",
   },
@@ -143,7 +143,7 @@ const statusItems = [
   { label: "NLFE", value: StatusItem.NO_LONGER_FOR_EXCHANGE },
   { label: "PENDING", value: StatusItem.PENDING },
   { label: "REJECTED", value: StatusItem.REJECTED },
-  { label: "SOLD", value: StatusItem.SOLD },
+  { label: "EXCHANGED", value: StatusItem.EXCHANGED },
   { label: "IN EXCHANGE", value: StatusItem.IN_EXCHANGE },
 ];
 
@@ -693,7 +693,7 @@ const ItemExpire: React.FC = () => {
               } px-5 bg-white rounded-t-xl flex-row items-center`}
             >
               {itemDetail?.statusItem !== StatusItem.REJECTED &&
-                itemDetail?.statusItem !== StatusItem.SOLD &&
+                itemDetail?.statusItem !== StatusItem.EXCHANGED &&
                 itemDetail?.statusItem !== StatusItem.IN_EXCHANGE && (
                   <>
                     {itemDetail?.statusItem === StatusItem.EXPIRED ? (
