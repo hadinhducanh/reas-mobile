@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useNavigation, useNavigationState } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -34,6 +34,9 @@ import {
 } from "../../redux/slices/userSlice";
 import { PlaceDetail } from "../../common/models/location";
 import { uploadItemThunk } from "../../redux/thunk/itemThunks";
+import ErrorModal from "../../components/ErrorModal";
+import { useTranslation } from "react-i18next";
+import { set } from "zod";
 
 export default function UploadItem() {
   const navigation =
@@ -64,6 +67,15 @@ export default function UploadItem() {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [locationDetail, setLocationDetail] = useState<PlaceDetail>();
+
+  const { t } = useTranslation();
+  const [visible, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+
+  useEffect(() => {
+    setUploadItem(defaultUploadItem);
+  }, []);
 
   useEffect(() => {
     if (!uploadItem) return;
@@ -133,67 +145,43 @@ export default function UploadItem() {
   const handleCreateItem = useCallback(async () => {
     setConfirmVisible(false);
 
-    const priceItem = isCheckedFree
-      ? 0
-      : parseInt(price.replace(/,/g, ""), 10) || 0;
+    setIsUploadingImages(true);
+    const processedImages = await processImages();
+    setIsUploadingImages(false);
 
-    if (
-      !images ||
-      !uploadItem.categoryId ||
-      !uploadItem.brandId ||
-      !uploadItem.conditionItem ||
-      (!price && priceItem > 0 && isCheckedFree) ||
-      !itemName ||
-      !description ||
-      !uploadItem.methodExchanges
-    ) {
-      Alert.alert("Invalid information", "All fields are required.");
-      return;
-    } else if (description.trim().length < 20) {
-      Alert.alert(
-        "Invalid information",
-        "Description must be at least 20 characters long."
-      );
-      return;
-    } else {
-      setIsUploadingImages(true);
-      const processedImages = await processImages();
-      setIsUploadingImages(false);
+    setImages(processedImages);
+    setUploadItem((prev) => ({ ...prev, imageUrl: processedImages }));
 
-      setImages(processedImages);
-      setUploadItem((prev) => ({ ...prev, imageUrl: processedImages }));
-
-      if (uploadItem.desiredItem?.categoryId !== 0) {
-        setUploadItem((prev) => ({
-          ...prev,
-          typeExchange: TypeExchange.EXCHANGE_WITH_DESIRED_ITEM,
-        }));
-      }
-
-      const uploadItemRequest = {
-        itemName: uploadItem.itemName.trim(),
-        description: uploadItem.description.trim(),
-        price: uploadItem.price === null ? 0 : uploadItem.price,
-        conditionItem: uploadItem.conditionItem,
-        imageUrl: processedImages,
-        methodExchanges: uploadItem.methodExchanges,
-        isMoneyAccepted: uploadItem.isMoneyAccepted,
-        termsAndConditionsExchange:
-          uploadItem.termsAndConditionsExchange &&
-          uploadItem.termsAndConditionsExchange.trim().length !== 0
-            ? uploadItem.termsAndConditionsExchange.trim()
-            : null,
-        categoryId: uploadItem.categoryId,
-        brandId: uploadItem.brandId,
-        desiredItem:
-          uploadItem.desiredItem?.description.length !== 0
-            ? uploadItem.desiredItem
-            : null,
-        userLocationId: userLocationId,
-      };
-
-      await dispatch(uploadItemThunk(uploadItemRequest)).unwrap();
+    if (uploadItem.desiredItem?.categoryId !== 0) {
+      setUploadItem((prev) => ({
+        ...prev,
+        typeExchange: TypeExchange.EXCHANGE_WITH_DESIRED_ITEM,
+      }));
     }
+
+    const uploadItemRequest = {
+      itemName: uploadItem.itemName.trim(),
+      description: uploadItem.description.trim(),
+      price: uploadItem.price === null ? 0 : uploadItem.price,
+      conditionItem: uploadItem.conditionItem,
+      imageUrl: processedImages,
+      methodExchanges: uploadItem.methodExchanges,
+      isMoneyAccepted: uploadItem.isMoneyAccepted,
+      termsAndConditionsExchange:
+        uploadItem.termsAndConditionsExchange &&
+        uploadItem.termsAndConditionsExchange.trim().length !== 0
+          ? uploadItem.termsAndConditionsExchange.trim()
+          : null,
+      categoryId: uploadItem.categoryId,
+      brandId: uploadItem.brandId,
+      desiredItem:
+        uploadItem.desiredItem?.description.length !== 0
+          ? uploadItem.desiredItem
+          : null,
+      userLocationId: userLocationId,
+    };
+
+    await dispatch(uploadItemThunk(uploadItemRequest)).unwrap();
   }, [setUploadItem, uploadItem, userLocationId, dispatch]);
 
   useEffect(() => {
@@ -212,7 +200,7 @@ export default function UploadItem() {
       }));
       return !prev;
     });
-  }, [setUploadItem]);
+  }, [setUploadItem, isCheckedFree]);
 
   const toggleCheckboxDesiredItem = useCallback(() => {
     setIsMoneyAccepted((prev) => {
@@ -222,7 +210,7 @@ export default function UploadItem() {
       }));
       return !prev;
     });
-  }, [setUploadItem]);
+  }, [setUploadItem, isMoneyAccepted]);
 
   useEffect(() => {
     const fetchLocationDetails = async () => {
@@ -264,7 +252,32 @@ export default function UploadItem() {
   }, [user, userLocationId]);
 
   const handleConfirm = async () => {
-    setConfirmVisible(true);
+    const priceItem = isCheckedFree
+      ? 0
+      : parseInt(price.replace(/,/g, ""), 10) || 0;
+
+    if (
+      !images ||
+      !uploadItem.categoryId ||
+      !uploadItem.brandId ||
+      !uploadItem.conditionItem ||
+      (!price && priceItem > 0 && isCheckedFree) ||
+      !itemName ||
+      !description ||
+      !uploadItem.methodExchanges
+    ) {
+      setTitle("Missing Information");
+      setContent("All fields are required. Please fill them in to proceed.");
+      setVisible(true);
+      return;
+    } else if (description.trim().length < 20) {
+      setTitle("Invalid Description");
+      setContent("Please enter a description with at least 20 characters.");
+      setVisible(true);
+      return;
+    } else {
+      setConfirmVisible(true);
+    }
   };
 
   const handleCancel = () => {
@@ -480,6 +493,13 @@ export default function UploadItem() {
           </KeyboardAwareScrollView>
         </ScrollView>
       )}
+
+      <ErrorModal
+        content={content}
+        title={title}
+        visible={visible}
+        onCancel={() => setVisible(false)}
+      />
 
       <ConfirmModal
         title="Confirm upload"

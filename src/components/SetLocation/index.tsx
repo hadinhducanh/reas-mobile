@@ -402,8 +402,8 @@ const SetLocation: React.FC<SetLocationProps> = ({
           </Pressable>
         </Modal>
         <ErrorModal
-          title={"Invalid"}
-          content={"Please choose your location first."}
+          title={"Location Required"}
+          content={"Please select your location before proceeding."}
           visible={errorVisible}
           onCancel={() => setErrorVisible(false)}
         />

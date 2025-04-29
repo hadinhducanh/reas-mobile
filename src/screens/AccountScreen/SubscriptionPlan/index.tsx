@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../../components/Header";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -85,25 +85,13 @@ const Premium: React.FC = () => {
               </Text>
             </View>
           </View>
-
-          <View className="flex-row items-center">
-            <Icon name="star" size={20} color="#00b0b9" />
-            <View className="ml-2">
-              <Text className="font-medium text-lg text-black">
-                Featured Listings
-              </Text>
-              <Text className="text-sm text-gray-500">
-                Higher visibility in search results
-              </Text>
-            </View>
-          </View>
         </View>
 
         <View className="bg-white my-8 p-5 rounded-lg flex-row justify-between items-center">
           {loading && (
-            <Text className="text-center text-lg text-gray-500">
-              Loading...
-            </Text>
+            <View className="flex-1 justify-center items-center">
+              <ActivityIndicator size="large" color="#00b0b9" />
+            </View>
           )}
           <View>
             <Text className="text-xl font-bold text-black">{planName}</Text>

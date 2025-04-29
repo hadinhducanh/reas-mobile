@@ -8,9 +8,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../../components/Header";
 import { MethodExchange } from "../../../common/enums/MethodExchange";
 import LoadingButton from "../../../components/LoadingButton";
-import { defaultUploadItem, useUploadItem } from "../../../context/ItemContext";
 import ConfirmModal from "../../../components/DeleteConfirmModal";
-import ErrorModal from "../../../components/ErrorModal";
+import {
+  defaultUpdateItem,
+  useUpdateItem,
+} from "../../../context/UpdateItemContext";
 
 const exchangeMethods = [
   { label: "Pick up in person", value: MethodExchange.PICK_UP_IN_PERSON },
@@ -21,18 +23,17 @@ const exchangeMethods = [
   },
 ];
 
-const MethodOfExchangeScreen = () => {
+const MethodOfExchangeUpdateScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { uploadItem, setUploadItem } = useUploadItem();
+  const { updateItem, setUpdateItem } = useUpdateItem();
 
   const [selectedMethodExchanges, setSetSelectedMethodExchanges] = useState<
     Set<MethodExchange>
-  >(new Set(uploadItem.methodExchanges || []));
+  >(new Set(updateItem.methodExchanges || []));
 
   const pendingBeforeRemoveEvent = useRef<any>(null);
   const [confirmVisible, setConfirmVisible] = useState(false);
-  const [visible, setVisible] = useState<boolean>(false);
   const hasConfirmedRef = useRef(false);
 
   const toggleMethod = useCallback((methodValue: MethodExchange) => {
@@ -49,7 +50,7 @@ const MethodOfExchangeScreen = () => {
 
   const handleConfirm = useCallback(() => {
     if (selectedMethodExchanges.size === 0) {
-      setVisible(true);
+      Alert.alert("Invalid information", "Please choose method of exchange.");
       return;
     } else {
       hasConfirmedRef.current = true;
@@ -57,14 +58,14 @@ const MethodOfExchangeScreen = () => {
       const methods = exchangeMethods.filter((method) =>
         selectedMethodExchanges.has(method.value)
       );
-      setUploadItem((prev) => ({
+      setUpdateItem((prev) => ({
         ...prev,
         methodExchangeName: methods.map((method) => method.label).join(", "),
         methodExchanges: Array.from(selectedMethodExchanges),
       }));
       navigation.goBack();
     }
-  }, [navigation, selectedMethodExchanges, setUploadItem]);
+  }, [navigation, selectedMethodExchanges, setUpdateItem]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
@@ -75,7 +76,7 @@ const MethodOfExchangeScreen = () => {
       }
 
       if (
-        JSON.stringify(uploadItem.methodExchanges || []) !==
+        JSON.stringify(updateItem.methodExchanges || []) !==
         JSON.stringify(Array.from(selectedMethodExchanges))
       ) {
         pendingBeforeRemoveEvent.current = e;
@@ -85,12 +86,12 @@ const MethodOfExchangeScreen = () => {
     });
 
     return unsubscribe;
-  }, [navigation, uploadItem, selectedMethodExchanges]);
+  }, [navigation, updateItem, selectedMethodExchanges]);
 
   const handleSure = async () => {
     hasConfirmedRef.current = true;
     setConfirmVisible(false);
-    setUploadItem(defaultUploadItem);
+    setUpdateItem(defaultUpdateItem);
 
     if (pendingBeforeRemoveEvent.current) {
       navigation.dispatch(pendingBeforeRemoveEvent.current.data.action);
@@ -141,14 +142,6 @@ const MethodOfExchangeScreen = () => {
           buttonClassName="p-4 mt-3"
         />
       </ScrollView>
-
-      <ErrorModal
-        content={"Please select a method of exchange."}
-        title={"Missing Selection"}
-        visible={visible}
-        onCancel={() => setVisible(false)}
-      />
-
       <ConfirmModal
         title="Warning"
         content={`You have unsaved item. ${"\n"} Do you really want to leave?`}
@@ -160,4 +153,4 @@ const MethodOfExchangeScreen = () => {
   );
 };
 
-export default MethodOfExchangeScreen;
+export default MethodOfExchangeUpdateScreen;

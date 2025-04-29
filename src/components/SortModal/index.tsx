@@ -9,7 +9,6 @@ interface SortModalProps {
 
 const sortOptions = [
   { label: "Newest first", value: "new" },
-  { label: "Closest to me", value: "near" },
   { label: "Price: Low to High", value: "lowPrice" },
   { label: "Price: High to Low", value: "highPrice" },
 ];
@@ -24,7 +23,6 @@ const SortModal: React.FC<SortModalProps> = ({
         <View className="w-20 h-1.5 bg-gray-400 rounded-full" />
       </View>
 
-      {/* Header: Tiêu đề và nút Clear */}
       <Text className="text-center text-base font-semibold text-black py-3">
         Sắp xếp
       </Text>

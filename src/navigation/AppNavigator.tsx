@@ -109,6 +109,12 @@ export type RootStackParamList = {
   ExchangeDesiredItemScreen: undefined;
   ExchangeDesiredItemTypeOfItemScreen: undefined;
   BrandSelectionScreen: undefined;
+  TypeOfItemUpdateScreen: undefined;
+  TypeOfItemDetailUpdateScreen: undefined;
+  ItemConditionUpdateScreen: undefined;
+  MethodOfExchangeUpdateScreen: undefined;
+  ExchangeDesiredItemUpdateScreen: undefined;
+  BrandSelectionUpdateScreen: undefined;
   SignUpSuccess: undefined;
   OTP: { signUpDTO: SignupDto };
   ResetPassword: undefined;

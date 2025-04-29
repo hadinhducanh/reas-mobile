@@ -17,7 +17,7 @@ export interface CriticalReportResidentRequest {
 export interface SearchCriticalReportRequest {
   ids?: number[];
   typeReports?: TypeCriticalReport[];
-  userIds?: number[];
+  residentIds?: number[];
   feedbackIds?: number[];
   exchangeRequestIds?: number[];
   reporterName?: string;

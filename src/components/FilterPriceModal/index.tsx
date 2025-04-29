@@ -63,7 +63,7 @@ const FilterPriceModal: React.FC<FilterPriceModalProps> = ({
       </View>
 
       <View className="flex-row items-center justify-between mb-4 px-2">
-        <Text className="text-lg font-semibold text-black">Lọc theo giá</Text>
+        <Text className="text-lg font-semibold text-black">Filter price</Text>
         <TouchableOpacity onPress={handleClear}>
           <Text className="text-base font-semibold text-[#00B0B9]">Clear</Text>
         </TouchableOpacity>

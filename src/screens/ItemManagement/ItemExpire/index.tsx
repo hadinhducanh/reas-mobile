@@ -214,7 +214,7 @@ const ItemExpire: React.FC = () => {
       { label: "Category", value: itemDetail?.category.categoryName },
       { label: "Brand", value: itemDetail?.brand.brandName },
       {
-        label: "Description",
+        label: "Exchange method",
         value:
           itemDetail?.methodExchanges.length === 3
             ? "All of methods"
@@ -631,7 +631,7 @@ const ItemExpire: React.FC = () => {
                         {info.label}
                       </Text>
                     </View>
-                    <View className="px-2 py-4">
+                    <View className="px-2 py-4 flex-1">
                       <Text className="text-base">{info.value}</Text>
                     </View>
                   </View>
@@ -643,7 +643,7 @@ const ItemExpire: React.FC = () => {
           {itemDetail?.termsAndConditionsExchange && (
             <View className="mt-5">
               <Text className="text-xl font-semibold mb-1">
-                Điều khoản và điều kiện trao đổi:
+                Terms and conditions:
               </Text>
               {itemDetail?.termsAndConditionsExchange
                 .split("\\n")

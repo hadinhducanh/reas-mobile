@@ -24,6 +24,8 @@ import SetLocation from "../../../../components/SetLocation";
 import ConfirmModal from "../../../../components/DeleteConfirmModal";
 import { deleteUserLocationOfCurrentUserThunk } from "../../../../redux/thunk/userThunk";
 import { fetchUserInfoThunk } from "../../../../redux/thunk/authThunks";
+import ErrorModal from "../../../../components/ErrorModal";
+import { useTranslation } from "react-i18next";
 
 const LocationOfUser: React.FC = () => {
   const navigation =
@@ -31,7 +33,7 @@ const LocationOfUser: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const { user } = useSelector((state: RootState) => state.auth);
-  const { userPlaceId, deleteUserLocation, loading } = useSelector(
+  const { userPlaceId, loading } = useSelector(
     (state: RootState) => state.user
   );
 
@@ -46,6 +48,10 @@ const LocationOfUser: React.FC = () => {
   const [selectedDeleteLocationId, setSelectedDeleteLocationId] =
     useState<number>(0);
   const [shouldReloadLocations, setShouldReloadLocations] = useState(false);
+  const { t } = useTranslation();
+  const [visible, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
 
   useEffect(() => {
     if (user && user?.userLocations.length > 0) {
@@ -80,17 +86,21 @@ const LocationOfUser: React.FC = () => {
   };
 
   const handleConfirm = async () => {
-    try {
-      setDeletedVisible(false);
-      await dispatch(
-        deleteUserLocationOfCurrentUserThunk(selectedDeleteLocationId)
-      ).unwrap();
-      await dispatch(fetchUserInfoThunk());
-      dispatch(resetUser());
-      setSelectedDeleteLocationId(0);
-    } catch (error) {
-      console.error("Failed to delete location:", error);
-    }
+    if (selectedLocationId)
+      try {
+        setDeletedVisible(false);
+        await dispatch(
+          deleteUserLocationOfCurrentUserThunk(selectedDeleteLocationId)
+        ).unwrap();
+        await dispatch(fetchUserInfoThunk());
+        dispatch(resetUser());
+        setSelectedDeleteLocationId(0);
+      } catch (error: any) {
+        setTitle("Warning");
+        setContent(error?.message ? t(error.message) : "Something went wrong");
+        setVisible(true);
+        return;
+      }
   };
 
   return (
@@ -201,6 +211,13 @@ const LocationOfUser: React.FC = () => {
           setShouldReloadLocations(true);
         }}
         userLocation={true}
+      />
+
+      <ErrorModal
+        content={content}
+        title={title}
+        visible={visible}
+        onCancel={() => setVisible(false)}
       />
 
       <ConfirmModal

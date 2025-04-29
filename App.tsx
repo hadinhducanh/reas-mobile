@@ -12,16 +12,19 @@ import { ExchangeItemProvider } from "./src/context/ExchangeContext";
 import { useNotification } from "./src/hook/useNotification";
 import { useDispatch } from "react-redux";
 import { setRegistrationTokenThunk } from "./src/redux/thunk/notificationThunk";
+import { UpdateItemProvider } from "./src/context/UpdateItemContext";
 
 const App: React.FC = () => {
   return (
     <Provider store={store}>
       <SafeAreaProvider style={styles.container}>
         <UploadItemProvider>
-          <ExchangeItemProvider>
-            <TokenHandler />
-            <AppNavigator />
-          </ExchangeItemProvider>
+          <UpdateItemProvider>
+            <ExchangeItemProvider>
+              <TokenHandler />
+              <AppNavigator />
+            </ExchangeItemProvider>
+          </UpdateItemProvider>
         </UploadItemProvider>
       </SafeAreaProvider>
     </Provider>

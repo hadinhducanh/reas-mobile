@@ -15,7 +15,6 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { useDispatch, useSelector } from "react-redux";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { AppDispatch, RootState } from "../../../redux/store";
-import { defaultUploadItem, useUploadItem } from "../../../context/ItemContext";
 import { uploadToCloudinary } from "../../../utils/CloudinaryImageUploader";
 import { TypeExchange } from "../../../common/enums/TypeExchange";
 import { updateItemThunk } from "../../../redux/thunk/itemThunks";
@@ -38,6 +37,10 @@ import {
   setUserPlaceIdState,
 } from "../../../redux/slices/userSlice";
 import { DesiredItemDto } from "../../../common/models/item";
+import {
+  defaultUpdateItem,
+  useUpdateItem,
+} from "../../../context/UpdateItemContext";
 
 const conditionItems = [
   { label: "Brand new", value: ConditionItem.BRAND_NEW },
@@ -68,25 +71,25 @@ export default function UpdateItem() {
     (state: RootState) => state.item
   );
   const dispatch = useDispatch<AppDispatch>();
-  const { uploadItem, setUploadItem } = useUploadItem();
+  const { updateItem, setUpdateItem } = useUpdateItem();
 
   const [isCheckedFree, setIsCheckedFree] = useState<boolean>(
-    uploadItem.isCheckedFree
+    updateItem.isCheckedFree
   );
   const [isMoneyAccepted, setIsMoneyAccepted] = useState(
-    uploadItem.isMoneyAccepted
+    updateItem.isMoneyAccepted
   );
   const [price, setPrice] = useState<string>(
-    uploadItem.price === null ? "" : uploadItem.price.toString()
+    updateItem.price === null ? "" : updateItem.price.toString()
   );
-  const [itemName, setItemName] = useState<string>(uploadItem.itemName);
+  const [itemName, setItemName] = useState<string>(updateItem.itemName);
   const [description, setDescription] = useState<string>(
-    uploadItem.description
+    updateItem.description
   );
   const [termCondition, setTermCondition] = useState<string>(
-    uploadItem.termsAndConditionsExchange || ""
+    updateItem.termsAndConditionsExchange || ""
   );
-  const [images, setImages] = useState<string>(uploadItem.imageUrl);
+  const [images, setImages] = useState<string>(updateItem.imageUrl);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [exitVisible, setExitVisible] = useState(false);
@@ -126,7 +129,12 @@ export default function UpdateItem() {
   });
 
   useEffect(() => {
-    if (itemDetail && itemDetail.desiredItem) {
+    if (itemDetail) {
+      const isDesiredItemPresent = !!itemDetail.desiredItem;
+      const typeExchangeValue = isDesiredItemPresent
+        ? TypeExchange.EXCHANGE_WITH_DESIRED_ITEM
+        : TypeExchange.OPEN_EXCHANGE;
+
       initialData.current = {
         id: itemDetail.id,
         itemName: itemDetail.itemName || "",
@@ -139,131 +147,71 @@ export default function UpdateItem() {
         termsAndConditionsExchange: itemDetail.termsAndConditionsExchange,
         categoryId: itemDetail.category.id,
         brandId: itemDetail.brand.id,
-        desiredItem: { ...itemDetail.desiredItem },
+        desiredItem: itemDetail.desiredItem
+          ? { ...itemDetail.desiredItem }
+          : null,
         userLocationId: itemDetail.userLocation.id,
       };
 
-      setPrice(itemDetail?.price.toString());
-      setItemName(itemDetail.itemName);
-      setDescription(itemDetail.description.replace(/\\n/g, "\n"));
+      setPrice(itemDetail.price?.toString() || "");
+      setItemName(itemDetail.itemName || "");
+      setDescription(itemDetail.description?.replace(/\\n/g, "\n") || "");
       setTermCondition(
         itemDetail.termsAndConditionsExchange
           ? itemDetail.termsAndConditionsExchange.replace(/\\n/g, "\n")
           : ""
       );
-      setImages(itemDetail.imageUrl);
-      setIsCheckedFree(itemDetail.price === 0 ? true : false);
-      setIsMoneyAccepted(itemDetail.moneyAccepted);
+      setImages(itemDetail.imageUrl || "");
+      setIsCheckedFree(itemDetail.price === 0);
+      setIsMoneyAccepted(itemDetail.moneyAccepted || false);
 
-      setUploadItem({
-        ...uploadItem,
-        price: itemDetail.price,
-        itemName: itemDetail.itemName,
-        description: itemDetail.description,
-        termsAndConditionsExchange: itemDetail.termsAndConditionsExchange,
-        imageUrl: itemDetail.imageUrl,
-        isCheckedFree: itemDetail.price === 0 ? true : false,
-        isMoneyAccepted: itemDetail.moneyAccepted,
-        brandName: itemDetail.brand.brandName,
-        brandId: itemDetail.brand.id,
-        conditionItem: itemDetail.conditionItem,
-        conditionItemName: getConditionItemLabel(itemDetail.conditionItem),
-        methodExchanges: itemDetail.methodExchanges,
-        methodExchangeName: getMethodExchangeLabel(itemDetail.methodExchanges),
-        typeItem: itemDetail.typeItem,
-        categoryName: itemDetail.category.categoryName,
-        categoryId: itemDetail.category.id,
-        desiredItem: {
-          ...uploadItem,
-          categoryId:
-            itemDetail.desiredItem.categoryId === null
-              ? null
-              : itemDetail.desiredItem.categoryId,
-          conditionItem:
-            itemDetail.desiredItem.conditionItem === null
-              ? null
-              : itemDetail.desiredItem.conditionItem,
-          brandId:
-            itemDetail.desiredItem.brandId === null
-              ? null
-              : itemDetail.desiredItem.brandId,
-          minPrice:
-            itemDetail.desiredItem.minPrice === null
-              ? 0
-              : itemDetail.desiredItem.minPrice,
-          maxPrice:
-            itemDetail.desiredItem.maxPrice === null
-              ? null
-              : itemDetail.desiredItem.maxPrice,
-          description: itemDetail.desiredItem.description,
-        },
-        typeItemDesire:
-          itemDetail.category.id === null
-            ? TypeItem.NO_TYPE
-            : itemDetail.desiredItem.typeItem,
-        conditionDesiredItemName:
-          itemDetail.desiredItem.conditionItem === null
-            ? ""
-            : getConditionItemLabel(itemDetail.desiredItem.conditionItem),
-        brandDesiredItemName:
-          itemDetail.desiredItem.brandId === null
-            ? ""
-            : itemDetail.desiredItem.brandName,
-        categoryDesiredItemName:
-          itemDetail.desiredItem.categoryId === null
-            ? ""
-            : itemDetail.desiredItem.categoryName,
-      });
-    } else if (itemDetail && !itemDetail.desiredItem) {
-      initialData.current = {
-        id: itemDetail.id,
+      const updateItem = {
+        price: itemDetail.price || 0,
         itemName: itemDetail.itemName || "",
         description: itemDetail.description || "",
-        price: itemDetail.price || 0,
-        conditionItem: itemDetail.conditionItem,
-        imageUrl: itemDetail.imageUrl,
-        methodExchanges: itemDetail.methodExchanges,
-        isMoneyAccepted: itemDetail.moneyAccepted,
-        termsAndConditionsExchange: itemDetail.termsAndConditionsExchange,
-        categoryId: itemDetail.category.id,
-        brandId: itemDetail.brand.id,
-        desiredItem: null,
-        userLocationId: itemDetail.userLocation.id,
-      };
-
-      setPrice(itemDetail?.price.toString());
-      setItemName(itemDetail.itemName);
-      setDescription(itemDetail.description.replace(/\\n/g, "\n"));
-      setTermCondition(
-        itemDetail.termsAndConditionsExchange
-          ? itemDetail.termsAndConditionsExchange.replace(/\\n/g, "\n")
-          : ""
-      );
-      setImages(itemDetail.imageUrl);
-      setIsCheckedFree(itemDetail.price === 0 ? true : false);
-      setIsMoneyAccepted(itemDetail.moneyAccepted);
-
-      setUploadItem({
-        ...uploadItem,
-        price: itemDetail.price,
-        itemName: itemDetail.itemName,
-        description: itemDetail.description,
-        termsAndConditionsExchange: itemDetail.termsAndConditionsExchange,
-        imageUrl: itemDetail.imageUrl,
-        isCheckedFree: itemDetail.price === 0 ? true : false,
-        isMoneyAccepted: itemDetail.moneyAccepted,
-        brandName: itemDetail.brand.brandName,
-        brandId: itemDetail.brand.id,
+        termsAndConditionsExchange:
+          itemDetail.termsAndConditionsExchange || null,
+        imageUrl: itemDetail.imageUrl || "",
+        isCheckedFree: itemDetail.price === 0,
+        isMoneyAccepted: itemDetail.moneyAccepted || false,
+        brandName: itemDetail.brand.brandName || "",
+        brandId: itemDetail.brand.id || 0,
         conditionItem: itemDetail.conditionItem,
         conditionItemName: getConditionItemLabel(itemDetail.conditionItem),
-        methodExchanges: itemDetail.methodExchanges,
+        methodExchanges: itemDetail.methodExchanges || [],
         methodExchangeName: getMethodExchangeLabel(itemDetail.methodExchanges),
         typeItem: itemDetail.typeItem,
-        categoryName: itemDetail.category.categoryName,
-        categoryId: itemDetail.category.id,
-      });
+        categoryName: itemDetail.category.categoryName || "",
+        categoryId: itemDetail.category.id || 0,
+        desiredItem: isDesiredItemPresent
+          ? {
+              categoryId: itemDetail.desiredItem.categoryId ?? null,
+              conditionItem: itemDetail.desiredItem.conditionItem ?? null,
+              brandId: itemDetail.desiredItem.brandId ?? null,
+              minPrice: itemDetail.desiredItem.minPrice ?? 0,
+              maxPrice: itemDetail.desiredItem.maxPrice ?? null,
+              description: itemDetail.desiredItem.description || "",
+            }
+          : null,
+        typeItemDesire: isDesiredItemPresent
+          ? itemDetail.desiredItem.typeItem
+          : TypeItem.NO_TYPE,
+        conditionDesiredItemName: isDesiredItemPresent
+          ? getConditionItemLabel(itemDetail.desiredItem.conditionItem)
+          : "",
+        brandDesiredItemName: isDesiredItemPresent
+          ? itemDetail.desiredItem.brandName ?? ""
+          : "",
+        categoryDesiredItemName: isDesiredItemPresent
+          ? itemDetail.desiredItem.categoryName ?? ""
+          : "",
+        typeExchange: typeExchangeValue,
+        userLocationId: itemDetail.userLocation.id || 0,
+      };
+
+      setUpdateItem(updateItem);
     }
-  }, [itemDetail]);
+  }, [itemDetail, setUpdateItem]);
 
   useEffect(() => {
     const fetchLocationDetails = async () => {
@@ -328,19 +276,19 @@ export default function UpdateItem() {
       if (field === "price") {
         const priceValue = parseInt(value.replace(/,/g, ""), 10) || 0;
         setPrice(value);
-        setUploadItem((prev) => ({ ...prev, price: priceValue }));
+        setUpdateItem((prev) => ({ ...prev, price: priceValue }));
       } else {
         if (field === "itemName") setItemName(value);
         else if (field === "description") setDescription(value);
         else if (field === "termsAndConditionsExchange")
           setTermCondition(value);
-        setUploadItem((prev) => ({
+        setUpdateItem((prev) => ({
           ...prev,
           [field]: value.trim().replace(/\n/g, "\\n"),
         }));
       }
     },
-    [setUploadItem]
+    [setUpdateItem]
   );
 
   const formatPrice = useCallback((value: string): string => {
@@ -408,17 +356,17 @@ export default function UpdateItem() {
 
     const hasChanged =
       itemDetail?.id !== initId ||
-      uploadItem.itemName !== initName ||
-      uploadItem.description !== initDescription.replace(/\\n/g, "\n") ||
-      uploadItem.price !== initPrice ||
-      uploadItem.conditionItem !== initConditionItem ||
-      uploadItem.imageUrl !== initImageUrl ||
-      !arraysEqual(uploadItem.methodExchanges, initMethodExchanges) ||
-      uploadItem.isMoneyAccepted !== initMoneyAccept ||
-      uploadItem.termsAndConditionsExchange !== initTermsAndCondition ||
-      uploadItem.categoryId !== initCategoryId ||
-      uploadItem.brandId !== initBrandId ||
-      !compareDesiredItems(uploadItem.desiredItem, initDesiredItem) ||
+      updateItem.itemName !== initName ||
+      updateItem.description !== initDescription.replace(/\\n/g, "\n") ||
+      updateItem.price !== initPrice ||
+      updateItem.conditionItem !== initConditionItem ||
+      updateItem.imageUrl !== initImageUrl ||
+      !arraysEqual(updateItem.methodExchanges, initMethodExchanges) ||
+      updateItem.isMoneyAccepted !== initMoneyAccept ||
+      updateItem.termsAndConditionsExchange !== initTermsAndCondition ||
+      updateItem.categoryId !== initCategoryId ||
+      updateItem.brandId !== initBrandId ||
+      !compareDesiredItems(updateItem.desiredItem, initDesiredItem) ||
       userLocationId !== initUserLoc;
 
     if (!hasChanged) {
@@ -437,13 +385,13 @@ export default function UpdateItem() {
 
     if (
       !images ||
-      !uploadItem.categoryId ||
-      !uploadItem.brandId ||
-      !uploadItem.conditionItem ||
+      !updateItem.categoryId ||
+      !updateItem.brandId ||
+      !updateItem.conditionItem ||
       (!price && priceItem > 0 && isCheckedFree) ||
       !itemName ||
       !description ||
-      !uploadItem.methodExchanges
+      !updateItem.methodExchanges
     ) {
       Alert.alert("Invalid information", "All fields are required.");
       return;
@@ -459,10 +407,10 @@ export default function UpdateItem() {
       setIsUploadingImages(false);
 
       setImages(processedImages);
-      setUploadItem((prev) => ({ ...prev, imageUrl: processedImages }));
+      setUpdateItem((prev) => ({ ...prev, imageUrl: processedImages }));
 
-      if (uploadItem.desiredItem?.categoryId !== 0) {
-        setUploadItem((prev) => ({
+      if (updateItem.desiredItem?.categoryId !== 0) {
+        setUpdateItem((prev) => ({
           ...prev,
           typeExchange: TypeExchange.EXCHANGE_WITH_DESIRED_ITEM,
         }));
@@ -470,36 +418,36 @@ export default function UpdateItem() {
 
       const updateItemRequest = {
         id: itemDetail?.id!,
-        itemName: uploadItem.itemName.trim(),
-        description: uploadItem.description.trim(),
-        price: uploadItem.price === null ? 0 : uploadItem.price,
-        conditionItem: uploadItem.conditionItem,
+        itemName: updateItem.itemName.trim(),
+        description: updateItem.description.trim(),
+        price: updateItem.price === null ? 0 : updateItem.price,
+        conditionItem: updateItem.conditionItem,
         imageUrl: processedImages,
-        methodExchanges: uploadItem.methodExchanges,
-        isMoneyAccepted: uploadItem.isMoneyAccepted,
+        methodExchanges: updateItem.methodExchanges,
+        isMoneyAccepted: updateItem.isMoneyAccepted,
         termsAndConditionsExchange:
-          uploadItem.termsAndConditionsExchange &&
-          uploadItem.termsAndConditionsExchange.trim().length !== 0
-            ? uploadItem.termsAndConditionsExchange.trim()
+          updateItem.termsAndConditionsExchange &&
+          updateItem.termsAndConditionsExchange.trim().length !== 0
+            ? updateItem.termsAndConditionsExchange.trim()
             : null,
-        categoryId: uploadItem.categoryId,
-        brandId: uploadItem.brandId,
+        categoryId: updateItem.categoryId,
+        brandId: updateItem.brandId,
         userLocationId: userLocationId,
         desiredItem:
-          uploadItem.desiredItem?.description.length !== 0
-            ? uploadItem.desiredItem
+          updateItem.desiredItem?.description.length !== 0
+            ? updateItem.desiredItem
             : null,
       };
 
       await dispatch(updateItemThunk(updateItemRequest)).unwrap();
     }
-  }, [setUploadItem, uploadItem, dispatch, userLocationId]);
+  }, [setUpdateItem, updateItem, dispatch, userLocationId]);
 
   useEffect(() => {
     if (itemUpdate !== null) {
       dispatch(resetLocation());
       dispatch(resetItemDetailState());
-      setUploadItem(defaultUploadItem);
+      setUpdateItem(defaultUpdateItem);
 
       hasConfirmedRef.current = true;
       navigation.reset({
@@ -516,23 +464,23 @@ export default function UpdateItem() {
 
   const toggleCheckboxFree = useCallback(() => {
     setIsCheckedFree((prev) => {
-      setUploadItem((prevUpload) => ({
+      setUpdateItem((prevUpload) => ({
         ...prevUpload,
         isCheckedFree: !prev,
       }));
       return !prev;
     });
-  }, [setUploadItem]);
+  }, [setUpdateItem]);
 
   const toggleCheckboxDesiredItem = useCallback(() => {
     setIsMoneyAccepted((prev) => {
-      setUploadItem((prevUpload) => ({
+      setUpdateItem((prevUpload) => ({
         ...prevUpload,
         isMoneyAccepted: !prev,
       }));
       return !prev;
     });
-  }, [setUploadItem]);
+  }, [setUpdateItem]);
 
   const handleConfirm = async () => {
     setConfirmVisible(true);
@@ -552,7 +500,7 @@ export default function UpdateItem() {
     });
 
     return unsubscribe;
-  }, [navigation, uploadItem]);
+  }, [navigation, updateItem]);
 
   const handleCancelExit = () => {
     setExitVisible(false);
@@ -591,35 +539,35 @@ export default function UpdateItem() {
 
             <NavigationListItem
               title="Type of item"
-              value={uploadItem.categoryName}
-              route="TypeOfItemScreen"
+              value={updateItem.categoryName}
+              route="TypeOfItemUpdateScreen"
               defaultValue="Select type"
             />
 
             <NavigationListItem
               title="Brand"
-              value={uploadItem.brandName}
-              route="BrandSelectionScreen"
+              value={updateItem.brandName}
+              route="BrandSelectionUpdateScreen"
               defaultValue="Select brand"
             />
 
             <NavigationListItem
               title="Condition"
-              value={uploadItem.conditionItemName}
-              route="ItemConditionScreen"
+              value={updateItem.conditionItemName}
+              route="ItemConditionUpdateScreen"
               defaultValue="Select condition"
             />
 
             <NavigationListItem
               title="Method of exchange"
               value={
-                uploadItem.methodExchanges.length === 3
+                updateItem.methodExchanges.length === 3
                   ? "All method exchanges"
-                  : uploadItem.methodExchanges.length > 0
-                  ? uploadItem.methodExchangeName
+                  : updateItem.methodExchanges.length > 0
+                  ? updateItem.methodExchangeName
                   : ""
               }
-              route="MethodOfExchangeScreen"
+              route="MethodOfExchangeUpdateScreen"
               defaultValue="Select methods"
             />
 
@@ -711,19 +659,21 @@ export default function UpdateItem() {
             )}
 
             <TouchableOpacity
-              onPress={() => navigation.navigate("ExchangeDesiredItemScreen")}
+              onPress={() =>
+                navigation.navigate("ExchangeDesiredItemUpdateScreen")
+              }
               className="w-full bg-white rounded-lg mt-4 flex-row justify-between items-center px-5 py-3"
             >
               <View>
                 <Text className="text-base font-normal text-black">
                   Add your desired item for exchanging
                 </Text>
-                {JSON.stringify(uploadItem.desiredItem) !==
-                JSON.stringify(defaultUploadItem.desiredItem) ? (
+                {JSON.stringify(updateItem.desiredItem) !==
+                JSON.stringify(defaultUpdateItem.desiredItem) ? (
                   <Text
                     className="text-[#00b0b9] text-lg underline font-bold"
                     onPress={() =>
-                      navigation.navigate("ExchangeDesiredItemScreen")
+                      navigation.navigate("ExchangeDesiredItemUpdateScreen")
                     }
                   >
                     Detail

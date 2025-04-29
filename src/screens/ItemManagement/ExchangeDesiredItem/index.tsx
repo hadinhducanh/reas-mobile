@@ -6,37 +6,36 @@ import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../../components/Header";
 import LoadingButton from "../../../components/LoadingButton";
-import { defaultUploadItem, useUploadItem } from "../../../context/ItemContext";
 import NavigationListItem from "../../../components/NavigationListItem";
 import ConfirmModal from "../../../components/DeleteConfirmModal";
 import { ConditionItem } from "../../../common/enums/ConditionItem";
 import { TypeItem } from "../../../common/enums/TypeItem";
-import ErrorModal from "../../../components/ErrorModal";
+import {
+  defaultUpdateItem,
+  useUpdateItem,
+} from "../../../context/UpdateItemContext";
 
-const ExchangeDesiredItemScreen = () => {
-  const { uploadItem, setUploadItem } = useUploadItem();
+const ExchangeDesiredItemUpdateScreen = () => {
+  const { updateItem, setUpdateItem } = useUpdateItem();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const [minPrice, setMinPrice] = useState<string>(
-    uploadItem.desiredItem?.minPrice === null
+    updateItem.desiredItem?.minPrice === null
       ? ""
-      : uploadItem.desiredItem?.minPrice.toString() || ""
+      : updateItem.desiredItem?.minPrice.toString() || ""
   );
   const [maxPrice, setMaxPrice] = useState<string>(
-    uploadItem.desiredItem?.maxPrice === null
+    updateItem.desiredItem?.maxPrice === null
       ? ""
-      : uploadItem.desiredItem?.maxPrice.toString() || ""
+      : updateItem.desiredItem?.maxPrice.toString() || ""
   );
   const [description, setDescription] = useState<string>(
-    uploadItem.desiredItem?.description.replace(/\\n/g, "\n") || ""
+    updateItem.desiredItem?.description.replace(/\\n/g, "\n") || ""
   );
   const [error, setError] = useState<string>("");
   const [isInvalid, setIsInvalid] = useState<boolean>(false);
-  const [visible, setVisible] = useState<boolean>(false);
-  const [content, setContent] = useState<string>("");
-  const [title, setTitle] = useState<string>("");
 
   const pendingBeforeRemoveEvent = useRef<any>(null);
   const hasConfirmedRef = useRef(false);
@@ -53,31 +52,29 @@ const ExchangeDesiredItemScreen = () => {
     const max = parseInt(maxPrice.replace(/,/g, ""), 10) || null;
 
     if (!minPrice || !description) {
-      setTitle("Missing Information");
-      setContent("All fields are required. Please fill them in to proceed.");
-      setVisible(true);
+      Alert.alert("Missing Information", "All fields is required.");
       return;
     } else if (max && min && max <= min && max !== 0) {
       Alert.alert("Invalid", "Max price must be greater than min price.");
       return;
     } else {
       hasConfirmedRef.current = true;
-      setUploadItem({
-        ...uploadItem,
+      setUpdateItem({
+        ...updateItem,
         desiredItem: {
-          ...uploadItem.desiredItem!,
+          ...updateItem.desiredItem!,
           categoryId:
-            uploadItem.desiredItem?.categoryId === 0
+            updateItem.desiredItem?.categoryId === 0
               ? null
-              : uploadItem.desiredItem?.categoryId!,
+              : updateItem.desiredItem?.categoryId!,
           brandId:
-            uploadItem.desiredItem?.brandId === 0
+            updateItem.desiredItem?.brandId === 0
               ? null
-              : uploadItem.desiredItem?.brandId!,
+              : updateItem.desiredItem?.brandId!,
           conditionItem:
-            uploadItem.desiredItem?.conditionItem === ConditionItem.NO_CONDITION
+            updateItem.desiredItem?.conditionItem === ConditionItem.NO_CONDITION
               ? null
-              : uploadItem.desiredItem?.conditionItem!,
+              : updateItem.desiredItem?.conditionItem!,
           maxPrice: max === null ? null : max,
           minPrice: min === null ? 0 : min,
         },
@@ -93,19 +90,19 @@ const ExchangeDesiredItemScreen = () => {
 
       if (field === "maxPrice") {
         setMaxPrice(value);
-        setUploadItem((prev) => ({
+        setUpdateItem((prev) => ({
           ...prev,
           desiredItem: { ...prev.desiredItem!, maxPrice: priceValue },
         }));
       } else if (field === "minPrice") {
         setMinPrice(value);
-        setUploadItem((prev) => ({
+        setUpdateItem((prev) => ({
           ...prev,
           desiredItem: { ...prev.desiredItem!, minPrice: priceValue },
         }));
       } else {
         setDescription(value);
-        setUploadItem((prev) => ({
+        setUpdateItem((prev) => ({
           ...prev,
           desiredItem: {
             ...prev.desiredItem!,
@@ -114,7 +111,7 @@ const ExchangeDesiredItemScreen = () => {
         }));
       }
     },
-    [setUploadItem]
+    [setUpdateItem]
   );
 
   useEffect(() => {
@@ -122,8 +119,8 @@ const ExchangeDesiredItemScreen = () => {
       if (hasConfirmedRef.current) return;
 
       if (
-        JSON.stringify(uploadItem.desiredItem) !==
-        JSON.stringify(defaultUploadItem.desiredItem)
+        JSON.stringify(updateItem.desiredItem) !==
+        JSON.stringify(defaultUpdateItem.desiredItem)
       ) {
         pendingBeforeRemoveEvent.current = e;
         e.preventDefault();
@@ -132,12 +129,12 @@ const ExchangeDesiredItemScreen = () => {
     });
 
     return unsubscribe;
-  }, [navigation, uploadItem]);
+  }, [navigation, updateItem]);
 
   const handleConfirm = async () => {
     hasConfirmedRef.current = true;
     setConfirmVisible(false);
-    setUploadItem((prev) => ({
+    setUpdateItem((prev) => ({
       ...prev,
       desiredItem: {
         ...prev.desiredItem!,
@@ -187,15 +184,15 @@ const ExchangeDesiredItemScreen = () => {
       <ScrollView className="flex-1 mx-5">
         <NavigationListItem
           title="Type of item"
-          value={uploadItem.categoryDesiredItemName}
-          route="TypeOfItemScreen"
+          value={updateItem.categoryDesiredItemName}
+          route="TypeOfItemUpdateScreen"
           defaultValue="Select type"
         />
 
         <NavigationListItem
           title="Brand"
-          value={uploadItem.brandDesiredItemName}
-          route="BrandSelectionScreen"
+          value={updateItem.brandDesiredItemName}
+          route="BrandSelectionUpdateScreen"
           defaultValue="Select brand"
         />
 
@@ -237,8 +234,8 @@ const ExchangeDesiredItemScreen = () => {
 
         <NavigationListItem
           title="Condition"
-          value={uploadItem.conditionDesiredItemName}
-          route="ItemConditionScreen"
+          value={updateItem.conditionDesiredItemName}
+          route="ItemConditionUpdateScreen"
           defaultValue="Select condition"
         />
 
@@ -268,14 +265,6 @@ const ExchangeDesiredItemScreen = () => {
           disable={isInvalid}
         />
       </ScrollView>
-
-      <ErrorModal
-        content={content}
-        title={title}
-        visible={visible}
-        onCancel={() => setVisible(false)}
-      />
-
       <ConfirmModal
         title="Warning"
         content={`You have unsaved desired item. ${"\n"} Do you really want to leave?`}
@@ -287,4 +276,4 @@ const ExchangeDesiredItemScreen = () => {
   );
 };
 
-export default ExchangeDesiredItemScreen;
+export default ExchangeDesiredItemUpdateScreen;

@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   Pressable,
-  Alert,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
@@ -23,18 +22,17 @@ import {
   authenticateUserThunk,
   fetchUserInfoThunk,
 } from "../../../redux/thunk/authThunks";
-import { z } from "zod";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Header from "../../../components/Header";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Auth from "../../../components/Auth";
+import ErrorModal from "../../../components/ErrorModal";
+import { useTranslation } from "react-i18next";
+import { RoleName } from "../../../common/enums/RoleName";
+import { resetUserAuth } from "../../../redux/slices/authSlice";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const signInSchema = z.object({
-  email: z.string().email("Email is invalid"),
-  password: z.string(),
-});
 
 const SignIn: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -49,7 +47,11 @@ const SignIn: React.FC = () => {
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(true);
   const [remember, setRemember] = useState(false);
-  const [enable, setEnable] = useState<boolean>(false);
+
+  const { t } = useTranslation();
+  const [visible, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const state = useNavigationState((state) => state);
@@ -87,19 +89,9 @@ const SignIn: React.FC = () => {
     const trimmedPassword = password.trim();
 
     if (!trimmedEmail || !trimmedPassword) {
-      Alert.alert("Sign in failed", "All fields is required");
-      return;
-    }
-
-    const result = signInSchema.safeParse({
-      email: trimmedEmail,
-      password: trimmedPassword,
-    });
-    if (!result.success) {
-      const errorMessage = result.error.errors
-        .map((error) => error.message)
-        .join(" ");
-      Alert.alert("Sign in failed", errorMessage);
+      setTitle("Missing information");
+      setContent("Please enter both your email and password to continue.");
+      setVisible(true);
       return;
     }
 
@@ -112,7 +104,10 @@ const SignIn: React.FC = () => {
         })
       ).unwrap();
     } catch (err: any) {
-      Alert.alert("Sign in Failed", err.message || "Sign in failed");
+      setTitle("Authentication failed");
+      setContent(err?.message ? t(err.message) : "Something went wrong");
+      setVisible(true);
+      return;
     }
   }, [dispatch, email, password, navigation]);
 
@@ -171,24 +166,47 @@ const SignIn: React.FC = () => {
     handleLogin();
   }, [accessToken, remember, email, password, dispatch]);
 
+  const handleErrorModalClose = () => {
+    setVisible(false);
+    dispatch(resetUserAuth());
+  };
+
   useEffect(() => {
-    if (user) {
-      if (user.firstLogin) {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Profile" }],
-        });
-      } else {
-        navigation.reset({
-          index: 0,
-          routes: [
-            {
-              name: "MainTabs",
-              state: { routes: [{ name: "Account" }] },
-            },
-          ],
-        });
-      }
+    if (!user) return;
+
+    if (user.roleName === RoleName.ROLE_STAFF) {
+      setTitle("Access Denied");
+      setContent(
+        "Staff accounts cannot log in via mobile. Please use the web portal."
+      );
+      setVisible(true);
+      return;
+    }
+
+    if (user.roleName === RoleName.ROLE_ADMIN) {
+      setTitle("Access Denied");
+      setContent(
+        "Admin access is only available on the web portal. Please log in there."
+      );
+      setVisible(true);
+      return;
+    }
+
+    if (user.firstLogin) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Profile" }],
+      });
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: "MainTabs",
+            state: { routes: [{ name: "Account" }] },
+          },
+        ],
+      });
     }
   }, [user, navigation]);
 
@@ -209,6 +227,7 @@ const SignIn: React.FC = () => {
       });
     }
   };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView className="flex-1 bg-[#F6F9F9] relative">
@@ -345,6 +364,15 @@ const SignIn: React.FC = () => {
             pointerEvents="auto"
           ></View>
         )}
+
+        <ErrorModal
+          content={content}
+          title={title}
+          visible={visible}
+          onCancel={
+            accessToken ? handleErrorModalClose : () => setVisible(false)
+          }
+        />
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );

@@ -5,7 +5,6 @@ import {
   TextInput,
   Pressable,
   Alert,
-  Platform,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
@@ -28,6 +27,8 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import Header from "../../../components/Header";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import Auth from "../../../components/Auth";
+import ErrorModal from "../../../components/ErrorModal";
+import { useTranslation } from "react-i18next";
 
 const emailRegex =
   /^[^\.][a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
@@ -37,19 +38,22 @@ const specialCharsRegex = /[!@#$%^&*()_\-+={[}\]|\\:;"'<,>.?/`~]/;
 
 const signUpSchema = z
   .object({
-    email: z.string().min(1, "Email is required").email("Email is invalid"),
-    fullName: z.string().min(1, "Full Name is required"),
+    email: z
+      .string()
+      .min(1, "Please enter your email.")
+      .email("Please enter a valid email address."),
+    fullName: z.string().min(1, "Please enter your full name."),
     password: z
       .string()
-      .min(1, "Password is required")
+      .min(1, "Please enter your password.")
       .regex(
         passwordRegex,
-        "Password must be at least 8 characters long, contain one uppercase letter, one digit, and one special character"
+        "Password must be at least 8 characters long and include an uppercase letter, a number, and a special character."
       ),
-    confirmPassword: z.string().min(1, "Confirm Password is required"),
+    confirmPassword: z.string().min(1, "Please confirm your password."),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: "Passwords do not match. Please try again.",
     path: ["confirmPassword"],
   });
 
@@ -75,6 +79,11 @@ const SignUp: React.FC = () => {
   const [hasLowerCase, setHasLowerCase] = useState(false);
   const [hasDigit, setHasDigit] = useState(false);
   const [hasSpecialChar, setHasSpecialChar] = useState(false);
+
+  const [visible, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+  const { t } = useTranslation();
 
   const isValidEmail = useCallback(
     (email: string) => emailRegex.test(email),
@@ -110,18 +119,18 @@ const SignUp: React.FC = () => {
     const trimmedPassword = password.trim();
     const trimmedConfirmPassword = confirmPassword.trim();
 
-    // Kiểm tra rỗng
     if (
       !trimmedEmail ||
       !trimmedFullName ||
       !trimmedPassword ||
       !trimmedConfirmPassword
     ) {
-      Alert.alert("Sign up Failed", "All fields are required");
+      setTitle("Missing information");
+      setContent("All fields are required. Please fill them in to proceed.");
+      setVisible(true);
       return;
     }
 
-    // Validate dữ liệu với schema
     const result = signUpSchema.safeParse({
       email: trimmedEmail,
       fullName: trimmedFullName,
@@ -132,7 +141,10 @@ const SignUp: React.FC = () => {
       const errorMessage = result.error.errors
         .map((error) => error.message)
         .join("\n");
-      Alert.alert("Sign up Failed", errorMessage);
+
+      setTitle("Invalid information");
+      setContent(errorMessage);
+      setVisible(true);
       return;
     }
 
@@ -146,7 +158,10 @@ const SignUp: React.FC = () => {
       await dispatch(sendOtpThunk(signUpDTO)).unwrap();
       navigation.navigate("OTP", { signUpDTO });
     } catch (err: any) {
-      Alert.alert("Sign up Failed", err.message || "Sign up failed");
+      setTitle("Authentication failed");
+      setContent(err?.message ? t(err.message) : "Something went wrong");
+      setVisible(true);
+      return;
     }
   }, [dispatch, email, fullName, password, confirmPassword, navigation]);
 
@@ -465,6 +480,13 @@ const SignUp: React.FC = () => {
             pointerEvents="auto"
           ></View>
         )}
+
+        <ErrorModal
+          content={content}
+          title={title}
+          visible={visible}
+          onCancel={() => setVisible(false)}
+        />
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );

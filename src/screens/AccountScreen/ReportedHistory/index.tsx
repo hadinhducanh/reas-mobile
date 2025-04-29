@@ -100,14 +100,13 @@ export default function ReportedHistory(): JSX.Element {
 
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { criticalReportDetail, searchCriticalReport, loadingCriticalReport } =
-    useSelector((state: RootState) => state.criticalReport);
+  const { searchCriticalReport, loadingCriticalReport } = useSelector(
+    (state: RootState) => state.criticalReport
+  );
   const { content, pageNo, last } = searchCriticalReport;
   const isFirstRender = useRef(true);
 
-  const searchRequest: SearchCriticalReportRequest = {
-    // statusPayments: [StatusPayment.SUCCESS],
-  };
+  const searchRequest: SearchCriticalReportRequest = {};
 
   useEffect(() => {
     if (user?.id) {
@@ -207,7 +206,6 @@ export default function ReportedHistory(): JSX.Element {
 
   const viewCriticalReportDetail = async (id: number) => {
     try {
-      // dispatch và đợi Promise hoàn thành, unwrap() sẽ trả về payload hoặc throw error
       const detail = await dispatch(getCriticalReportDetailThunk(id)).unwrap();
 
       if (detail.typeReport === TypeCriticalReport.EXCHANGE) {
@@ -230,7 +228,6 @@ export default function ReportedHistory(): JSX.Element {
         });
       }
     } catch (err) {
-      // bắt lỗi nếu cần
       Alert.alert("Error", "Something error");
     }
   };
@@ -250,17 +247,14 @@ export default function ReportedHistory(): JSX.Element {
         </Text>
       </View>
 
-      {/* Type */}
       <Text className="text-base font-semibold text-gray-800 mb-1">
         Type: {item.typeReport}
       </Text>
 
-      {/* Content */}
       <Text className="text-base text-gray-700 mb-4" numberOfLines={2}>
         Content: {item.contentReport.split("\\n")[0]}
       </Text>
 
-      {/* Meta info */}
       <View className="flex-col mb-4">
         <View className="flex-row items-center">
           <Feather name="clock" size={20} color="#4A5568" />
@@ -289,7 +283,6 @@ export default function ReportedHistory(): JSX.Element {
         )}
       </View>
 
-      {/* Button */}
       <TouchableOpacity
         onPress={() => viewCriticalReportDetail(item.id)}
         className="bg-[#00b0b9] rounded-xl py-3 items-center"
@@ -304,7 +297,6 @@ export default function ReportedHistory(): JSX.Element {
       <View className="flex-1 bg-gray-100">
         <Header title="Critical reports" showOption={false} />
 
-        {/* Filter UI */}
         <View className="px-4 pt-3 pb-2 bg-white">
           <View className="flex-row justify-between items-center my-2 px-3">
             <View className="flex-row items-center">
@@ -316,7 +308,7 @@ export default function ReportedHistory(): JSX.Element {
               onPress={() => setShowStatusFilterModal(true)}
             >
               <Text className="text-[#00b0b9] font-semibold mr-1">
-                {statusFilter}
+                {statusFilter ? statusFilter : "Select status"}
               </Text>
               <AntDesign name="down" size={12} color="#00b0b9" />
             </TouchableOpacity>
@@ -331,7 +323,7 @@ export default function ReportedHistory(): JSX.Element {
               onPress={() => setShowTypesFilterModal(true)}
             >
               <Text className="text-[#00b0b9] font-semibold mr-1">
-                {typesFilter}
+                {typesFilter ? typesFilter : "Select type"}
               </Text>
               <AntDesign name="down" size={12} color="#00b0b9" />
             </TouchableOpacity>
@@ -386,7 +378,6 @@ export default function ReportedHistory(): JSX.Element {
           onPress={() => setShowStatusFilterModal(false)}
         >
           <View className="bg-white rounded-t-2xl p-6 relative">
-            {/* Header row: Title centered, Reset top-right */}
             <Text className="text-center text-xl font-bold text-[#00b0b9]">
               Select Status
             </Text>
@@ -400,12 +391,10 @@ export default function ReportedHistory(): JSX.Element {
               <Text className="text-[#00b0b9] font-medium">Reset</Text>
             </TouchableOpacity>
 
-            {/* Subtitle */}
             <Text className="text-center text-base text-gray-500 mt-1">
               Choose a status
             </Text>
 
-            {/* List of statuses */}
             <View className="mt-4 space-y-3">
               {statusCriticalReports.map((status) => (
                 <TouchableOpacity

@@ -126,7 +126,7 @@ const getDateRange = (range: string): { fromDate: Date; toDate: Date } => {
 
 export default function PaymentHistory(): JSX.Element {
   const [transactionIdSearch, setTransactionIdSearch] = useState<string>("");
-  const [dateRange, setDateRange] = useState<string>("30 days");
+  const [dateRange, setDateRange] = useState<string>("15 days");
   const [showDateModal, setShowDateModal] = useState<boolean>(false);
 
   const dispatch = useDispatch<AppDispatch>();
@@ -137,9 +137,7 @@ export default function PaymentHistory(): JSX.Element {
   const { content, pageNo, last } = searchPaymentHistory;
   const isFirstRender = useRef(true);
 
-  const searchRequest: SearchPaymentHistoryRequest = {
-    // statusPayments: [StatusPayment.SUCCESS],
-  };
+  const searchRequest: SearchPaymentHistoryRequest = {};
 
   useEffect(() => {
     if (user?.id) {

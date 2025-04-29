@@ -122,9 +122,6 @@ const SearchResult: React.FC = () => {
     if (selectedSort === "new") {
       _sortBy = "approvedTime";
       _sortDir = "desc";
-    } else if (selectedSort === "near") {
-      _sortBy = "location";
-      _sortDir = "asc";
     } else if (selectedSort === "lowPrice") {
       _sortBy = "price";
       _sortDir = "asc";
@@ -253,7 +250,6 @@ const SearchResult: React.FC = () => {
 
   const sortOptions = [
     { label: "Newest first", value: "new" },
-    { label: "Closest to me", value: "near" },
     { label: "Price: Low to High", value: "lowPrice" },
     { label: "Price: High to Low", value: "highPrice" },
   ];
@@ -427,7 +423,7 @@ const SearchResult: React.FC = () => {
                 />
               </Pressable>
             )}
-            {minPrice === "0" && maxPrice === "0" ? (
+            {minPrice.length === 0 && maxPrice.length === 0 ? (
               <View className="relative ml-2">
                 <Icon name="funnel-outline" size={25} color="black" />
               </View>
@@ -603,7 +599,6 @@ const SearchResult: React.FC = () => {
         </Pressable>
       </Modal>
 
-      {/* Search Categories */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -624,7 +619,6 @@ const SearchResult: React.FC = () => {
         </Pressable>
       </Modal>
 
-      {/* Search Brands */}
       <Modal
         animationType="fade"
         transparent={true}

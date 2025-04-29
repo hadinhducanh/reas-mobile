@@ -1,18 +1,20 @@
 import React, { useRef, useState } from "react";
 import { View, Text, TextInput, Pressable, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
 import LoadingButton from "../../../components/LoadingButton";
 import { sendOtpThunk, signupUserThunk } from "../../../redux/thunk/authThunks";
 import Header from "../../../components/Header";
+import ErrorModal from "../../../components/ErrorModal";
+import { useTranslation } from "react-i18next";
 
 interface SignUpDTO {
   fullName: string;
   email: string;
   password: string;
+  registrationTokens: string[];
 }
 
 const OTP: React.FC = () => {
@@ -20,10 +22,13 @@ const OTP: React.FC = () => {
   const route = useRoute<any>();
   const dispatch = useDispatch<AppDispatch>();
   const { loading, otp } = useSelector((state: RootState) => state.auth);
+  const [visible, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+  const { t } = useTranslation();
 
   const [otpInput, setOtp] = useState(Array(6).fill(""));
 
-  // Tạo mảng ref cho 6 ô nhập OTP
   const otpRefs = Array.from({ length: 6 }, (_, i) => useRef<TextInput>(null));
 
   const handleChange = (index: number, value: string) => {
@@ -48,10 +53,16 @@ const OTP: React.FC = () => {
           navigation.navigate("SignUpSuccess");
         }
       } catch (error: any) {
-        Alert.alert("Sign up Failed", error.message || "Sign up failed");
+        setTitle("Authentication Failed");
+        setContent(error?.message ? t(error.message) : "Something went wrong");
+        setVisible(true);
+        return;
       }
     } else {
-      Alert.alert("OTP Verification Failed", "The OTP entered is incorrect.");
+      setTitle("OTP Verification");
+      setContent("The OTP you entered is invalid. Please try again.");
+      setVisible(true);
+      return;
     }
   };
 
@@ -59,9 +70,17 @@ const OTP: React.FC = () => {
     const { signUpDTO } = route.params as { signUpDTO: SignUpDTO };
     try {
       await dispatch(sendOtpThunk(signUpDTO)).unwrap();
-      Alert.alert("OTP Sent", "A new OTP has been sent.");
+      setTitle("Notification");
+      setContent("A new OTP has been sent to your email.");
+      setVisible(true);
     } catch (error: any) {
-      Alert.alert("Resend Failed", error.message || "Failed to resend OTP");
+      setTitle("Resend Failed");
+      setContent(
+        error?.message
+          ? error.message
+          : "Unable to resend OTP. Please try again later."
+      );
+      setVisible(true);
     }
   };
 
@@ -90,6 +109,13 @@ const OTP: React.FC = () => {
             />
           ))}
         </View>
+
+        <ErrorModal
+          content={content}
+          title={title}
+          visible={visible}
+          onCancel={() => setVisible(false)}
+        />
 
         <LoadingButton
           title="Verify"

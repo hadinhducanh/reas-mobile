@@ -10,12 +10,10 @@ import LoadingButton from "../../../components/LoadingButton";
 const About: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const handleContact = () => {};
-
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
       <Header
-        title="Abount us"
+        title="About us"
         backgroundColor="bg-[#00B0B9]"
         backIconColor="white"
         textColor="text-white"
@@ -30,11 +28,11 @@ const About: React.FC = () => {
         <View className="pb-14">
           <View className="items-center mb-6">
             <View className="w-[228px] h-[228px] rounded-full border-[6px] border-white justify-center items-center">
-              <View className="w-[216px] h-[216px] rounded-full bg-[#00b0b9] justify-center items-center">
+              <View className="w-[216px] h-[216px] rounded-full bg-white justify-center items-center">
                 <View className="w-[200px] h-[200px] rounded-full overflow-hidden">
                   <Image
                     source={{
-                      uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1739892939/REAS/Logo/Logo.png",
+                      uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1744177339/REAS/Logo/Reas-logo.png",
                     }}
                     className="w-full h-full object-cover"
                     resizeMode="cover"
@@ -85,12 +83,6 @@ const About: React.FC = () => {
               cutting-edge solutions.
             </Text>
           </View>
-
-          <LoadingButton
-            title="Contact us"
-            onPress={handleContact}
-            buttonClassName="p-4"
-          />
         </View>
       </ScrollView>
     </SafeAreaView>

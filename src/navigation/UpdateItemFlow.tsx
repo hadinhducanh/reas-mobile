@@ -11,6 +11,12 @@ import BrandSelectionScreen from "../screens/PostItemScreen/BrandSelectionScreen
 import { useIsFocused } from "@react-navigation/native";
 import UpdateItem from "../screens/ItemManagement/UpdateItem";
 import LocationOfUser from "../screens/AccountScreen/ProfileDetail/LocationOfUser";
+import TypeOfItemUpdateScreen from "../screens/ItemManagement/TypeOfItem";
+import TypeOfItemDetailUpdateScreen from "../screens/ItemManagement/TypeOfItemDetail";
+import ItemConditionUpdateScreen from "../screens/ItemManagement/ItemCondition";
+import MethodOfExchangeUpdateScreen from "../screens/ItemManagement/MethodOfExchange";
+import ExchangeDesiredItemUpdateScreen from "../screens/ItemManagement/ExchangeDesiredItem";
+import BrandSelectionUpdateScreen from "../screens/ItemManagement/BrandSelectionScreen";
 
 const UpdateItemStack = createNativeStackNavigator();
 
@@ -39,28 +45,28 @@ export default function UpdateItemFlow() {
           }}
         />
         <UpdateItemStack.Screen
-          name="TypeOfItemScreen"
-          component={TypeOfItemScreen}
+          name="TypeOfItemUpdateScreen"
+          component={TypeOfItemUpdateScreen}
         />
         <UpdateItemStack.Screen
-          name="TypeOfItemDetailScreen"
-          component={TypeOfItemDetailScreen}
+          name="TypeOfItemDetailUpdateScreen"
+          component={TypeOfItemDetailUpdateScreen}
         />
         <UpdateItemStack.Screen
-          name="ItemConditionScreen"
-          component={ItemConditionScreen}
+          name="ItemConditionUpdateScreen"
+          component={ItemConditionUpdateScreen}
         />
         <UpdateItemStack.Screen
-          name="MethodOfExchangeScreen"
-          component={MethodOfExchangeScreen}
+          name="MethodOfExchangeUpdateScreen"
+          component={MethodOfExchangeUpdateScreen}
         />
         <UpdateItemStack.Screen
-          name="ExchangeDesiredItemScreen"
-          component={ExchangeDesiredItemScreen}
+          name="ExchangeDesiredItemUpdateScreen"
+          component={ExchangeDesiredItemUpdateScreen}
         />
         <UpdateItemStack.Screen
-          name="BrandSelectionScreen"
-          component={BrandSelectionScreen}
+          name="BrandSelectionUpdateScreen"
+          component={BrandSelectionUpdateScreen}
         />
         <UpdateItemStack.Screen
           name="LocationOfUser"

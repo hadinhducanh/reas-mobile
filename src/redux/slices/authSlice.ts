@@ -8,11 +8,7 @@ import {
   sendOtpThunk,
   signupUserThunk,
 } from "../thunk/authThunks";
-import {
-  JWTAuthResponse,
-  SignupDto,
-  UserResponse,
-} from "../../common/models/auth";
+import { JWTAuthResponse, UserResponse } from "../../common/models/auth";
 
 export interface AuthState {
   accessToken: string | null;
@@ -40,14 +36,17 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    resetUserAuth: (state) => {
+      state.user = null;
+      state.accessToken = null;
+      state.refreshToken = null;
+    },
     logout(state) {
       state.accessToken = null;
       state.refreshToken = null;
       state.otp = null;
       state.user = null;
       state.changePasswordSuccess = null;
-      state.loading = false;
-      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -195,5 +194,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, resetUserAuth } = authSlice.actions;
 export default authSlice.reducer;
