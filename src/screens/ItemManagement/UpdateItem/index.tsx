@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TextInput,
@@ -41,6 +40,7 @@ import {
   defaultUpdateItem,
   useUpdateItem,
 } from "../../../context/UpdateItemContext";
+import ErrorModal from "../../../components/ErrorModal";
 
 const conditionItems = [
   { label: "Brand new", value: ConditionItem.BRAND_NEW },
@@ -94,6 +94,10 @@ export default function UpdateItem() {
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [exitVisible, setExitVisible] = useState(false);
   const [locationDetail, setLocationDetail] = useState<PlaceDetail>();
+
+  const [visible, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
 
   const pendingBeforeRemoveEvent = useRef<any>(null);
   const hasConfirmedRef = useRef(false);
@@ -206,7 +210,7 @@ export default function UpdateItem() {
           ? itemDetail.desiredItem.categoryName ?? ""
           : "",
         typeExchange: typeExchangeValue,
-        userLocationId: itemDetail.userLocation.id || 0,
+        userLocationId: itemDetail.userLocation.id,
       };
 
       setUpdateItem(updateItem);
@@ -245,7 +249,7 @@ export default function UpdateItem() {
     };
 
     fetchLocationDetails();
-  }, [user, userLocationId, itemDetail, dispatch]);
+  }, [user?.userLocations, itemDetail, userLocationId, dispatch]);
 
   const getConditionItemLabel = (status: ConditionItem | undefined): string => {
     const found = conditionItems.find((item) => item.value === status);
@@ -309,10 +313,6 @@ export default function UpdateItem() {
 
   const handleUpdateItem = useCallback(async () => {
     setConfirmVisible(false);
-
-    const priceItem = isCheckedFree
-      ? 0
-      : parseInt(price.replace(/,/g, ""), 10) || 0;
 
     const arraysEqual = (a: any[], b: any[]) =>
       a.length === b.length && a.every((val, idx) => val === b[idx]);
@@ -383,64 +383,44 @@ export default function UpdateItem() {
       return;
     }
 
-    if (
-      !images ||
-      !updateItem.categoryId ||
-      !updateItem.brandId ||
-      !updateItem.conditionItem ||
-      (!price && priceItem > 0 && isCheckedFree) ||
-      !itemName ||
-      !description ||
-      !updateItem.methodExchanges
-    ) {
-      Alert.alert("Invalid information", "All fields are required.");
-      return;
-    } else if (description.trim().length < 20) {
-      Alert.alert(
-        "Invalid information",
-        "Description must be at least 20 characters long."
-      );
-      return;
-    } else {
-      setIsUploadingImages(true);
-      const processedImages = await processImages();
-      setIsUploadingImages(false);
+    setIsUploadingImages(true);
+    const processedImages = await processImages();
+    setIsUploadingImages(false);
 
-      setImages(processedImages);
-      setUpdateItem((prev) => ({ ...prev, imageUrl: processedImages }));
+    setImages(processedImages);
+    setUpdateItem((prev) => ({ ...prev, imageUrl: processedImages }));
 
-      if (updateItem.desiredItem?.categoryId !== 0) {
-        setUpdateItem((prev) => ({
-          ...prev,
-          typeExchange: TypeExchange.EXCHANGE_WITH_DESIRED_ITEM,
-        }));
-      }
-
-      const updateItemRequest = {
-        id: itemDetail?.id!,
-        itemName: updateItem.itemName.trim(),
-        description: updateItem.description.trim(),
-        price: updateItem.price === null ? 0 : updateItem.price,
-        conditionItem: updateItem.conditionItem,
-        imageUrl: processedImages,
-        methodExchanges: updateItem.methodExchanges,
-        isMoneyAccepted: updateItem.isMoneyAccepted,
-        termsAndConditionsExchange:
-          updateItem.termsAndConditionsExchange &&
-          updateItem.termsAndConditionsExchange.trim().length !== 0
-            ? updateItem.termsAndConditionsExchange.trim()
-            : null,
-        categoryId: updateItem.categoryId,
-        brandId: updateItem.brandId,
-        userLocationId: userLocationId,
-        desiredItem:
-          updateItem.desiredItem?.description.length !== 0
-            ? updateItem.desiredItem
-            : null,
-      };
-
-      await dispatch(updateItemThunk(updateItemRequest)).unwrap();
+    if (updateItem.desiredItem?.categoryId !== 0) {
+      setUpdateItem((prev) => ({
+        ...prev,
+        typeExchange: TypeExchange.EXCHANGE_WITH_DESIRED_ITEM,
+      }));
     }
+
+    const updateItemRequest = {
+      id: itemDetail?.id!,
+      itemName: updateItem.itemName.trim(),
+      description: updateItem.description.trim(),
+      price: updateItem.price === null ? 0 : updateItem.price,
+      conditionItem: updateItem.conditionItem,
+      imageUrl: processedImages,
+      methodExchanges: updateItem.methodExchanges,
+      isMoneyAccepted: updateItem.isMoneyAccepted,
+      termsAndConditionsExchange:
+        updateItem.termsAndConditionsExchange &&
+        updateItem.termsAndConditionsExchange.trim().length !== 0
+          ? updateItem.termsAndConditionsExchange.trim()
+          : null,
+      categoryId: updateItem.categoryId,
+      brandId: updateItem.brandId,
+      userLocationId: userLocationId,
+      desiredItem:
+        updateItem.desiredItem?.description.length !== 0
+          ? updateItem.desiredItem
+          : null,
+    };
+
+    await dispatch(updateItemThunk(updateItemRequest)).unwrap();
   }, [setUpdateItem, updateItem, dispatch, userLocationId]);
 
   useEffect(() => {
@@ -483,7 +463,31 @@ export default function UpdateItem() {
   }, [setUpdateItem]);
 
   const handleConfirm = async () => {
-    setConfirmVisible(true);
+    const priceItem = isCheckedFree
+      ? 0
+      : parseInt(price.replace(/,/g, ""), 10) || 0;
+    if (
+      !images ||
+      !updateItem.categoryId ||
+      !updateItem.brandId ||
+      !updateItem.conditionItem ||
+      (!price && priceItem > 0 && isCheckedFree) ||
+      !itemName ||
+      !description ||
+      !updateItem.methodExchanges
+    ) {
+      setTitle("Missing information");
+      setContent("All fields are required. Please fill them in to proceed.");
+      setVisible(true);
+      return;
+    } else if (description.trim().length < 20) {
+      setTitle("Invalid description");
+      setContent("Please enter a description with at least 20 characters.");
+      setVisible(true);
+      return;
+    } else {
+      setConfirmVisible(true);
+    }
   };
 
   const handleCancel = () => {
@@ -633,12 +637,16 @@ export default function UpdateItem() {
             </View>
 
             <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
-              <Text className="text-black text-base">
-                Description{" "}
-                <Text className="text-[#00b0b9] font-semibold">
-                  (at least 20 characters)
+              <View className="flex-row justify-between">
+                <Text className="text-black text-base">
+                  Description<Text className="text-red-500">*</Text>
                 </Text>
-              </Text>
+                <View className="flex-row items-center">
+                  <Text className="text-gray-500 text-sm">
+                    ({description.length}/at least 20)
+                  </Text>
+                </View>
+              </View>
               <TextInput
                 className="flex-1 text-lg font-normal text-black"
                 placeholder="Aaaaa"
@@ -716,9 +724,16 @@ export default function UpdateItem() {
         </ScrollView>
       )}
 
+      <ErrorModal
+        content={content}
+        title={title}
+        visible={visible}
+        onCancel={() => setVisible(false)}
+      />
+
       <ConfirmModal
         title="Confirm update"
-        content="Are you sure you to update this item?"
+        content="Are you sure to update this item?"
         visible={confirmVisible}
         onCancel={handleCancel}
         onConfirm={handleUpdateItem}

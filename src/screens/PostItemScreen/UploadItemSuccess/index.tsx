@@ -1,11 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  ActivityIndicator,
-  Platform,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Platform, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";

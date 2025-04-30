@@ -224,7 +224,7 @@ export default function ReportedHistory(): JSX.Element {
         navigation.navigate("CriticalReport", {
           typeOfReport: TypeCriticalReport.RESIDENT,
           criticalReport: detail,
-          userReport: detail.user,
+          userReport: detail.resident,
         });
       }
     } catch (err) {

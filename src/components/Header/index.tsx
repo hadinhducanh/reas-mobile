@@ -22,9 +22,7 @@ interface HeaderProps {
   onBackPress?: () => void;
   backIconColor?: string;
   optionIconColor?: string;
-  setFavorites?: () => void;
   onAddLocation?: () => void;
-  owner?: boolean;
 }
 
 const statusExchanges = [
@@ -42,11 +40,9 @@ const Header: React.FC<HeaderProps> = ({
   showFilter = false,
   showUserLocation = false,
   onBackPress,
-  setFavorites,
   onAddLocation,
   backIconColor = "#0b1d2d",
   optionIconColor = "#0b1d2d",
-  owner = true,
 }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
@@ -153,23 +149,8 @@ const Header: React.FC<HeaderProps> = ({
               onPress={handleNavigateCriticalReport}
             >
               <Icon name="warning-outline" size={24} color="black" />
-              {owner ? (
-                <Text className="ml-2 text-base">Báo cáo tin đăng này</Text>
-              ) : (
-                <Text className="ml-2 text-base">Báo cáo người dùng</Text>
-              )}
-            </Pressable>
 
-            <Pressable
-              className="flex-row items-center bg-white p-5 active:bg-gray-100"
-              onPress={() => {}}
-            >
-              <Icon name="share-social-outline" size={24} color="black" />
-              {owner ? (
-                <Text className="ml-2 text-base">Chia sẻ tin</Text>
-              ) : (
-                <Text className="ml-2 text-base">Chia sẻ người dùng</Text>
-              )}
+              <Text className="ml-2 text-base">Report this resident</Text>
             </Pressable>
           </View>
         </Pressable>

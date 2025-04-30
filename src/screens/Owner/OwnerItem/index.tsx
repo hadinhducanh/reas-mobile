@@ -39,6 +39,7 @@ const OwnerItem: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "OwnerFeedback">>();
   const { userId } = route.params;
   const { userDetail, loading } = useSelector((state: RootState) => state.user);
+  const { user } = useSelector((state: RootState) => state.auth);
   const { itemByStatusOfUser, countsOfUser } = useSelector(
     (state: RootState) => state.item
   );
@@ -149,7 +150,7 @@ const OwnerItem: React.FC = () => {
         backIconColor="white"
         textColor="text-white"
         optionIconColor="white"
-        owner={false}
+        showOption={userDetail?.id !== user?.id}
         user={userDetail!}
       />
       {loading ? (

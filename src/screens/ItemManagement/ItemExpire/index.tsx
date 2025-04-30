@@ -46,6 +46,7 @@ import { AppDispatch, RootState } from "../../../redux/store";
 import { StatusItem } from "../../../common/enums/StatusItem";
 import { TypeItem } from "../../../common/enums/TypeItem";
 import { getCurrentSubscriptionThunk } from "../../../redux/thunk/subscriptionThunks";
+import ImagePreviewModal from "../../../components/ImagePreviewModal";
 
 const { width } = Dimensions.get("window");
 
@@ -140,7 +141,7 @@ const statusStyles: Record<
 const statusItems = [
   { label: "AVAILABLE", value: StatusItem.AVAILABLE },
   { label: "EXPIRED", value: StatusItem.EXPIRED },
-  { label: "NLFE", value: StatusItem.NO_LONGER_FOR_EXCHANGE },
+  { label: "DEACTIVATED", value: StatusItem.NO_LONGER_FOR_EXCHANGE },
   { label: "PENDING", value: StatusItem.PENDING },
   { label: "REJECTED", value: StatusItem.REJECTED },
   { label: "EXCHANGED", value: StatusItem.EXCHANGED },
@@ -163,6 +164,9 @@ const ItemExpire: React.FC = () => {
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const [isFavorite, setIsFavorite] = useState(itemDetail?.favorite);
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+
   const statusStyle = itemDetail?.statusItem
     ? statusStyles[itemDetail.statusItem] || {
         textColor: "text-gray-500",
@@ -438,19 +442,30 @@ const ItemExpire: React.FC = () => {
   }, [extendFree]);
 
   const renderImageItem = useCallback(
-    ({ item: image }: { item: string }) => (
-      <View className="relative" style={{ width: width }}>
-        <View className={`w-[${width}] h-96 bg-white`}>
-          <Image
-            source={{ uri: image }}
-            className="w-full h-full"
-            resizeMode="contain"
-          />
+    ({ item: image, index }: { item: string; index: number }) => (
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedIndex(index);
+          setImageModalVisible(true);
+        }}
+      >
+        <View className="relative" style={{ width: width }}>
+          <View className={`w-[${width}] h-96 bg-white`}>
+            <Image
+              source={{ uri: image }}
+              className="w-full h-full"
+              resizeMode="contain"
+            />
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
     ),
     [handleFavoritePress, isFavorite]
   );
+
+  const imageUrls = itemDetail?.imageUrl
+    ? itemDetail?.imageUrl.split(", ")
+    : [];
 
   const renderContent = useMemo(
     () => (
@@ -503,14 +518,15 @@ const ItemExpire: React.FC = () => {
               </View>
             </Pressable>
 
-            {itemDetail?.expiredTime && (
-              <View className="flex flex-row items-center mt-2">
-                <Icon name="time-outline" size={25} color="black" />
-                <Text className="ml-1 text-gray-500 text-lg font-semibold">
-                  Expire: {formatExchangeDate(itemDetail?.expiredTime)}
-                </Text>
-              </View>
-            )}
+            {itemDetail?.expiredTime &&
+              itemDetail.statusItem === StatusItem.AVAILABLE && (
+                <View className="flex flex-row items-center mt-2">
+                  <Icon name="time-outline" size={25} color="black" />
+                  <Text className="ml-1 text-gray-500 text-lg font-semibold">
+                    Expire: {formatExchangeDate(itemDetail?.expiredTime)}
+                  </Text>
+                </View>
+              )}
 
             {itemDetail?.approvedTime && (
               <View className="flex flex-row items-center mt-2">
@@ -622,18 +638,40 @@ const ItemExpire: React.FC = () => {
               <Text className="text-xl font-bold mt-4 mb-3">Desired item</Text>
               <View className="border border-gray-300 rounded-md overflow-hidden">
                 {dataDesired.map((info, index) => (
-                  <View
-                    key={index}
-                    className="flex-row border-b border-gray-300"
-                  >
-                    <View className="w-[40%] px-2 py-4 bg-gray-200">
-                      <Text className="text-base font-semibold text-gray-500">
-                        {info.label}
-                      </Text>
-                    </View>
-                    <View className="px-2 py-4 flex-1">
-                      <Text className="text-base">{info.value}</Text>
-                    </View>
+                  <View key={index}>
+                    {info.label === "Description" ? (
+                      <View
+                        key={index}
+                        className="flex-row border-b border-gray-300"
+                      >
+                        <View className="w-[40%] px-2 py-4 bg-gray-200">
+                          <Text className="text-base font-semibold text-gray-500">
+                            {info.label}
+                          </Text>
+                        </View>
+                        <View className="px-2 py-4 flex-1">
+                          {info.value.split("\\n").map((line, index) => (
+                            <Text className="text-base mb-0.5" key={index}>
+                              {line}
+                            </Text>
+                          ))}
+                        </View>
+                      </View>
+                    ) : (
+                      <View
+                        key={index}
+                        className="flex-row border-b border-gray-300"
+                      >
+                        <View className="w-[40%] px-2 py-4 bg-gray-200">
+                          <Text className="text-base font-semibold text-gray-500">
+                            {info.label}
+                          </Text>
+                        </View>
+                        <View className="px-2 py-4 flex-1">
+                          <Text className="text-base">{info.value}</Text>
+                        </View>
+                      </View>
+                    )}
                   </View>
                 ))}
               </View>
@@ -736,7 +774,7 @@ const ItemExpire: React.FC = () => {
                         <View className="flex-1">
                           <LoadingButton
                             title="Delete"
-                            onPress={handleDeactivate}
+                            onPress={handleDelete}
                             buttonClassName="p-3 border-transparent border-2 bg-[rgba(250,85,85)] active:bg-[rgba(250,85,85,0.5)]"
                             iconName="trash-outline"
                             iconSize={25}
@@ -817,6 +855,13 @@ const ItemExpire: React.FC = () => {
           }
         />
       )}
+
+      <ImagePreviewModal
+        visible={imageModalVisible}
+        onClose={() => setImageModalVisible(false)}
+        initialIndex={selectedIndex}
+        imageUrls={imageUrls}
+      />
 
       <ConfirmModal
         title="Confirm deactivate"

@@ -68,7 +68,6 @@ export default function UploadItem() {
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [locationDetail, setLocationDetail] = useState<PlaceDetail>();
 
-  const { t } = useTranslation();
   const [visible, setVisible] = useState<boolean>(false);
   const [content, setContent] = useState<string>("");
   const [title, setTitle] = useState<string>("");
@@ -266,12 +265,12 @@ export default function UploadItem() {
       !description ||
       !uploadItem.methodExchanges
     ) {
-      setTitle("Missing Information");
+      setTitle("Missing information");
       setContent("All fields are required. Please fill them in to proceed.");
       setVisible(true);
       return;
     } else if (description.trim().length < 20) {
-      setTitle("Invalid Description");
+      setTitle("Invalid description");
       setContent("Please enter a description with at least 20 characters.");
       setVisible(true);
       return;
@@ -413,12 +412,16 @@ export default function UploadItem() {
             </View>
 
             <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
-              <Text className="text-black text-base">
-                Description<Text className="text-red-500">*</Text>{" "}
-                <Text className="text-[#00b0b9] font-semibold">
-                  (at least 20 characters)
+              <View className="flex-row justify-between">
+                <Text className="text-black text-base">
+                  Description<Text className="text-red-500">*</Text>
                 </Text>
-              </Text>
+                <View className="flex-row items-center">
+                  <Text className="text-gray-500 text-sm">
+                    ({description.length}/at least 20)
+                  </Text>
+                </View>
+              </View>
               <TextInput
                 className="flex-1 text-lg font-normal text-black"
                 placeholder="Aaaaa"
@@ -503,7 +506,7 @@ export default function UploadItem() {
 
       <ConfirmModal
         title="Confirm upload"
-        content="Are you sure you to upload this item?"
+        content="Are you sure to upload this item?"
         visible={confirmVisible}
         onCancel={handleCancel}
         onConfirm={handleCreateItem}

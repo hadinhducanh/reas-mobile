@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, Alert } from "react-native";
+import { ScrollView, Text, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -13,6 +13,7 @@ import {
   defaultUpdateItem,
   useUpdateItem,
 } from "../../../context/UpdateItemContext";
+import ErrorModal from "../../../components/ErrorModal";
 
 const exchangeMethods = [
   { label: "Pick up in person", value: MethodExchange.PICK_UP_IN_PERSON },
@@ -34,6 +35,7 @@ const MethodOfExchangeUpdateScreen = () => {
 
   const pendingBeforeRemoveEvent = useRef<any>(null);
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [visible, setVisible] = useState<boolean>(false);
   const hasConfirmedRef = useRef(false);
 
   const toggleMethod = useCallback((methodValue: MethodExchange) => {
@@ -50,7 +52,7 @@ const MethodOfExchangeUpdateScreen = () => {
 
   const handleConfirm = useCallback(() => {
     if (selectedMethodExchanges.size === 0) {
-      Alert.alert("Invalid information", "Please choose method of exchange.");
+      setVisible(true);
       return;
     } else {
       hasConfirmedRef.current = true;
@@ -142,6 +144,14 @@ const MethodOfExchangeUpdateScreen = () => {
           buttonClassName="p-4 mt-3"
         />
       </ScrollView>
+
+      <ErrorModal
+        content={"Please select a method of exchange."}
+        title={"Missing Selection"}
+        visible={visible}
+        onCancel={() => setVisible(false)}
+      />
+
       <ConfirmModal
         title="Warning"
         content={`You have unsaved item. ${"\n"} Do you really want to leave?`}

@@ -30,6 +30,7 @@ import { CriticalReportResidentRequest } from "../../../common/models/criticalRe
 import ErrorModal from "../../../components/ErrorModal";
 import { resetCriticalReportDetail } from "../../../redux/slices/criticalReportSlice";
 import ImagePreviewModal from "../../../components/ImagePreviewModal";
+import { StatusCriticalReport } from "../../../common/enums/StatusCriticalReport";
 
 const CriticalReport: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -60,7 +61,6 @@ const CriticalReport: React.FC = () => {
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
-  // initialize local state only once when detail loads
   useEffect(() => {
     if (criticalReportDetail) {
       setComment(
@@ -106,7 +106,6 @@ const CriticalReport: React.FC = () => {
     const imageUrl = await processImages();
     setIsUploadingImages(false);
 
-    // Build typed request based on mode
     if (typeOfReport === TypeCriticalReport.RESIDENT) {
       const request: CriticalReportResidentRequest = {
         typeReport: typesReport,
@@ -157,6 +156,27 @@ const CriticalReport: React.FC = () => {
     ? criticalReportDetail?.imageUrl.split(", ")
     : [];
 
+  const handleBackPress = () => {
+    dispatch(resetCriticalReportDetail());
+    navigation.goBack();
+  };
+
+  const getStatusColor = (status: StatusCriticalReport): string => {
+    return status === StatusCriticalReport.RESOLVED
+      ? "text-green-600"
+      : status === StatusCriticalReport.PENDING
+      ? "text-yellow-600"
+      : "text-red-600";
+  };
+
+  const getStatusBackground = (status: StatusCriticalReport): string => {
+    return status === StatusCriticalReport.RESOLVED
+      ? "bg-green-100"
+      : status === StatusCriticalReport.PENDING
+      ? "bg-yellow-100"
+      : "bg-red-100";
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <Header
@@ -165,6 +185,7 @@ const CriticalReport: React.FC = () => {
         backgroundColor="bg-[#00b0b9]"
         textColor="text-white"
         backIconColor="white"
+        onBackPress={handleBackPress}
       />
 
       <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -235,9 +256,9 @@ const CriticalReport: React.FC = () => {
                   {userReport?.fullName}
                 </Text>
                 <Text className="text-gray-500 my-1">
-                  Sản phẩm:{" "}
+                  Items:{" "}
                   <Text className="underline text-black">
-                    {userReport?.numOfExchangedItems} đã bán
+                    {userReport?.numOfExchangedItems} exchanged
                   </Text>
                 </Text>
               </View>
@@ -254,7 +275,7 @@ const CriticalReport: React.FC = () => {
                 <Icon name="star" size={20} color="yellow" />
               </View>
               <Text className="underline">
-                {userReport?.numOfFeedbacks} đánh giá
+                {userReport?.numOfFeedbacks} feedbacks
               </Text>
             </View>
           </View>
@@ -593,12 +614,34 @@ const CriticalReport: React.FC = () => {
           </>
         )}
 
-        <View className="bg-white rounded-2xl shadow p-4 mb-6">
-          <Text className="text-gray-600 mb-2 text-base font-semibold">
-            Type of Report
-          </Text>
-          <View className="flex-row justify-between items-center bg-gray-100 rounded-lg p-3">
-            <Text className="text-[#00b0b9] font-semibold">{typesReport}</Text>
+        <View className="flex-row">
+          <View className="bg-white rounded-2xl shadow p-4 mb-6 flex-1 mr-2">
+            <Text className="text-gray-600 mb-2 text-base font-semibold text-center">
+              Type of report
+            </Text>
+            <View className="flex-row justify-center items-center bg-gray-100 rounded-lg p-3">
+              <Text className="text-[#00b0b9] font-semibold">
+                {typesReport}
+              </Text>
+            </View>
+          </View>
+          <View className="bg-white rounded-2xl shadow p-4 mb-6 flex-1">
+            <Text className="text-gray-600 mb-2 text-base font-semibold text-center">
+              Status of report
+            </Text>
+            <View
+              className={`flex-row justify-center items-center ${getStatusBackground(
+                criticalReport?.statusCriticalReport!
+              )}  rounded-lg p-3`}
+            >
+              <Text
+                className={`font-semibold ${getStatusColor(
+                  criticalReport?.statusCriticalReport!
+                )}`}
+              >
+                {criticalReport?.statusCriticalReport}
+              </Text>
+            </View>
           </View>
         </View>
 

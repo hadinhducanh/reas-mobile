@@ -14,5 +14,6 @@
   "error.incorrectPassword": "Incorrect password. Please try again.",
   "error.roleNotExist": "The specified role does not exist.",
   "error.emailAlreadyExist": "An account with this email already exists.",
-  "error.cannotDeletePrimaryLocation": "You cannot delete your primary location."
+  "error.cannotDeletePrimaryLocation": "You cannot delete your primary location.",
+  "error.oldPasswordNotMatch": "The old password is incorrect."
 }

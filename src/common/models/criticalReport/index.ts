@@ -34,7 +34,7 @@ export interface CriticalReportResponse {
   contentResponse: string;
   imageUrl: string;
   approvedTime: string;
-  user: UserResponse;
+  resident: UserResponse;
   feedback: FeedbackResponse;
   exchangeRequest: ExchangeResponse;
   reporter: UserResponse;

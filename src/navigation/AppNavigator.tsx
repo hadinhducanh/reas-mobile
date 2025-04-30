@@ -4,7 +4,6 @@ import {
   NavigationContainer,
   NavigatorScreenParams,
   useNavigation,
-  useNavigationState,
 } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -57,11 +56,9 @@ import Payment from "../screens/Payment";
 import OrderFailed from "../screens/OrderScreen/OrderFailed";
 import OrderSuccess from "../screens/OrderScreen/OrderSuccess";
 import ExtendItemPlan from "../screens/AccountScreen/SubscriptionPlan/ExtendItemPlan";
-import UpdateItem from "../screens/ItemManagement/UpdateItem";
 import UpdateItemFlow from "./UpdateItemFlow";
 import LocationOfUser from "../screens/AccountScreen/ProfileDetail/LocationOfUser";
 import { resetLocation } from "../redux/slices/userSlice";
-import PaymentHistoryScreen from "../screens/AccountScreen/PaymentHistory";
 import PaymentHistory from "../screens/AccountScreen/PaymentHistory";
 import ReportedHistory from "../screens/AccountScreen/ReportedHistory";
 import CriticalReport from "../screens/AccountScreen/CriticalReport";

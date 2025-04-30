@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
-import { ScrollView, Text, TextInput, View, Alert } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
@@ -14,6 +14,7 @@ import {
   defaultUpdateItem,
   useUpdateItem,
 } from "../../../context/UpdateItemContext";
+import ErrorModal from "../../../components/ErrorModal";
 
 const ExchangeDesiredItemUpdateScreen = () => {
   const { updateItem, setUpdateItem } = useUpdateItem();
@@ -36,6 +37,9 @@ const ExchangeDesiredItemUpdateScreen = () => {
   );
   const [error, setError] = useState<string>("");
   const [isInvalid, setIsInvalid] = useState<boolean>(false);
+  const [visible, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
 
   const pendingBeforeRemoveEvent = useRef<any>(null);
   const hasConfirmedRef = useRef(false);
@@ -52,10 +56,9 @@ const ExchangeDesiredItemUpdateScreen = () => {
     const max = parseInt(maxPrice.replace(/,/g, ""), 10) || null;
 
     if (!minPrice || !description) {
-      Alert.alert("Missing Information", "All fields is required.");
-      return;
-    } else if (max && min && max <= min && max !== 0) {
-      Alert.alert("Invalid", "Max price must be greater than min price.");
+      setTitle("Missing Information");
+      setContent("All fields are required. Please fill them in to proceed.");
+      setVisible(true);
       return;
     } else {
       hasConfirmedRef.current = true;
@@ -265,6 +268,14 @@ const ExchangeDesiredItemUpdateScreen = () => {
           disable={isInvalid}
         />
       </ScrollView>
+
+      <ErrorModal
+        content={content}
+        title={title}
+        visible={visible}
+        onCancel={() => setVisible(false)}
+      />
+
       <ConfirmModal
         title="Warning"
         content={`You have unsaved desired item. ${"\n"} Do you really want to leave?`}

@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   Pressable,
-  Alert,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
@@ -388,7 +387,7 @@ const SignUp: React.FC = () => {
                     color={isLengthValid ? "#00b0b9" : "gray"}
                   />
                   <Text className="ml-2 text-base text-gray-500">
-                    Mật khẩu phải từ 8 đến 20 ký tự
+                    Password must be between 8 and 20 characters
                   </Text>
                 </View>
 
@@ -403,7 +402,7 @@ const SignUp: React.FC = () => {
                     }
                   />
                   <Text className="ml-2 text-base text-gray-500">
-                    Bao gồm số, chữ viết hoa, chữ viết thường
+                    Must include uppercase, lowercase letters and numbers
                   </Text>
                 </View>
 
@@ -414,7 +413,7 @@ const SignUp: React.FC = () => {
                     color={hasSpecialChar ? "#00b0b9" : "gray"}
                   />
                   <Text className="ml-2 text-base text-gray-500">
-                    Bao gồm ít nhất một ký tự đặc biệt !@#$%^&*()_-
+                    Must include at least one special character !@#$%^&*()_-
                   </Text>
                 </View>
               </View>

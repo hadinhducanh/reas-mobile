@@ -1,16 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   ScrollView,
   Text,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import {
-  RouteProp,
-  useNavigation,
-  useNavigationState,
-  useRoute,
-} from "@react-navigation/native";
+import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { SafeAreaView } from "react-native-safe-area-context";

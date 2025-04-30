@@ -222,7 +222,7 @@ const LocationOfUser: React.FC = () => {
 
       <ConfirmModal
         title="Confirm delete"
-        content="Are you sure you to delete this location?"
+        content="Are you sure to delete this location?"
         visible={deletedVisible}
         onCancel={() => setDeletedVisible(false)}
         onConfirm={handleConfirm}

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
-import { ScrollView, Text, TextInput, View, Alert } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
@@ -56,9 +56,6 @@ const ExchangeDesiredItemScreen = () => {
       setTitle("Missing Information");
       setContent("All fields are required. Please fill them in to proceed.");
       setVisible(true);
-      return;
-    } else if (max && min && max <= min && max !== 0) {
-      Alert.alert("Invalid", "Max price must be greater than min price.");
       return;
     } else {
       hasConfirmedRef.current = true;
