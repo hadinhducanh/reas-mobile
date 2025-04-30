@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "REAS",
-    "slug": "REAS",
+    "slug": "reas",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo-bg.png",
@@ -50,14 +50,20 @@
         }
       }
     },
-    "plugins": [   
+    "plugins": [
       "@react-native-firebase/app",
       "@react-native-google-signin/google-signin"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "sdkVersion": "52.0.0"
+    "sdkVersion": "52.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "644df9c4-9da3-41ce-acf2-a50345f5a4ee"
+      }
+    },
+    "owner": "hadinhducanh2003123"
   },
   "name": "reas"
 }
