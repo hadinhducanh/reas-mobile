@@ -616,33 +616,46 @@ const CriticalReport: React.FC = () => {
 
         <View className="flex-row">
           <View className="bg-white rounded-2xl shadow p-4 mb-6 flex-1 mr-2">
-            <Text className="text-gray-600 mb-2 text-base font-semibold text-center">
+            <Text
+              className={`text-gray-600 mb-2 text-base font-semibold ${
+                criticalReport?.statusCriticalReport ? "text-center" : ""
+              }`}
+            >
               Type of report
             </Text>
-            <View className="flex-row justify-center items-center bg-gray-100 rounded-lg p-3">
+            <View
+              className={`flex-row ${
+                criticalReport?.statusCriticalReport
+                  ? "justify-center"
+                  : "justify-start"
+              } items-center bg-gray-100 rounded-lg p-3`}
+            >
               <Text className="text-[#00b0b9] font-semibold">
                 {typesReport}
               </Text>
             </View>
           </View>
-          <View className="bg-white rounded-2xl shadow p-4 mb-6 flex-1">
-            <Text className="text-gray-600 mb-2 text-base font-semibold text-center">
-              Status of report
-            </Text>
-            <View
-              className={`flex-row justify-center items-center ${getStatusBackground(
-                criticalReport?.statusCriticalReport!
-              )}  rounded-lg p-3`}
-            >
-              <Text
-                className={`font-semibold ${getStatusColor(
-                  criticalReport?.statusCriticalReport!
-                )}`}
-              >
-                {criticalReport?.statusCriticalReport}
+
+          {criticalReport?.statusCriticalReport && (
+            <View className="bg-white rounded-2xl shadow p-4 mb-6 flex-1">
+              <Text className="text-gray-600 mb-2 text-base font-semibold text-center">
+                Status of report
               </Text>
+              <View
+                className={`flex-row justify-center items-center ${getStatusBackground(
+                  criticalReport?.statusCriticalReport!
+                )}  rounded-lg p-3`}
+              >
+                <Text
+                  className={`font-semibold ${getStatusColor(
+                    criticalReport?.statusCriticalReport!
+                  )}`}
+                >
+                  {criticalReport?.statusCriticalReport}
+                </Text>
+              </View>
             </View>
-          </View>
+          )}
         </View>
 
         {criticalReportDetail === null && (

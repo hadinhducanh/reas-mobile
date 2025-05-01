@@ -162,7 +162,7 @@ const AccpectRejectExchange: React.FC = () => {
 
   const handleRejectExchange = async () => {
     setRejectVisible(false);
-    navigation.goBack();
+
     await dispatch(
       reviewExchangeRequestThunk({
         exchangeId: exchangeDetail?.id!,
@@ -186,7 +186,6 @@ const AccpectRejectExchange: React.FC = () => {
 
   const handleCancelExchange = async () => {
     setCancelVisible(false);
-    navigation.goBack();
     await dispatch(cancelExchangeThunk(exchangeDetail?.id!));
 
     dispatch(resetExchange());

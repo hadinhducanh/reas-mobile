@@ -97,6 +97,7 @@ const dateRanges = ["15 days", "30 days", "3 months", "6 months", "1 year"];
 const getDateRange = (range: string): { fromDate: Date; toDate: Date } => {
   const today = new Date();
   let fromDate = new Date();
+  let toDate = new Date(); // <-- sẽ dùng làm toDate gốc
 
   switch (range) {
     case "15 days":
@@ -115,18 +116,20 @@ const getDateRange = (range: string): { fromDate: Date; toDate: Date } => {
       fromDate.setFullYear(today.getFullYear() - 1);
       break;
     default:
-      fromDate = today;
+      fromDate.setDate(today.getDate() - 15);
   }
 
+  toDate.setDate(toDate.getDate() + 1);
+
   return {
-    fromDate: fromDate,
-    toDate: today,
+    fromDate,
+    toDate,
   };
 };
 
 export default function PaymentHistory(): JSX.Element {
   const [transactionIdSearch, setTransactionIdSearch] = useState<string>("");
-  const [dateRange, setDateRange] = useState<string>("15 days");
+  const [dateRange, setDateRange] = useState<string>("Select date");
   const [showDateModal, setShowDateModal] = useState<boolean>(false);
 
   const dispatch = useDispatch<AppDispatch>();
@@ -166,7 +169,6 @@ export default function PaymentHistory(): JSX.Element {
             pageNo: 0,
             userId: user.id,
             request: {
-              ...searchRequest,
               transactionId: Number(transactionIdSearch) || undefined,
               fromTransactionDate: fromDate || undefined,
               toTransactionDate: toDate || undefined,
@@ -275,6 +277,9 @@ export default function PaymentHistory(): JSX.Element {
             {item.description}
           </Text>
           <Text className="text-sm text-gray-500 my-1">
+            ID: #{item.transactionId}
+          </Text>
+          <Text className="text-sm text-gray-500 my-1">
             {formatDate(new Date(item.transactionDateTime)) +
               " - " +
               formatPaymentTime(item.transactionDateTime.toString())}
@@ -290,7 +295,7 @@ export default function PaymentHistory(): JSX.Element {
       </View>
       <View className="flex-col justify-between h-full">
         <Text
-          className={`text-sm w-3/4 ml-auto py-1 items-center text-center bg-black font-medium ${getStatusColor(
+          className={`text-sm ml-auto px-2 py-1 items-center text-center bg-black font-medium ${getStatusColor(
             item.statusPayment
           )} ${getStatusBackground(item.statusPayment)} rounded-full`}
         >
@@ -397,6 +402,15 @@ export default function PaymentHistory(): JSX.Element {
             <Text className="text-center text-xl font-bold text-[#00b0b9]">
               Select Date Range
             </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setDateRange("Select date");
+                setShowDateModal(false);
+              }}
+              className="absolute right-6 top-6"
+            >
+              <Text className="text-[#00b0b9] font-medium">Reset</Text>
+            </TouchableOpacity>
             <Text className="text-center text-base text-gray-500 mt-1">
               Choose a time
             </Text>

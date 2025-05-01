@@ -122,7 +122,7 @@ const Account: React.FC = () => {
       },
       {
         iconName: "clipboard-outline",
-        label: "Reported",
+        label: "Report history",
         route: "ReportedHistory",
         requireAuth: true,
       },
@@ -149,7 +149,14 @@ const Account: React.FC = () => {
         />
 
         {isLoggedIn ? (
-          <View className="mx-5 h-[100px] flex-row items-center">
+          <Pressable
+            onPress={() =>
+              navigation.navigate("OwnerItem", {
+                userId: user.id,
+              })
+            }
+            className="mx-5 h-[100px] flex-row items-center"
+          >
             {user.image ? (
               <View className="w-24 h-24 rounded-full items-center justify-center">
                 <Image
@@ -180,12 +187,19 @@ const Account: React.FC = () => {
                     color={num <= user.numOfRatings! ? "#FFD700" : "#dfecec"}
                   />
                 ))}
-                <Text className="ml-1 text-[13px] font-semibold text-[#00B0B9]">
-                  ({user.numOfFeedbacks} đánh giá)
+                <Text
+                  onPress={() =>
+                    navigation.navigate("OwnerFeedback", {
+                      userId: user.id,
+                    })
+                  }
+                  className="ml-1 text-[13px] font-semibold text-[#00B0B9] underline"
+                >
+                  ({user.numOfFeedbacks} feedbacks)
                 </Text>
               </View>
             </View>
-          </View>
+          </Pressable>
         ) : (
           <View className="px-5 h-[100px] flex-row items-center bg-white justify-between">
             <Icon name="person-circle-outline" size={85} color="gray" />
@@ -226,6 +240,30 @@ const Account: React.FC = () => {
               }
             />
           ))}
+
+          {isLoggedIn && (
+            <Pressable
+              onPress={() => {
+                navigation.navigate("ChatDetails", {
+                  receiverUsername: "admin",
+                  receiverFullName: "Admin",
+                });
+              }}
+              className="h-[70px] bg-white border-t border-[#DBE9F5] flex-row items-center pl-5 active:bg-gray-200"
+            >
+              <View className="relative mr-2">
+                <Icon
+                  name={"call-outline"}
+                  size={24}
+                  style={{ position: "absolute" }}
+                  color={"#00B0B9"}
+                />
+                <Icon name="call-outline" size={24} color={"#00B0B9"} />
+              </View>
+              <Text className="text-[14px]">Contact with us</Text>
+            </Pressable>
+          )}
+
           {isLoggedIn && (
             <AccountListItem
               iconName="log-out-outline"

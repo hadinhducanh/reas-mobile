@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Modal,
   View,
@@ -18,6 +18,7 @@ import { RootStackParamList } from "../../navigation/AppNavigator";
 import dayjs from "dayjs";
 import { resetFeedback } from "../../redux/slices/feedbackSlice";
 import ImagePreviewModal from "../ImagePreviewModal";
+import { TypeCriticalReport } from "../../common/enums/TypeCriticalReport";
 
 interface FeebackModalProps {
   feedbackId: number;
@@ -40,6 +41,7 @@ const FeebackModal: React.FC<FeebackModalProps> = ({
   const { user } = useSelector((state: RootState) => state.auth);
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
 
   useEffect(() => {
     dispatch(resetFeedback());
@@ -81,6 +83,18 @@ const FeebackModal: React.FC<FeebackModalProps> = ({
     ? feedbackDetail.imageUrl.split(", ")
     : [];
 
+  const handleNavigateCriticalReport = useCallback(() => {
+    if (feedbackDetail) {
+      onCancel();
+      setIsPopupVisible(false);
+      navigation.navigate("CriticalReport", {
+        id: feedbackDetail.id,
+        typeOfReport: TypeCriticalReport.FEEDBACK,
+        feedbackReport: feedbackDetail,
+      });
+    }
+  }, [navigation, feedbackDetail?.id]);
+
   return (
     <>
       <Modal
@@ -117,6 +131,10 @@ const FeebackModal: React.FC<FeebackModalProps> = ({
                       textColor="text-[#00B0B9]"
                     />
                   </View>
+                ) : user?.id !== feedbackDetail?.user.id ? (
+                  <TouchableOpacity onPress={() => setIsPopupVisible(true)}>
+                    <Icon name="ellipsis-vertical" size={20} color="gray" />
+                  </TouchableOpacity>
                 ) : (
                   ""
                 )}
@@ -199,6 +217,27 @@ const FeebackModal: React.FC<FeebackModalProps> = ({
           initialIndex={selectedIndex}
           imageUrls={imageUrls}
         />
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={isPopupVisible}
+          onRequestClose={() => setIsPopupVisible(false)}
+        >
+          <Pressable
+            className="flex-1 bg-[rgba(0,0,0,0.2)]"
+            onPress={() => setIsPopupVisible(false)}
+          >
+            <View className="mt-auto ">
+              <Pressable
+                className="flex-row items-center bg-white p-5 active:bg-gray-100"
+                onPress={handleNavigateCriticalReport}
+              >
+                <Icon name="warning-outline" size={24} color="black" />
+                <Text className="ml-2 text-base">Report this feedback</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Modal>
       </Modal>
     </>
   );

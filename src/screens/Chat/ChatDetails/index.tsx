@@ -182,12 +182,11 @@ const ChatDetails: React.FC = () => {
             </Text>
           </View>
 
-          {/* Chat Messages */}
           <View className="flex-1 bg-white">
             {Array.isArray(messages) && messages.length > 0 ? (
               <ScrollView
                 ref={scrollViewRef}
-                onContentSizeChange={scrollToBottom} // auto-scroll on content change
+                onContentSizeChange={scrollToBottom}
                 className="bg-white"
               >
                 {messages.map((msg, index) => (
@@ -246,10 +245,9 @@ const ChatDetails: React.FC = () => {
 
           {/* Chat Input & Actions */}
           <View className="flex-row items-center px-5 bg-white py-8">
-            <Pressable onPress={handleSelectImage}>
+            <Pressable onPress={handleSelectImage} className="mr-2">
               <Icon name="image" size={28} color="#00b0b9" />
             </Pressable>
-            <Icon className="mx-2" name="location" size={28} color="#00b0b9" />
             <TextInput
               placeholder="Nhập tin nhắn..."
               className="flex-1 bg-[rgb(217,217,217,0.6)] rounded-[20px] px-5 py-3 text-black mr-2"

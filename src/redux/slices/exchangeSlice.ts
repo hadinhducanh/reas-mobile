@@ -21,6 +21,7 @@ interface ExchangeState {
   exchangeRequest: ExchangeResponse | null;
   exchangeByStatus: ResponseEntityPagination<ExchangeResponse>;
   exchangeDetail: ExchangeResponse | null;
+  exchangeUploadEvidence: ExchangeResponse | null;
   counts: { [key in StatusExchange]?: number };
   numberOfSuccessfulExchange: number;
   revenueOfUserFromExchanges: number;
@@ -32,6 +33,7 @@ interface ExchangeState {
 const initialState: ExchangeState = {
   exchangeRequest: null,
   exchangeDetail: null,
+  exchangeUploadEvidence: null,
   revenueOfUserFromExchanges: 0,
   monthlyRevenueOfUserFromExchanges: {},
   exchangeByStatus: {
@@ -52,6 +54,9 @@ const exchangeSlice = createSlice({
   name: "exchange",
   initialState,
   reducers: {
+    resetExchangeEvidence: (state) => {
+      state.exchangeUploadEvidence = null;
+    },
     resetExchange: (state) => {
       state.exchangeRequest = null;
       state.exchangeDetail = null;
@@ -253,7 +258,7 @@ const exchangeSlice = createSlice({
         uploadExchangeEvidenceThunk.fulfilled,
         (state, action: PayloadAction<ExchangeResponse>) => {
           state.loading = false;
-          state.exchangeDetail = action.payload;
+          state.exchangeUploadEvidence = action.payload;
         }
       )
       .addCase(
@@ -320,7 +325,6 @@ const exchangeSlice = createSlice({
         getMonthlyRevenueOfUserInOneYearFromExchangesThunk.fulfilled,
         (state, action: PayloadAction<Record<number, number>>) => {
           state.loading = false;
-          // action.payload vốn đã là Record<number, number>
           state.monthlyRevenueOfUserFromExchanges = action.payload;
         }
       )
@@ -336,5 +340,5 @@ const exchangeSlice = createSlice({
   },
 });
 
-export const { resetExchange } = exchangeSlice.actions;
+export const { resetExchange, resetExchangeEvidence } = exchangeSlice.actions;
 export default exchangeSlice.reducer;

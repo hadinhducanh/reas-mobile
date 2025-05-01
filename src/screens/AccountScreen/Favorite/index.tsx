@@ -54,7 +54,7 @@ const Favorite: React.FC = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
+    <SafeAreaView className="flex-1" edges={["top"]}>
       <Header
         title="Favorites"
         backgroundColor="bg-[#00B0B9]"

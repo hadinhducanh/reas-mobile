@@ -21,6 +21,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 import { StatusExchange } from "../../common/enums/StatusExchange";
 import ImagePreviewModal from "../ImagePreviewModal";
+import ErrorModal from "../ErrorModal";
+import { resetExchangeEvidence } from "../../redux/slices/exchangeSlice";
 
 interface EvidenceModalProps {
   isSeller: boolean;
@@ -43,13 +45,17 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
   const [receivedItemImage, setReceivedItemImage] = useState<string>("");
   const [transferReceiptImage, setTransferReceiptImage] = useState<string>("");
   const { user } = useSelector((state: RootState) => state.auth);
-  const { loading, exchangeDetail } = useSelector(
+  const { loading, exchangeDetail, exchangeUploadEvidence } = useSelector(
     (state: RootState) => state.exchange
   );
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [additionalNotes, setAdditionalNotes] = useState<string>("");
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+
+  const [visibleWarning, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [titleWarning, setTitle] = useState<string>("");
 
   const combinedImages = [receivedItemImage, transferReceiptImage]
     .filter((img) => img.trim() !== "")
@@ -68,7 +74,9 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
 
   const handleConfirm = async () => {
     if (!receivedItemImage) {
-      Alert.alert("Invalid information", "All fields are required.");
+      setTitle("Missing information");
+      setContent("All fields are required. Please fill them in to proceed.");
+      setVisible(true);
       return;
     }
 
@@ -93,14 +101,12 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
     };
 
     try {
-      const resultAction = await dispatch(uploadExchangeEvidenceThunk(request));
-      if (uploadExchangeEvidenceThunk.fulfilled.match(resultAction)) {
+      await dispatch(uploadExchangeEvidenceThunk(request)).unwrap();
+      if (exchangeUploadEvidence) {
+        dispatch(resetExchangeEvidence());
         onCancel();
-      } else {
-        Alert.alert("Error", "Failed to upload exchange evidence.");
       }
     } catch (error) {
-      console.error("Dispatch error:", error);
       Alert.alert("Error", "Something went wrong.");
     }
   };
@@ -395,6 +401,14 @@ const EvidenceModal: React.FC<EvidenceModalProps> = ({
           )}
         </View>
       </Pressable>
+
+      <ErrorModal
+        content={content}
+        title={titleWarning}
+        visible={visibleWarning}
+        onCancel={() => setVisible(false)}
+      />
+
       <ImagePreviewModal
         visible={imageModalVisible}
         onClose={() => setImageModalVisible(false)}

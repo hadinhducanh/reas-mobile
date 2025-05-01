@@ -62,6 +62,7 @@ const ChooseLocationModal: React.FC<ChooseLocationModalProps> = ({
       ...exchangeItem,
       exchangeLocation: geocode + "//" + address,
     });
+    onCancel();
   };
 
   return (

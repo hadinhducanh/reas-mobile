@@ -10,7 +10,6 @@ import {
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Modal,
   Platform,
@@ -73,11 +72,12 @@ const CreateExchange: React.FC = () => {
   const [locationShowVisible, setLocationShowVisible] =
     useState<boolean>(false);
 
+  const [visible, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+
   const [deliveryVisible, setDeliveryVisible] = useState<boolean>(false);
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
-  const [errorTitleInput, setErrorTitleInput] = useState<string>("");
-  const [errorContentInput, setErrorContentInput] = useState<string>("");
-  const [errorVisible, setErrorVisible] = useState<boolean>(false);
   const [additionalNotes, setAdditionalNotes] = useState<string | null>(
     exchangeItem.additionalNotes
   );
@@ -131,7 +131,9 @@ const CreateExchange: React.FC = () => {
       !exchangeItem.exchangeLocation ||
       !selectedDateTime
     ) {
-      Alert.alert("Invalid information", "All fields are required.");
+      setTitle("Missing information");
+      setContent("All fields are required. Please fill them in to proceed.");
+      setVisible(true);
       return;
     } else if (
       itemDetail?.moneyAccepted &&
@@ -224,9 +226,10 @@ const CreateExchange: React.FC = () => {
 
   const handleSetLocation = () => {
     if (exchangeItem.methodExchangeName.length === 0) {
-      setErrorVisible(true);
-      setErrorTitleInput("Invalid");
-      setErrorContentInput("Please choose your method exchange first.");
+      setVisible(true);
+      setTitle("Incomplete Information");
+      setContent("Please select your method of exchange before proceeding.");
+      return;
     } else if (
       exchangeItem.methodExchange === MethodExchange.DELIVERY &&
       user?.userLocations
@@ -319,10 +322,9 @@ const CreateExchange: React.FC = () => {
 
   const handleSelectDateTime = (picked: Date) => {
     if (picked.getTime() < Date.now()) {
-      Alert.alert(
-        "Invalid Date",
-        "Please select a date and time in the future."
-      );
+      setVisible(true);
+      setTitle("Invalid Date & Time");
+      setContent("Please select a future date and time to continue.");
       return;
     }
 
@@ -400,7 +402,7 @@ const CreateExchange: React.FC = () => {
 
                   <View className="bg-gray-100 p-4 rounded-lg border border-gray-300 mt-10">
                     <Text className="text-gray-500 text-lg font-medium mb-2">
-                      Your chosen item
+                      Your chosen item<Text className="text-red-500">*</Text>
                     </Text>
                     {exchangeItem.selectedItem ? (
                       <View
@@ -456,7 +458,9 @@ const CreateExchange: React.FC = () => {
 
                   <View className="bg-white mt-2 rounded-lg p-4">
                     <View className="items-center flex-row justify-between mb-3">
-                      <Text className="text-base text-gray-500">Method</Text>
+                      <Text className="text-base text-gray-500">
+                        Method<Text className="text-red-500">*</Text>
+                      </Text>
                       <Pressable onPress={() => setMethodVisible(true)}>
                         <Text
                           className={`text-right text-base text-[#00b0b9] underline font-normal`}
@@ -478,7 +482,7 @@ const CreateExchange: React.FC = () => {
 
                     <View className="items-center flex-row justify-between mb-3">
                       <Text className="text-base text-gray-500 w-1/2">
-                        Meeting location
+                        Meeting location<Text className="text-red-500">*</Text>
                       </Text>
                       <Pressable
                         className="flex-row items-center w-1/2 justify-end"
@@ -500,7 +504,7 @@ const CreateExchange: React.FC = () => {
 
                     <View className="items-center flex-row justify-between">
                       <Text className="text-base text-gray-500">
-                        Date & Time
+                        Date & Time<Text className="text-red-500">*</Text>
                       </Text>
                       <Pressable
                         className="flex-row items-center justify-end"
@@ -531,9 +535,7 @@ const CreateExchange: React.FC = () => {
                 </View>
 
                 <View className="my-5">
-                  <Text className="font-bold text-lg text-gray-500">
-                    Note (Optional)
-                  </Text>
+                  <Text className="font-bold text-lg text-gray-500">Note</Text>
 
                   <View className="w-full h-40 bg-white rounded-lg mt-4 px-5 py-3">
                     <TextInput
@@ -614,10 +616,10 @@ const CreateExchange: React.FC = () => {
       />
 
       <ErrorModal
-        title={errorTitleInput}
-        content={errorContentInput}
-        visible={errorVisible}
-        onCancel={() => setErrorVisible(false)}
+        title={title}
+        content={content}
+        visible={visible}
+        onCancel={() => setVisible(false)}
       />
 
       <ChooseLocationModal

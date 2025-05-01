@@ -50,6 +50,7 @@ const ResetPassword: React.FC = () => {
   const [hasLowerCase, setHasLowerCase] = useState(false);
   const [hasDigit, setHasDigit] = useState(false);
   const [hasSpecialChar, setHasSpecialChar] = useState(false);
+  const [errorVisible, setErrorVisible] = useState<boolean>(false);
 
   const [visible, setVisible] = useState<boolean>(false);
   const [content, setContent] = useState<string>("");
@@ -83,29 +84,19 @@ const ResetPassword: React.FC = () => {
     }
 
     try {
-      const response = await dispatch(
-        changePasswordThunk({
-          oldPassword: trimmedOldPassword,
-          newPassword: trimmedNewPassword,
-        })
-      ).unwrap();
+      console.log(trimmedOldPassword);
+      console.log(trimmedNewPassword);
 
-      if (response) {
-        Alert.alert("Reset password", "Successfully", [
-          {
-            text: "OK",
-            onPress: () => {
-              setOldPassword("");
-              setNewPassword("");
-            },
-          },
-        ]);
-      } else {
-        Alert.alert(
-          "Reset password failed",
-          response || "Something went wrong"
-        );
-      }
+      // const response = await dispatch(
+      //   changePasswordThunk({
+      //     oldPassword: trimmedOldPassword,
+      //     newPassword: trimmedNewPassword,
+      //   })
+      // ).unwrap();
+
+      // if (response) {
+      //   setErrorVisible(true);
+      // }
     } catch (err: any) {
       setTitle("Reset password failed");
       setContent(err?.message ? t(err.message) : "Something went wrong");
@@ -135,7 +126,7 @@ const ResetPassword: React.FC = () => {
       {/* Form */}
       <View className="bg-white rounded-tl-[10px] rounded-tr-[10px] mx-5 p-5">
         <Text className="text-[16px] text-[#738aa0] mt-[20px] mb-[30px] font-light">
-          Enter new password and confirm.
+          Enter new password and old password.
         </Text>
 
         {/* Old Password Input */}
@@ -257,6 +248,16 @@ const ResetPassword: React.FC = () => {
           }
         />
       </View>
+
+      <ErrorModal
+        title={"Notification"}
+        content={"Password was reset successful!"}
+        visible={errorVisible}
+        onCancel={() => {
+          setErrorVisible(false);
+          navigation.goBack();
+        }}
+      />
     </SafeAreaView>
   );
 };

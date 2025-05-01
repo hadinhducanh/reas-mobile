@@ -134,6 +134,10 @@ const ItemDetails: React.FC = () => {
       .join(", ");
   };
 
+  const formatPrice = (price: number | undefined): string => {
+    return price !== undefined ? price.toLocaleString("vi-VN") : "0";
+  };
+
   const data = useMemo(
     () => [
       {
@@ -162,13 +166,46 @@ const ItemDetails: React.FC = () => {
     [itemDetail]
   );
 
+  const dataDesired = useMemo(() => {
+    const desired = itemDetail?.desiredItem;
+    if (!desired) {
+      return [];
+    }
+
+    const allFields = [
+      {
+        label: "Condition",
+        value: getConditionItemLabel(desired.conditionItem),
+      },
+      {
+        label: "Type",
+        value: getTypeItemLabel(desired.typeItem),
+      },
+      { label: "Category", value: desired.categoryName },
+      { label: "Brand", value: desired.brandName },
+      {
+        label: "Min price",
+        value:
+          desired.minPrice != null
+            ? `${formatPrice(desired.minPrice)} VND`
+            : "",
+      },
+      {
+        label: "Max price",
+        value:
+          desired.maxPrice != null
+            ? `${formatPrice(desired.maxPrice)} VND`
+            : "",
+      },
+      { label: "Description", value: desired.description },
+    ];
+
+    return allFields.filter(({ value }) => value != null && value !== "");
+  }, [itemDetail]);
+
   const imageArray = useMemo(() => {
     return itemDetail?.imageUrl ? itemDetail.imageUrl.split(", ") : [];
   }, [itemDetail?.imageUrl]);
-
-  const formatPrice = (price: number | undefined): string => {
-    return price !== undefined ? price.toLocaleString("vi-VN") : "0";
-  };
 
   function formatRelativeTime(timeStr: Date | undefined): string {
     const givenTime = dayjs(timeStr);
@@ -267,7 +304,7 @@ const ItemDetails: React.FC = () => {
               resizeMode="contain"
             />
           </View>
-          {accessToken && (
+          {accessToken && itemDetail?.statusItem !== StatusItem.EXCHANGED && (
             <TouchableOpacity
               className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg"
               onPress={handleFavoritePress}
@@ -431,6 +468,51 @@ const ItemDetails: React.FC = () => {
             ))}
           </View>
 
+          {itemDetail?.desiredItem && (
+            <>
+              <Text className="text-xl font-bold mt-4 mb-3">Desired item</Text>
+              <View className="border border-gray-300 rounded-md overflow-hidden">
+                {dataDesired.map((info, index) => (
+                  <View key={index}>
+                    {info.label === "Description" ? (
+                      <View
+                        key={index}
+                        className="flex-row border-b border-gray-300"
+                      >
+                        <View className="w-[40%] px-2 py-4 bg-gray-200">
+                          <Text className="text-base font-semibold text-gray-500">
+                            {info.label}
+                          </Text>
+                        </View>
+                        <View className="px-2 py-4 flex-1">
+                          {info.value.split("\\n").map((line, index) => (
+                            <Text className="text-base mb-0.5" key={index}>
+                              {line}
+                            </Text>
+                          ))}
+                        </View>
+                      </View>
+                    ) : (
+                      <View
+                        key={index}
+                        className="flex-row border-b border-gray-300"
+                      >
+                        <View className="w-[40%] px-2 py-4 bg-gray-200">
+                          <Text className="text-base font-semibold text-gray-500">
+                            {info.label}
+                          </Text>
+                        </View>
+                        <View className="px-2 py-4 flex-1">
+                          <Text className="text-base">{info.value}</Text>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
+
           {itemDetail?.termsAndConditionsExchange && (
             <View className="mt-5">
               <Text className="text-xl font-semibold mb-1">
@@ -487,7 +569,11 @@ const ItemDetails: React.FC = () => {
   return (
     <>
       <SafeAreaView className="flex-1 bg-gray-100" edges={["top"]}>
-        <Header title="" user={itemDetail?.owner} />
+        <Header
+          title=""
+          user={itemDetail?.owner}
+          showOption={itemDetail?.statusItem !== StatusItem.EXCHANGED}
+        />
         {loading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#00b0b9" />

@@ -696,24 +696,28 @@ const ExchangeDetail: React.FC = () => {
             )}
 
             {exchangeDetail?.statusExchangeRequest ===
-              StatusExchange.APPROVED && (
-              <View className="flex-row items-center justify-center mb-5">
-                <Icon name="flag-outline" size={20} color="#00B0B9" />
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("CriticalReport", {
-                      id: exchangeDetail?.id,
-                      typeOfReport: TypeCriticalReport.EXCHANGE,
-                      exchangeReport: exchangeDetail,
-                    })
-                  }
-                >
-                  <Text className="font-semibold text-lg text-gray-500 ml-2 underline">
-                    Report exchange
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
+              StatusExchange.APPROVED &&
+              (exchangeDetail.exchangeHistory.statusExchangeHistory ===
+                StatusExchange.NOT_YET_EXCHANGE ||
+                exchangeDetail.exchangeHistory.statusExchangeHistory ===
+                  StatusExchange.PENDING_EVIDENCE) && (
+                <View className="flex-row items-center justify-center mb-5">
+                  <Icon name="flag-outline" size={20} color="#00B0B9" />
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate("CriticalReport", {
+                        id: exchangeDetail?.id,
+                        typeOfReport: TypeCriticalReport.EXCHANGE,
+                        exchangeReport: exchangeDetail,
+                      })
+                    }
+                  >
+                    <Text className="font-semibold text-lg text-gray-500 ml-2 underline">
+                      Report exchange
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
           </ScrollView>
         )}
       </SafeAreaView>

@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -35,13 +34,13 @@ import {
 import { PlaceDetail } from "../../common/models/location";
 import { uploadItemThunk } from "../../redux/thunk/itemThunks";
 import ErrorModal from "../../components/ErrorModal";
-import { useTranslation } from "react-i18next";
-import { set } from "zod";
 
 export default function UploadItem() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useSelector((state: RootState) => state.auth);
+  const state = useNavigationState((state) => state);
+
   const { userLocationId } = useSelector((state: RootState) => state.user);
   const { itemUpload, loading } = useSelector((state: RootState) => state.item);
   const dispatch = useDispatch<AppDispatch>();
@@ -287,7 +286,10 @@ export default function UploadItem() {
     <SafeAreaView className="flex-1 bg-[#F6F9F9]" edges={["top"]}>
       <Header
         title="Upload your item"
-        showBackButton={false}
+        showBackButton={
+          state.index > 0 &&
+          state.routes[state.index - 1].name === "BrowseItems"
+        }
         showOption={false}
       />
       {loading || isUploadingImages ? (

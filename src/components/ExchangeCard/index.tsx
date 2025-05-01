@@ -73,6 +73,12 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
 
+  const displayStatus =
+    status === StatusExchange.APPROVED &&
+    exchange.exchangeHistory?.statusExchangeHistory === StatusExchange.FAILED
+      ? StatusExchange.FAILED
+      : status;
+
   const handlePress = () => {
     if (status === StatusExchange.PENDING) {
       navigation.navigate("AccpectRejectExchange", { exchangeId: exchange.id });
@@ -84,7 +90,7 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
     }
   };
 
-  const { textColor, backgroundColor } = statusStyles[status];
+  const { textColor, backgroundColor } = statusStyles[displayStatus];
 
   const formatExchangeDate = (
     exchangeDate: string,
@@ -110,8 +116,16 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
   };
 
   const getStatusExchangeLabel = (
-    status: StatusExchange | undefined
+    status: StatusExchange | undefined,
+    statusHistory?: StatusExchange
   ): string => {
+    if (
+      status === StatusExchange.APPROVED &&
+      statusHistory === StatusExchange.FAILED
+    ) {
+      return "Failed";
+    }
+
     const found = statusExchanges.find((item) => item.value === status);
     return found ? found.label : "";
   };
@@ -129,7 +143,10 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
           <Text
             className={`items-center text-[13px] font-medium ${textColor} ${backgroundColor} rounded-full px-5 py-2`}
           >
-            {getStatusExchangeLabel(status)}
+            {getStatusExchangeLabel(
+              status,
+              exchange.exchangeHistory?.statusExchangeHistory
+            )}
           </Text>
         </View>
 
@@ -273,20 +290,24 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
           </Text>
           <View
             className={`flex-row items-center ${
-              status === StatusExchange.APPROVED
+              status === StatusExchange.APPROVED &&
+              exchange.exchangeHistory.statusExchangeHistory !==
+                StatusExchange.FAILED
                 ? "justify-between"
                 : " justify-end"
             }`}
           >
-            {status === StatusExchange.APPROVED && (
-              <View>
-                <Text className="text-[#00b0b9]">
-                  {getStatusExchangeLabel(
-                    exchange.exchangeHistory.statusExchangeHistory
-                  )}
-                </Text>
-              </View>
-            )}
+            {status === StatusExchange.APPROVED &&
+              exchange.exchangeHistory.statusExchangeHistory !==
+                StatusExchange.FAILED && (
+                <View>
+                  <Text className="text-[#00b0b9]">
+                    {getStatusExchangeLabel(
+                      exchange.exchangeHistory.statusExchangeHistory
+                    )}
+                  </Text>
+                </View>
+              )}
 
             <View className="flex-row">
               {((status === StatusExchange.SUCCESSFUL &&
@@ -329,18 +350,18 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
                         (exchange.buyerItem === null
                           ? exchange.paidBy.id
                           : exchange.buyerItem.owner.id)
-                          ? exchange.buyerItem === null
-                            ? exchange.paidBy.userName
-                            : exchange.sellerItem.owner.userName
+                          ? exchange.sellerItem.owner.userName
+                          : exchange.buyerItem === null
+                          ? exchange.paidBy.userName
                           : exchange.buyerItem.owner.userName,
                       receiverFullName:
                         user?.id ===
                         (exchange.buyerItem === null
                           ? exchange.paidBy.id
                           : exchange.buyerItem.owner.id)
-                          ? exchange.buyerItem === null
-                            ? exchange.paidBy.fullName
-                            : exchange.sellerItem.owner.fullName
+                          ? exchange.sellerItem.owner.fullName
+                          : exchange.buyerItem === null
+                          ? exchange.paidBy.fullName
                           : exchange.buyerItem.owner.fullName,
                     })
                   }
