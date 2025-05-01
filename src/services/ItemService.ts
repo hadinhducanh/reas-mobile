@@ -191,6 +191,21 @@ const isReachMaxOfUploadItemThisMonth = async (
   return response.data;
 };
 
+const isUpdatedItemInPendingExchange = async (
+  itemId: number,
+  accessToken: string
+): Promise<boolean> => {
+  const response = await axios.get<boolean>(
+    `${API_BASE_URL}/item/updated-item-in-pending-exchange?itemId=${itemId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.data;
+};
+
 const findNearbyItems = async (
   pageNo: number,
   latitude: number,
@@ -236,4 +251,5 @@ export default {
   extendItemForFree,
   deleteItem,
   isReachMaxOfUploadItemThisMonth,
+  isUpdatedItemInPendingExchange,
 };

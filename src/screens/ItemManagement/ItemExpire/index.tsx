@@ -33,12 +33,14 @@ import {
 import {
   resetExtendFree,
   resetItemDetailState,
+  resetItemUpdateInExchange,
 } from "../../../redux/slices/itemSlice";
 import {
   changeItemStatusThunk,
   deleteItemThunk,
   extendItemForFreeThunk,
   getItemDetailThunk,
+  isUpdatedItemInPendingExchangeThunk,
 } from "../../../redux/thunk/itemThunks";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
@@ -47,6 +49,7 @@ import { StatusItem } from "../../../common/enums/StatusItem";
 import { TypeItem } from "../../../common/enums/TypeItem";
 import { getCurrentSubscriptionThunk } from "../../../redux/thunk/subscriptionThunks";
 import ImagePreviewModal from "../../../components/ImagePreviewModal";
+import ErrorModal from "../../../components/ErrorModal";
 
 const { width } = Dimensions.get("window");
 
@@ -158,14 +161,23 @@ const ItemExpire: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { itemId } = route.params;
   const dispatch = useDispatch<AppDispatch>();
-  const { itemDetail, itemSimilar, otherItemOfUser, extendFree, loading } =
-    useSelector((state: RootState) => state.item);
+  const {
+    itemDetail,
+    itemSimilar,
+    otherItemOfUser,
+    itemUpdateInExchange,
+    extendFree,
+    loading,
+  } = useSelector((state: RootState) => state.item);
   const { currentPlan } = useSelector((state: RootState) => state.subscription);
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const [isFavorite, setIsFavorite] = useState(itemDetail?.favorite);
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [visible, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
 
   const statusStyle = itemDetail?.statusItem
     ? statusStyles[itemDetail.statusItem] || {
@@ -333,7 +345,23 @@ const ItemExpire: React.FC = () => {
   }, [accessToken, dispatch, itemId, isFavorite, navigation]);
 
   const handleUpdate = async () => {
-    navigation.navigate("UpdateItem", { screen: "UpdateItemScreen" });
+    if (itemDetail) {
+      const response = await dispatch(
+        isUpdatedItemInPendingExchangeThunk(itemDetail?.id)
+      ).unwrap();
+      if (response) {
+        dispatch(resetItemUpdateInExchange());
+        setTitle("Invalid");
+        setContent(
+          "This item is currently in exchange. Please try again later."
+        );
+        setVisible(true);
+        return;
+      } else {
+        dispatch(resetItemUpdateInExchange());
+        navigation.navigate("UpdateItem", { screen: "UpdateItemScreen" });
+      }
+    }
   };
 
   const handleExtend = async () => {
@@ -855,6 +883,13 @@ const ItemExpire: React.FC = () => {
           }
         />
       )}
+
+      <ErrorModal
+        content={content}
+        title={title}
+        visible={visible}
+        onCancel={() => setVisible(false)}
+      />
 
       <ImagePreviewModal
         visible={imageModalVisible}

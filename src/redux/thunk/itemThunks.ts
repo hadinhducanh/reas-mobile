@@ -362,6 +362,29 @@ export const isReachMaxOfUploadItemThisMonthThunk = createAsyncThunk<
   }
 });
 
+export const isUpdatedItemInPendingExchangeThunk = createAsyncThunk<
+  boolean,
+  number,
+  { state: RootState }
+>("item/isUpdatedItemInPendingExchange", async (itemId, thunkAPI) => {
+  const state = thunkAPI.getState();
+  const accessToken = state.auth.accessToken;
+  if (!accessToken) {
+    return thunkAPI.rejectWithValue("No access token available");
+  }
+  try {
+    const data = await ItemService.isUpdatedItemInPendingExchange(
+      itemId,
+      accessToken
+    );
+    return data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response.data || "Update item in pending exchange failed"
+    );
+  }
+});
+
 export const extendItemForFreeThunk = createAsyncThunk<
   boolean,
   number,
