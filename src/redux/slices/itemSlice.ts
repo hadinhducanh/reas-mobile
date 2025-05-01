@@ -18,6 +18,7 @@ import {
   extendItemForFreeThunk,
   deleteItemThunk,
   isReachMaxOfUploadItemThisMonthThunk,
+  isUpdatedItemInPendingExchangeThunk,
 } from "../thunk/itemThunks";
 import { ItemResponse } from "../../common/models/item";
 import { ResponseEntityPagination } from "../../common/models/pagination";
@@ -39,6 +40,7 @@ interface ItemState {
   itemRecommnand: ItemResponse[];
   itemDeleted: boolean;
   itemUploadMax: boolean;
+  itemUpdateInExchange: boolean;
   itemSimilar: ItemResponse[];
   otherItemOfUser: ItemResponse[];
   itemSuggested: ItemResponse[];
@@ -54,6 +56,7 @@ interface ItemState {
 
 const initialState: ItemState = {
   extendFree: false,
+  itemUpdateInExchange: false,
   itemDetail: null,
   itemDeleted: false,
   itemUploadMax: false,
@@ -125,6 +128,9 @@ const itemSlice = createSlice({
     },
     resetItemUploadMax: (state) => {
       state.itemUploadMax = false;
+    },
+    resetItemUpdateInExchange: (state) => {
+      state.itemUpdateInExchange = false;
     },
     resetItemDetailState: (state) => {
       state.itemUpload = null;
@@ -613,6 +619,27 @@ const itemSlice = createSlice({
           state.error = action.payload || "Check max of upload item failed";
         }
       );
+
+    builder
+      .addCase(isUpdatedItemInPendingExchangeThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        isUpdatedItemInPendingExchangeThunk.fulfilled,
+        (state, action: PayloadAction<boolean>) => {
+          state.loading = false;
+          state.itemUpdateInExchange = action.payload;
+        }
+      )
+      .addCase(
+        isUpdatedItemInPendingExchangeThunk.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error =
+            action.payload || "Update item in pending exchange failed";
+        }
+      );
   },
 });
 
@@ -622,5 +649,6 @@ export const {
   resetExtendFree,
   resetItemDelete,
   resetItemUploadMax,
+  resetItemUpdateInExchange,
 } = itemSlice.actions;
 export default itemSlice.reducer;

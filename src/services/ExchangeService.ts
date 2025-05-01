@@ -40,9 +40,6 @@ const getAllExchangesByStatusOfCurrentUser = async (
     ...(statusExchangeHistory ? { statusExchangeHistory } : {}),
   };
 
-  // console.log("Request URL:", url);
-  // console.log("Params:", params);
-
   const response = await axios.get<ResponseEntityPagination<ExchangeResponse>>(
     url,
     {
