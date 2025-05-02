@@ -39,18 +39,35 @@ import ConfirmModal from "../../components/DeleteConfirmModal";
 import { resetPlaceDetail } from "../../redux/slices/locationSlice";
 import LocationModal from "../../components/LocationModal";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { getRecommendedItemsInExchangeThunk } from "../../redux/thunk/itemThunks";
+import {
+  getItemDetailThunk,
+  getRecommendedItemsInExchangeThunk,
+} from "../../redux/thunk/itemThunks";
 import dayjs from "dayjs";
+import { resetExchange } from "../../redux/slices/exchangeSlice";
+import { StatusItem } from "../../common/enums/StatusItem";
+
+const exchangeMethods = [
+  { label: "Pick up in person", value: MethodExchange.PICK_UP_IN_PERSON },
+  { label: "Delivery", value: MethodExchange.DELIVERY },
+  {
+    label: "Meet at a given location",
+    value: MethodExchange.MEET_AT_GIVEN_LOCATION,
+  },
+];
 
 const CreateExchange: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "CreateExchange">>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
   const { itemId } = route.params;
-  const { itemDetail, itemSuggested, loading } = useSelector(
+  const { itemDetail, itemSuggested } = useSelector(
     (state: RootState) => state.item
   );
   const { user } = useSelector((state: RootState) => state.auth);
+  const { exchangeDetail, loading } = useSelector(
+    (state: RootState) => state.exchange
+  );
   const hasConfirmedRef = useRef(false);
   const pendingBeforeRemoveEvent = useRef<any>(null);
 
@@ -82,17 +99,63 @@ const CreateExchange: React.FC = () => {
     exchangeItem.additionalNotes
   );
 
-  const handleSelectItem = (item: ItemResponse) => {
-    const index = items.findIndex((i) => i.id === item.id);
-    if (index !== -1) {
-      setExchangeItem({
-        ...exchangeItem,
-        buyerItemId: item.id,
-        selectedItem: item,
-      });
-      setSelectedItem(item);
-      setSelectedItemIndex(index);
-      setItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
+  useEffect(() => {
+    if (exchangeDetail) {
+      // View buyer item
+      if (
+        exchangeDetail.buyerItem &&
+        exchangeDetail.buyerItem.statusItem === StatusItem.AVAILABLE
+      ) {
+        setSelectedItem(exchangeDetail.buyerItem);
+        setExchangeItem((prev) => ({
+          ...prev,
+          selectedItem: exchangeDetail.buyerItem,
+          buyerItemId: exchangeDetail.buyerItem.id,
+        }));
+      }
+
+      const methodMatch = exchangeMethods.find(
+        (methodItem) => methodItem.value === exchangeDetail.methodExchange
+      );
+
+      setExchangeItem((prev) => ({
+        ...prev,
+        methodExchange: exchangeDetail.methodExchange,
+        methodExchangeName: methodMatch?.label!,
+        exchangeLocation: exchangeDetail.exchangeLocation || "",
+      }));
+
+      // View additional notes
+      setAdditionalNotes(
+        exchangeDetail.additionalNotes?.replace(/\\n/g, "\n") || ""
+      );
+    }
+  }, [exchangeDetail]);
+
+  useEffect(() => {
+    if (itemDetail !== null && itemDetail.desiredItem !== null) {
+      dispatch(
+        getRecommendedItemsInExchangeThunk({
+          sellerItemId: itemDetail?.id,
+          limit: 4,
+        })
+      );
+    }
+  }, [itemId]);
+
+  const handleSelectItem = (item: ItemResponse | null) => {
+    if (item) {
+      const index = items.findIndex((i) => i.id === item.id);
+      if (index !== -1) {
+        setExchangeItem({
+          ...exchangeItem,
+          buyerItemId: item.id,
+          selectedItem: item,
+        });
+        setSelectedItem(item);
+        setSelectedItemIndex(index);
+        setItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
+      }
     }
   };
 
@@ -202,17 +265,6 @@ const CreateExchange: React.FC = () => {
     });
     navigation.navigate("ConfirmExchange");
   };
-
-  useEffect(() => {
-    if (itemDetail !== null && itemDetail.desiredItem !== null) {
-      dispatch(
-        getRecommendedItemsInExchangeThunk({
-          sellerItemId: itemDetail?.id,
-          limit: 4,
-        })
-      );
-    }
-  }, [itemId]);
 
   useEffect(() => {
     if (itemSuggested) {
@@ -332,10 +384,19 @@ const CreateExchange: React.FC = () => {
     setCalendarVisible(false);
   };
 
+  const onBackPress = () => {
+    dispatch(resetExchange());
+    navigation.goBack();
+  };
+
   return (
     <>
       <SafeAreaView className="flex-1 bg-[#F6F9F9]" edges={["top"]}>
-        <Header title="Create exchange" showOption={false} />
+        <Header
+          title="Create exchange"
+          showOption={false}
+          onBackPress={onBackPress}
+        />
         {loading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#00b0b9" />

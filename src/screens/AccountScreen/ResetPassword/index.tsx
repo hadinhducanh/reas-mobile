@@ -18,21 +18,16 @@ const passwordRegex =
   /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
 const specialCharsRegex = /[!@#$%^&*()_\-+={[}\]|\\:;"'<,>.?/`~]/;
 
-const passwordSchema = z
-  .object({
-    oldPassword: z.string().min(1, "Old password is required"),
-    newPassword: z
-      .string()
-      .min(1, "New password is required")
-      .regex(
-        passwordRegex,
-        "New password must be at least 8 characters long, contain one uppercase letter, one digit, and one special character"
-      ),
-  })
-  .refine((data) => data.oldPassword === data.newPassword, {
-    message: "Passwords do not match. Please try again.",
-    path: ["confirmPassword"],
-  });
+const passwordSchema = z.object({
+  oldPassword: z.string().min(1, "Old password is required"),
+  newPassword: z
+    .string()
+    .min(1, "New password is required")
+    .regex(
+      passwordRegex,
+      "New password must be at least 8 characters long, contain one uppercase letter, one digit, and one special character"
+    ),
+});
 
 const ResetPassword: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -87,16 +82,16 @@ const ResetPassword: React.FC = () => {
       console.log(trimmedOldPassword);
       console.log(trimmedNewPassword);
 
-      // const response = await dispatch(
-      //   changePasswordThunk({
-      //     oldPassword: trimmedOldPassword,
-      //     newPassword: trimmedNewPassword,
-      //   })
-      // ).unwrap();
+      const response = await dispatch(
+        changePasswordThunk({
+          oldPassword: trimmedOldPassword,
+          newPassword: trimmedNewPassword,
+        })
+      ).unwrap();
 
-      // if (response) {
-      //   setErrorVisible(true);
-      // }
+      if (response) {
+        setErrorVisible(true);
+      }
     } catch (err: any) {
       setTitle("Reset password failed");
       setContent(err?.message ? t(err.message) : "Something went wrong");
