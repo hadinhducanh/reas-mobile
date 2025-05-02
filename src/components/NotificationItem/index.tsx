@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, Pressable, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { NotificationDto } from "../../common/models/notification";
@@ -6,6 +6,14 @@ import { TypeNotification } from "../../common/enums/TypeNotification";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../redux/store";
+import { getExchangeDetailThunk } from "../../redux/thunk/exchangeThunk";
+import { StatusItem } from "../../common/enums/StatusItem";
+import ErrorModal from "../ErrorModal";
+import { getItemDetailThunk } from "../../redux/thunk/itemThunks";
+import { resetItemDetailState } from "../../redux/slices/itemSlice";
+import { resetExchange } from "../../redux/slices/exchangeSlice";
 
 // Helper function to map enum values to user-friendly labels
 const getNotificationTitle = (notificationType: TypeNotification): string => {
@@ -69,48 +77,129 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const dispatch = useDispatch<AppDispatch>();
   const formattedDate = new Date(notification.timestamp).toLocaleString();
   const iconName = getNotificationIcon(notification.notificationType);
   const { bgColor, textColor } = getNotificationColors(
     notification.notificationType
   );
+  const { exchangeDetail } = useSelector((state: RootState) => state.exchange);
+
+  const [visible, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+
+  const extractExchangeId = (content: string): number | null => {
+    const match = content.match(/#EX(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+  };
 
   return (
-    <View className="bg-white rounded-xl p-4 my-3 shadow-sm mx-5 py-8">
-      {/* Header row: Icon + sender ID on the left, and notification type on the right */}
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center">
-          <View className="w-6 h-6 bg-[#00B0B9] rounded-full items-center justify-center mr-2">
-            <Icon name={iconName} size={14} color="#ffffff" />
+    <>
+      {notification.content?.includes("Click here to re-create") ? (
+        <TouchableOpacity
+          onPress={async () => {
+            const exchangeId = extractExchangeId(notification.content || "");
+            if (exchangeId) {
+              try {
+                const result = await dispatch(
+                  getExchangeDetailThunk(Number(exchangeId))
+                ).unwrap();
+
+                if (
+                  result &&
+                  result.sellerItem.statusItem !== StatusItem.AVAILABLE
+                ) {
+                  dispatch(resetExchange());
+                  setVisible(true);
+                  setTitle("Unavailable Item");
+                  setContent(
+                    "The item you want to exchange is currently unavailable."
+                  );
+                  return;
+                } else {
+                  dispatch(resetItemDetailState());
+                  dispatch(getItemDetailThunk(result.sellerItem.id));
+                  navigation.navigate("CreateExchange", {
+                    itemId: result.sellerItem.id,
+                  });
+                }
+              } catch (error) {
+                setVisible(true);
+                setTitle("Error");
+                setContent(
+                  "Failed to retrieve exchange details. Please try again."
+                );
+              }
+            }
+          }}
+          className="bg-white rounded-xl p-4 my-3 shadow-sm mx-5 py-8"
+        >
+          {/* Header row: Icon + sender ID on the left, and notification type on the right */}
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <View className="w-6 h-6 bg-[#00B0B9] rounded-full items-center justify-center mr-2">
+                <Icon name={iconName} size={14} color="#ffffff" />
+              </View>
+              <Text className="text-base font-semibold text-[#0B1D2D]">
+                {notification.senderId}
+              </Text>
+            </View>
+            <View className={` ${bgColor} px-3 py-1 rounded-xl`}>
+              <Text className={`text-base font-semibold ${textColor}`}>
+                {getNotificationTitle(notification.notificationType)}
+              </Text>
+            </View>
           </View>
-          <Text className="text-base font-semibold text-[#0B1D2D]">
-            {notification.senderId}
-          </Text>
-        </View>
-        <View className={` ${bgColor} px-3 py-1 rounded-xl`}>
-          <Text className={`text-base font-semibold ${textColor}`}>
-            {getNotificationTitle(notification.notificationType)}
-          </Text>
-        </View>
-      </View>
 
-      {/* Notification content */}
-      <Text className="text-sm text-gray-600 my-5">{notification.content}</Text>
+          {/* Notification content */}
+          <Text className="text-sm text-gray-600 my-5">
+            {notification.content}
+          </Text>
 
-      {/* Footer with timestamp and mark as read button */}
-      <View className="flex-row justify-between items-center">
-        <Text className="text-sm text-gray-500">{formattedDate}</Text>
-        {notification.content?.includes("item has been approved") && (
-          <TouchableOpacity
-            onPress={() => navigation.navigate("CreateExchange", { itemId: 1 })}
-          >
-            <Text className="text-sm font-semibold text-[#00B0B9]">
-              Mark as read
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
+          {/* Footer with timestamp and mark as read button */}
+          <View className="flex-row justify-between items-center">
+            <Text className="text-sm text-gray-500">{formattedDate}</Text>
+          </View>
+        </TouchableOpacity>
+      ) : (
+        <View className="bg-white rounded-xl p-4 my-3 shadow-sm mx-5 py-8">
+          {/* Header row: Icon + sender ID on the left, and notification type on the right */}
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <View className="w-6 h-6 bg-[#00B0B9] rounded-full items-center justify-center mr-2">
+                <Icon name={iconName} size={14} color="#ffffff" />
+              </View>
+              <Text className="text-base font-semibold text-[#0B1D2D]">
+                {notification.senderId}
+              </Text>
+            </View>
+            <View className={` ${bgColor} px-3 py-1 rounded-xl`}>
+              <Text className={`text-base font-semibold ${textColor}`}>
+                {getNotificationTitle(notification.notificationType)}
+              </Text>
+            </View>
+          </View>
+
+          {/* Notification content */}
+          <Text className="text-sm text-gray-600 my-5">
+            {notification.content}
+          </Text>
+
+          {/* Footer with timestamp and mark as read button */}
+          <View className="flex-row justify-between items-center">
+            <Text className="text-sm text-gray-500">{formattedDate}</Text>
+          </View>
+        </View>
+      )}
+
+      <ErrorModal
+        title={title}
+        content={content}
+        visible={visible}
+        onCancel={() => setVisible(false)}
+      />
+    </>
   );
 };
 
