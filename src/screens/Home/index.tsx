@@ -33,6 +33,7 @@ import { StatusItem } from "../../common/enums/StatusItem";
 import { TypeItem } from "../../common/enums/TypeItem";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
+import { FlatList } from "react-native-gesture-handler";
 
 type HomeScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -100,28 +101,6 @@ const HomeScreen: React.FC = () => {
   const { content, pageNo, last } = itemAvailable;
   const [searchText, setSearchText] = useState<string>("");
 
-  const chunkArray = (array: ItemResponse[], size: number) => {
-    const chunked: ItemResponse[][] = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunked.push(array.slice(i, i + size));
-    }
-    return chunked;
-  };
-
-  const rows = chunkArray(content, 2);
-
-  const isCloseToBottom = ({
-    layoutMeasurement,
-    contentOffset,
-    contentSize,
-  }: any) => {
-    const paddingToBottom = 80;
-    return (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - paddingToBottom
-    );
-  };
-
   const searchRequest: SearchItemRequest = {
     statusItems: [StatusItem.AVAILABLE],
   };
@@ -161,148 +140,172 @@ const HomeScreen: React.FC = () => {
     }
   };
 
-  return (
-    <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>
-      <ScrollView
-        className="bg-gray-100"
-        showsVerticalScrollIndicator={false}
-        onScroll={({ nativeEvent }) => {
-          if (isCloseToBottom(nativeEvent)) {
-            handleLoadMore();
-          }
-        }}
-        scrollEventThrottle={100}
-      >
-        <View className="h-20 bg-[#00B0B9] w-full flex-row justify-between items-center px-2">
-          <View className="flex-1 mr-5">
-            <View className="bg-white rounded-xl flex-row items-center px-2">
-              <Pressable
-                className="p-2 bg-[#00B0B9] rounded-xl flex items-center justify-center mr-3"
-                onPress={handleSearch}
-              >
-                <Icon name="search" size={20} color="#ffffff" />
-              </Pressable>
-              <TextInput
-                placeholder="Search..."
-                placeholderTextColor="#738aa0"
-                className="flex-1 text-lg text-gray-800 py-3"
-                onChangeText={setSearchText}
-                value={searchText}
-                onSubmitEditing={handleSearch}
-              />
-            </View>
-          </View>
-          <View className="flex-row">
-            <Pressable onPress={() => navigation.navigate("Notifications")}>
-              <Icon
-                className="mr-1"
-                name="notifications-outline"
-                size={34}
-                color="#ffffff"
-              />
+  const ListHeaderComponent = (
+    <>
+      <View className="h-20 bg-[#00B0B9] w-full flex-row justify-between items-center px-2">
+        <View className="flex-1 mr-5">
+          <View className="bg-white rounded-xl flex-row items-center px-2">
+            <Pressable
+              className="p-2 bg-[#00B0B9] rounded-xl flex items-center justify-center mr-3"
+              onPress={handleSearch}
+            >
+              <Icon name="search" size={20} color="#ffffff" />
             </Pressable>
-            <Pressable onPress={() => navigation.navigate("ChatHistory")}>
-              <Icon name="chatbox-outline" size={34} color="#ffffff" />
-            </Pressable>
-          </View>
-        </View>
-
-        <View>
-          <Image
-            source={{
-              uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1745427623/REAS/Banner/banner1.jpg",
-            }}
-            className="w-full h-60"
-          />
-        </View>
-
-        <View className="">
-          <View className="mx-5 relative rounded-lg mt-5 p-4 bg-white">
-            <Text className="text-[#0b1d2d] text-lg font-bold capitalize mb-3">
-              Explore Category
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View className="flex flex-row">
-                {categories
-                  .reduce((columns: any[], _, i) => {
-                    if (i % 2 === 0) {
-                      columns.push(categories.slice(i, i + 2));
-                    }
-                    return columns;
-                  }, [])
-                  .map((col, colIndex) => (
-                    <View
-                      key={colIndex}
-                      className="flex flex-col justify-between mx-6"
-                    >
-                      {col.map((category: any) => (
-                        <TouchableOpacity
-                          key={category.id}
-                          className="flex flex-col items-center mb-5"
-                          onPress={() =>
-                            navigation.navigate("SearchResult", {
-                              itemType: category.value,
-                            })
-                          }
-                        >
-                          <View className="bg-gray-100 rounded-lg">
-                            <Image
-                              source={{ uri: category.image }}
-                              style={{
-                                width: 80,
-                                height: 80,
-                                alignSelf: "center",
-                              }}
-                              resizeMode="contain"
-                            />
-                          </View>
-                          <Text className="text-sm font-medium text-black capitalize mt-1">
-                            {category.name}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  ))}
-              </View>
-            </ScrollView>
-          </View>
-
-          <View className="my-8">
-            <Image
-              source={{
-                uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1745427561/REAS/Banner/banner2.png",
-              }}
-              style={{ width: width, height: 155 }}
-              resizeMode="cover"
+            <TextInput
+              placeholder="Search..."
+              placeholderTextColor="#738aa0"
+              className="flex-1 text-lg text-gray-800 py-3"
+              onChangeText={setSearchText}
+              value={searchText}
+              onSubmitEditing={handleSearch}
             />
           </View>
+        </View>
+        <View className="flex-row">
+          <Pressable onPress={() => navigation.navigate("Notifications")}>
+            <Icon
+              className="mr-1"
+              name="notifications-outline"
+              size={34}
+              color="#ffffff"
+            />
+          </Pressable>
+          <Pressable onPress={() => navigation.navigate("ChatHistory")}>
+            <Icon name="chatbox-outline" size={34} color="#ffffff" />
+          </Pressable>
+        </View>
+      </View>
 
-          <View className="mx-5 ">
-            <Text className="text-[#0b1d2d] text-xl font-bold">New items</Text>
-          </View>
-          {content && (
-            <View className="mx-3 mt-5">
-              {rows.map((row, rowIndex) => (
-                <View key={rowIndex} className="flex flex-row gap-x-2">
-                  {row.map((item, index) => (
-                    <View key={item.id} className="flex-1">
-                      <ItemCard
-                        item={item}
-                        navigation={navigation}
-                        mode="default"
-                      />
-                    </View>
+      <View>
+        <Image
+          source={{
+            uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1745427623/REAS/Banner/banner1.jpg",
+          }}
+          className="w-full h-60"
+        />
+      </View>
+
+      <View className="mx-5 relative rounded-lg mt-5 p-4 bg-white">
+        <Text className="text-[#0b1d2d] text-lg font-bold capitalize mb-3">
+          Explore Category
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex flex-row">
+            {categories
+              .reduce((columns: any[], _, i) => {
+                if (i % 2 === 0) {
+                  columns.push(categories.slice(i, i + 2));
+                }
+                return columns;
+              }, [])
+              .map((col, colIndex) => (
+                <View
+                  key={colIndex}
+                  className="flex flex-col justify-between mx-6"
+                >
+                  {col.map((category: any) => (
+                    <TouchableOpacity
+                      key={category.id}
+                      className="flex flex-col items-center mb-5"
+                      onPress={() =>
+                        navigation.navigate("SearchResult", {
+                          itemType: category.value,
+                        })
+                      }
+                    >
+                      <View className="bg-gray-100 rounded-lg">
+                        <Image
+                          source={{ uri: category.image }}
+                          style={{
+                            width: 80,
+                            height: 80,
+                            alignSelf: "center",
+                          }}
+                          resizeMode="contain"
+                        />
+                      </View>
+                      <Text className="text-sm font-medium text-black capitalize mt-1">
+                        {category.name}
+                      </Text>
+                    </TouchableOpacity>
                   ))}
-                  {row.length === 1 && <View className="flex-1" />}
                 </View>
               ))}
+          </View>
+        </ScrollView>
+      </View>
+
+      <View className="my-8">
+        <Image
+          source={{
+            uri: "https://res.cloudinary.com/dpysbryyk/image/upload/v1745427561/REAS/Banner/banner2.png",
+          }}
+          style={{ width: width, height: 155 }}
+          resizeMode="cover"
+        />
+      </View>
+
+      <View className="mx-5 mb-2">
+        <Text className="text-[#0b1d2d] text-xl font-bold">New items</Text>
+      </View>
+    </>
+  );
+
+  const renderItem = ({
+    item,
+    index,
+  }: {
+    item: ItemResponse;
+    index: number;
+  }) => {
+    const isSingle = content.length % 2 === 1 && index === content.length - 1;
+
+    return (
+      <View className={`${isSingle ? "w-1/2 px-1.5" : "flex-1 px-1.5"}`}>
+        <ItemCard item={item} navigation={navigation} mode="default" />
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView className="flex-1" edges={["top"]}>
+      <FlatList
+        data={content}
+        numColumns={2}
+        renderItem={renderItem}
+        keyExtractor={(item, index) =>
+          item ? item.id.toString() : `empty-${index}`
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListHeaderComponent={ListHeaderComponent}
+        ListEmptyComponent={() => {
+          if (loading) {
+            return (
+              <View className="flex-1 justify-center items-center">
+                <ActivityIndicator size="large" color="#00b0b9" />
+              </View>
+            );
+          }
+
+          return (
+            <View className="bg-white flex-1 justify-center items-center">
+              <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
+              <Text className="text-gray-500">No item</Text>
             </View>
-          )}
-          {loading && (
-            <ActivityIndicator size="large" color="#00b0b9" className="mb-5" />
-          )}
-        </View>
-      </ScrollView>
+          );
+        }}
+        ListFooterComponent={
+          !loading || content.length === 0 ? null : (
+            <ActivityIndicator size="large" color="#00b0b9" className="my-4" />
+          )
+        }
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          backgroundColor: "#f3f4f6",
+          flexGrow: 1,
+        }}
+      />
     </SafeAreaView>
   );
 };

@@ -60,7 +60,7 @@ const getAllFeedbackOfUser = async (
     {
       params: {
         pageNo,
-        pageSize: 5,
+        pageSize: 10,
         sortBy: "id",
         sortDir: "desc",
         userId,

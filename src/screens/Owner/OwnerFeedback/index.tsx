@@ -1,21 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  ActivityIndicator,
-  FlatList,
-  Image,
-} from "react-native";
+import { View, Text, ActivityIndicator, FlatList, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../../components/Header";
 import Icon from "react-native-vector-icons/Ionicons";
-import {
-  NavigationProp,
-  RouteProp,
-  useNavigation,
-  useRoute,
-} from "@react-navigation/native";
+import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../redux/store";
@@ -165,7 +153,6 @@ const OwnerFeedback: React.FC = () => {
         backIconColor="white"
         textColor="text-white"
         optionIconColor="white"
-        owner={false}
         showOption={false}
       />
 

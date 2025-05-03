@@ -15,7 +15,7 @@ const searchCriticalReport = async (
   const response = await axios.post<
     ResponseEntityPagination<CriticalReportResponse>
   >(
-    `${API_BASE_URL}/critical-report/search?pageNo=${pageNo}&pageSize=5&sortBy=id&sortDir=desc`,
+    `${API_BASE_URL}/critical-report/search?pageNo=${pageNo}&pageSize=10&sortBy=id&sortDir=desc`,
     request,
     {
       headers: {

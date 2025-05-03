@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  ScrollView,
   Modal,
   ActivityIndicator,
   Alert,
@@ -26,6 +25,7 @@ import { StatusCriticalReport } from "../../../common/enums/StatusCriticalReport
 import { TypeCriticalReport } from "../../../common/enums/TypeCriticalReport";
 import { RootStackParamList } from "../../../navigation/AppNavigator";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const formatMonthYear = (date: Date): string => {
   const monthNames = [
@@ -59,17 +59,6 @@ const formatCriticalReportDateTime = (creationDate: string): string => {
     minute: "2-digit",
   });
   return `${formattedDate} ${formattedTime}`;
-};
-
-const groupByMonth = (
-  data: CriticalReportResponse[]
-): Record<string, CriticalReportResponse[]> => {
-  return data.reduce((acc, item) => {
-    const month = formatMonthYear(new Date(item.creationDate));
-    if (!acc[month]) acc[month] = [];
-    acc[month].push(item);
-    return acc;
-  }, {} as Record<string, CriticalReportResponse[]>);
 };
 
 const statusCriticalReports = [
@@ -145,38 +134,17 @@ export default function ReportedHistory(): JSX.Element {
     }, 500);
 
     return () => clearTimeout(delayDebounce);
-  }, [user?.id, statusFilter, typesFilter]);
+  }, [statusFilter, typesFilter]);
 
-  const handleLoadMore = useCallback(() => {
-    if (!loadingCriticalReport && !last && user?.id) {
-      if (statusFilter) {
-        searchRequest.statusCriticalReports = [statusFilter];
-      }
-      if (typesFilter) {
-        searchRequest.typeReports = [typesFilter];
-      }
-
+  const handleLoadMore = () => {
+    if (!loadingCriticalReport && !last) {
       dispatch(
         searchCriticalReportThunk({
           pageNo: pageNo + 1,
-          request: {
-            ...searchRequest,
-          },
+          request: searchRequest,
         })
       );
     }
-  }, [user?.id, statusFilter, typesFilter]);
-
-  const isCloseToBottom = ({
-    layoutMeasurement,
-    contentOffset,
-    contentSize,
-  }: any) => {
-    const paddingToBottom = 80;
-    return (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - paddingToBottom
-    );
   };
 
   const getStatusCriticalReportedLabel = (
@@ -201,8 +169,6 @@ export default function ReportedHistory(): JSX.Element {
       ? "bg-yellow-100"
       : "bg-red-100";
   };
-
-  const grouped = groupByMonth(content);
 
   const viewCriticalReportDetail = async (id: number) => {
     try {
@@ -233,7 +199,7 @@ export default function ReportedHistory(): JSX.Element {
   };
 
   const renderTransaction = ({ item }: { item: CriticalReportResponse }) => (
-    <View className="bg-white rounded-2xl p-4 my-2 shadow">
+    <View className="bg-white rounded-2xl p-4 mx-2 my-2 shadow">
       <View className="flex-row justify-between items-center mb-2">
         <Text className="text-lg text-gray-600">#ID: {item.id}</Text>
         <Text
@@ -292,80 +258,86 @@ export default function ReportedHistory(): JSX.Element {
     </View>
   );
 
+  const ListHeaderComponent = (
+    <>
+      <Header title="Critical reports" showOption={false} />
+
+      <View className="px-4 pt-3 pb-2 bg-white">
+        <View className="flex-row justify-between items-center my-2 px-3">
+          <View className="flex-row items-center">
+            <Feather name="alert-circle" size={20} color="#555" />
+            <Text className="ml-2 text-gray-700">Status</Text>
+          </View>
+          <TouchableOpacity
+            className="flex-row items-center"
+            onPress={() => setShowStatusFilterModal(true)}
+          >
+            <Text className="text-[#00b0b9] font-semibold mr-1">
+              {statusFilter ? statusFilter : "Select status"}
+            </Text>
+            <AntDesign name="down" size={12} color="#00b0b9" />
+          </TouchableOpacity>
+        </View>
+        <View className="flex-row justify-between items-center my-2 px-3">
+          <View className="flex-row items-center">
+            <Feather name="file-text" size={20} color="#555" />
+            <Text className="ml-2 text-gray-700">Type</Text>
+          </View>
+          <TouchableOpacity
+            className="flex-row items-center"
+            onPress={() => setShowTypesFilterModal(true)}
+          >
+            <Text className="text-[#00b0b9] font-semibold mr-1">
+              {typesFilter ? typesFilter : "Select type"}
+            </Text>
+            <AntDesign name="down" size={12} color="#00b0b9" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </>
+  );
+
   return (
     <>
-      <View className="flex-1 bg-gray-100">
-        <Header title="Critical reports" showOption={false} />
-
-        <View className="px-4 pt-3 pb-2 bg-white">
-          <View className="flex-row justify-between items-center my-2 px-3">
-            <View className="flex-row items-center">
-              <Feather name="alert-circle" size={20} color="#555" />
-              <Text className="ml-2 text-gray-700">Status</Text>
-            </View>
-            <TouchableOpacity
-              className="flex-row items-center"
-              onPress={() => setShowStatusFilterModal(true)}
-            >
-              <Text className="text-[#00b0b9] font-semibold mr-1">
-                {statusFilter ? statusFilter : "Select status"}
-              </Text>
-              <AntDesign name="down" size={12} color="#00b0b9" />
-            </TouchableOpacity>
-          </View>
-          <View className="flex-row justify-between items-center my-2 px-3">
-            <View className="flex-row items-center">
-              <Feather name="file-text" size={20} color="#555" />
-              <Text className="ml-2 text-gray-700">Type</Text>
-            </View>
-            <TouchableOpacity
-              className="flex-row items-center"
-              onPress={() => setShowTypesFilterModal(true)}
-            >
-              <Text className="text-[#00b0b9] font-semibold mr-1">
-                {typesFilter ? typesFilter : "Select type"}
-              </Text>
-              <AntDesign name="down" size={12} color="#00b0b9" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {loadingCriticalReport ? (
-          <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color="#00b0b9" />
-          </View>
-        ) : content.length === 0 ? (
-          <View className="flex-1 justify-center items-center">
-            <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
-            <Text className="text-gray-500">No critical reported</Text>
-          </View>
-        ) : (
-          <ScrollView
-            className="px-4 mt-2"
-            showsVerticalScrollIndicator={false}
-            onScroll={({ nativeEvent }) => {
-              if (isCloseToBottom(nativeEvent)) {
-                handleLoadMore();
-              }
-            }}
-            scrollEventThrottle={100}
-          >
-            {Object.entries(grouped).map(([month, items]) => (
-              <View key={month} className="mb-4">
-                <Text className="text-gray-500 font-semibold mb-2">
-                  {month}
-                </Text>
-                <FlatList
-                  data={items}
-                  keyExtractor={(item) => item.id.toString()}
-                  renderItem={renderTransaction}
-                  scrollEnabled={false}
+      <SafeAreaView className="flex-1" edges={["top"]}>
+        <FlatList
+          data={content}
+          renderItem={({ item }) => renderTransaction({ item })}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          ListHeaderComponent={ListHeaderComponent}
+          ListEmptyComponent={() => {
+            if (loadingCriticalReport) {
+              return (
+                <View className="flex-1 justify-center items-center">
+                  <ActivityIndicator size="large" color="#00b0b9" />
+                </View>
+              );
+            }
+            return (
+              <View className="flex-1 justify-center items-center">
+                <Icon
+                  name="remove-circle-outline"
+                  size={70}
+                  color={"#00b0b9"}
                 />
+                <Text className="text-gray-500">No critical reported</Text>
               </View>
-            ))}
-          </ScrollView>
-        )}
-      </View>
+            );
+          }}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingCriticalReport ? (
+              <ActivityIndicator
+                size="small"
+                color="#00b0b9"
+                className="my-4"
+              />
+            ) : null
+          }
+          contentContainerStyle={{ flexGrow: 1 }}
+        />
+      </SafeAreaView>
 
       <Modal
         transparent

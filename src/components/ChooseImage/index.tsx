@@ -25,6 +25,7 @@ interface ImagePickerProps {
   isUploadEvidence?: boolean;
   isFeedback?: boolean;
   isProfile?: boolean;
+  isCriticalReport?: boolean;
 }
 
 const MAX_IMAGES = 4;
@@ -48,6 +49,7 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
     isUploadEvidence,
     isFeedback,
     isProfile,
+    isCriticalReport,
   } = props;
 
   const parseImages = useCallback((imageStr: string | null): string[] => {
@@ -344,6 +346,8 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
                 <Text className="text-gray-500 text-center text-xs mt-2 w-32">
                   {isFeedback
                     ? "(Optional)"
+                    : isCriticalReport
+                    ? "Please add your evidence"
                     : " Please add your received item picture"}
                 </Text>
               </>
@@ -374,6 +378,8 @@ const ChooseImage: React.FC<ImagePickerProps> = (props) => {
                 <Text className="text-gray-500 text-center text-xs mt-2 w-32">
                   {isFeedback
                     ? "(Optional)"
+                    : isCriticalReport
+                    ? "Please add your evidence (optional)"
                     : "Please add your transfer receipt (optional)"}
                 </Text>
               </>

@@ -33,7 +33,7 @@ const getAllExchangesByStatusOfCurrentUser = async (
   const url = `${API_BASE_URL}/exchange/current-user`;
   const params = {
     pageNo,
-    pageSize: 5,
+    pageSize: 10,
     sortBy: "id",
     sortDir: "desc",
     statusExchangeRequest,
