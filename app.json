@@ -50,14 +50,19 @@
         }
       }
     },
-    "plugins": [   
+    "plugins": [
       "@react-native-firebase/app",
       "@react-native-google-signin/google-signin"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "sdkVersion": "52.0.0"
+    "sdkVersion": "52.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "d10122c5-5834-451a-ad66-f211cb955d89"
+      }
+    }
   },
   "name": "reas"
 }
