@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -21,24 +21,6 @@ import { AppDispatch, RootState } from "../../../redux/store";
 import { StatusPayment } from "../../../common/enums/StatusPayment";
 import { MethodPayment } from "../../../common/enums/MethodPayment";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const formatMonthYear = (date: Date): string => {
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  return `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-};
 
 const formatDate = (date: Date): string => {
   return new Date(date).toLocaleDateString("en-US", {
@@ -64,17 +46,6 @@ const formatPaymentTime = (paymentTime: string): string => {
   return `${formattedTime} `;
 };
 
-const groupByMonth = (
-  data: PaymentHistoryDto[]
-): Record<string, PaymentHistoryDto[]> => {
-  return data.reduce((acc, item) => {
-    const month = formatMonthYear(new Date(item.transactionDateTime));
-    if (!acc[month]) acc[month] = [];
-    acc[month].push(item);
-    return acc;
-  }, {} as Record<string, PaymentHistoryDto[]>);
-};
-
 const methodPayments = [
   { label: "APPLE PAY", value: MethodPayment.APPLE_PAY },
   { label: "BANK", value: MethodPayment.BANK_TRANSFER },
@@ -97,7 +68,7 @@ const dateRanges = ["15 days", "30 days", "3 months", "6 months", "1 year"];
 const getDateRange = (range: string): { fromDate: Date; toDate: Date } => {
   const today = new Date();
   let fromDate = new Date();
-  let toDate = new Date(); // <-- sẽ dùng làm toDate gốc
+  let toDate = new Date();
 
   switch (range) {
     case "15 days":
@@ -179,9 +150,9 @@ export default function PaymentHistory(): JSX.Element {
     }, 500);
 
     return () => clearTimeout(delayDebounce);
-  }, [user?.id, transactionIdSearch, dateRange]);
+  }, [transactionIdSearch, dateRange]);
 
-  const handleLoadMore = useCallback(() => {
+  const handleLoadMore = () => {
     if (!loadingPayment && !last && user?.id) {
       const { fromDate, toDate } = getDateRange(dateRange);
 
@@ -198,18 +169,6 @@ export default function PaymentHistory(): JSX.Element {
         })
       );
     }
-  }, [user?.id, transactionIdSearch, dateRange]);
-
-  const isCloseToBottom = ({
-    layoutMeasurement,
-    contentOffset,
-    contentSize,
-  }: any) => {
-    const paddingToBottom = 80;
-    return (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - paddingToBottom
-    );
   };
 
   const getMethodPaymentLabel = (status: MethodPayment | undefined): string => {
@@ -256,8 +215,6 @@ export default function PaymentHistory(): JSX.Element {
       : "x-circle";
   };
 
-  const grouped = groupByMonth(content);
-
   const renderTransaction = ({ item }: { item: PaymentHistoryDto }) => (
     <View className="flex-row items-center justify-between bg-white rounded-lg p-4 mx-2 my-2 shadow mb-2">
       <View className="flex-row items-center">
@@ -293,7 +250,7 @@ export default function PaymentHistory(): JSX.Element {
           </View>
         </View>
       </View>
-      <View className="flex-col justify-between h-full">
+      <View className="flex-col justify-between">
         <Text
           className={`text-sm ml-auto px-2 py-1 items-center text-center bg-black font-medium ${getStatusColor(
             item.statusPayment
