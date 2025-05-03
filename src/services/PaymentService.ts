@@ -34,7 +34,7 @@ const searchPaymentHistoryOfUserPagination = async (
   const response = await axios.post<
     ResponseEntityPagination<PaymentHistoryDto>
   >(
-    `${API_BASE_URL}/payment-history/search/${userId}?pageNo=${pageNo}&pageSize=5&sortBy=id&sortDir=desc`,
+    `${API_BASE_URL}/payment-history/search/${userId}?pageNo=${pageNo}&pageSize=10&sortBy=id&sortDir=desc`,
     request,
     {
       headers: {

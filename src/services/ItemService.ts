@@ -103,7 +103,7 @@ const getAllItemAvailable = async (
   sortDir?: string
 ): Promise<ResponseEntityPagination<ItemResponse>> => {
   const response = await axios.post<ResponseEntityPagination<ItemResponse>>(
-    `${API_BASE_URL}/item/search?pageNo=${pageNo}&pageSize=5&sortBy=${sortBy}&sortDir=${sortDir}`,
+    `${API_BASE_URL}/item/search?pageNo=${pageNo}&pageSize=10&sortBy=${sortBy}&sortDir=${sortDir}`,
     request
   );
   return response.data;
@@ -115,7 +115,7 @@ const getAllItemOfCurrentUserByStatus = async (
   accessToken: string
 ): Promise<ResponseEntityPagination<ItemResponse>> => {
   const response = await axios.get<ResponseEntityPagination<ItemResponse>>(
-    `${API_BASE_URL}/item/current-user?pageNo=${pageNo}&pageSize=5&sortBy=approvedTime&sortDir=asc&statusItem=${statusItem}`,
+    `${API_BASE_URL}/item/current-user?pageNo=${pageNo}&pageSize=10&sortBy=approvedTime&sortDir=asc&statusItem=${statusItem}`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -131,7 +131,7 @@ const getAllItemOfUserByStatus = async (
   statusItem: StatusItem
 ): Promise<ResponseEntityPagination<ItemResponse>> => {
   const response = await axios.get<ResponseEntityPagination<ItemResponse>>(
-    `${API_BASE_URL}/item/user?pageNo=${pageNo}&pageSize=5&sortBy=id&sortDir=asc&statusItem=${statusItem}&userId=${userId}`
+    `${API_BASE_URL}/item/user?pageNo=${pageNo}&pageSize=10&sortBy=id&sortDir=asc&statusItem=${statusItem}&userId=${userId}`
   );
   return response.data;
 };
@@ -213,7 +213,7 @@ const findNearbyItems = async (
   distance: number
 ): Promise<ResponseEntityPagination<ItemResponse>> => {
   const response = await axios.get<ResponseEntityPagination<ItemResponse>>(
-    `${API_BASE_URL}/item/nearby?pageNo=${pageNo}&pageSize=20&latitude=${latitude}&longitude=${longitude}&distance=${distance}`
+    `${API_BASE_URL}/item/nearby?pageNo=${pageNo}&pageSize=10&latitude=${latitude}&longitude=${longitude}&distance=${distance}`
   );
 
   return response.data;

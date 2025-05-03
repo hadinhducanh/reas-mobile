@@ -30,6 +30,7 @@ import {
 import { StatusItem } from "../../../common/enums/StatusItem";
 import dayjs from "dayjs";
 import LocationModal from "../../../components/LocationModal";
+import { FlatList } from "react-native-gesture-handler";
 
 const OwnerItem: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<StatusItem>(
@@ -108,26 +109,6 @@ const OwnerItem: React.FC = () => {
     },
   ];
 
-  const chunkArray = (array: ItemResponse[], size: number) => {
-    const chunked: ItemResponse[][] = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunked.push(array.slice(i, i + size));
-    }
-    return chunked;
-  };
-
-  const isCloseToBottom = ({
-    layoutMeasurement,
-    contentOffset,
-    contentSize,
-  }: any) => {
-    const paddingToBottom = 80;
-    return (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - paddingToBottom
-    );
-  };
-
   const handleLoadMore = () => {
     if (!loading && !last) {
       dispatch(
@@ -140,10 +121,8 @@ const OwnerItem: React.FC = () => {
     }
   };
 
-  const rows = chunkArray(content, 2);
-
-  return (
-    <SafeAreaView className="flex-1" edges={["top"]}>
+  const ListHeaderComponent = (
+    <>
       <Header
         title={userDetail?.fullName}
         backgroundColor="bg-[#00B0B9]"
@@ -153,135 +132,144 @@ const OwnerItem: React.FC = () => {
         showOption={userDetail?.id !== user?.id}
         user={userDetail!}
       />
-      {loading ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#00b0b9" />
+
+      <View className="bg-gray-200 h-[140px]" />
+
+      <View className="bg-white -mt-[50px] px-5 pt-5">
+        <View className="w-[100px] h-[100px] rounded-full -mt-[60px] items-center justify-center overflow-hidden bg-white">
+          {userDetail?.image ? (
+            <View className="w-24 h-24 rounded-full items-center justify-center">
+              <Image
+                source={{
+                  uri: userDetail?.image,
+                }}
+                className="w-full h-full rounded-full"
+              />
+            </View>
+          ) : (
+            <Icon name="person-circle" size={100} color="gray" />
+          )}
         </View>
-      ) : (
-        <>
-          <View className="bg-gray-200 h-[140px]" />
-
-          <View className="bg-white -mt-[50px] px-5 pt-5">
-            <View className="w-[100px] h-[100px] rounded-full -mt-[60px] items-center justify-center overflow-hidden bg-white">
-              {userDetail?.image ? (
-                <View className="w-24 h-24 rounded-full items-center justify-center">
-                  <Image
-                    source={{
-                      uri: userDetail?.image,
-                    }}
-                    className="w-full h-full rounded-full"
-                  />
-                </View>
-              ) : (
-                <Icon name="person-circle" size={100} color="gray" />
-              )}
-            </View>
-            <View className="mt-2 pb-5">
-              <Text className="text-2xl font-bold">{userDetail?.fullName}</Text>
-              <View className="flex-row items-center mt-1">
-                <Text className="text-sm mr-1">
-                  {userDetail?.numOfRatings !== undefined
-                    ? Number.isInteger(userDetail.numOfRatings)
-                      ? `${userDetail.numOfRatings}.0`
-                      : userDetail.numOfRatings
-                    : ""}
-                </Text>
-                {[1, 2, 3, 4, 5].map((num) => (
-                  <Icon
-                    key={`star-${num}`}
-                    name="star"
-                    size={16}
-                    color={
-                      num <= userDetail?.numOfRatings! ? "#FFD700" : "#dfecec"
-                    }
-                  />
-                ))}
-                <Pressable
-                  onPress={() =>
-                    navigation.navigate("OwnerFeedback", { userId: userId })
-                  }
-                >
-                  <Text className="ml-1 text-sm font-semibold text-[#00B0B9] underline">
-                    ({userDetail?.numOfFeedbacks} feedback)
-                  </Text>
-                </Pressable>
-              </View>
-
-              <View className="flex-row items-center mt-2">
-                <Icon name="location-outline" size={20} color="#738AA0" />
-                <Text
-                  className="text-base text-gray-500 ml-1"
-                  numberOfLines={1}
-                >
-                  Location:{" "}
-                  <Text
-                    className="text-black underline "
-                    onPress={() => setLocationVisible(true)}
-                  >
-                    {userDetail?.userLocations[0].specificAddress}
-                  </Text>{" "}
-                </Text>
-              </View>
-
-              <View className="flex-row items-center mt-1">
-                <Icon name="time-outline" size={20} color="#738AA0" />
-                <Text className="text-base text-gray-600 ml-1">
-                  Paticipant:{" "}
-                  <Text className="text-black">
-                    {formatRelativeTime(userDetail?.creationDate)}
-                  </Text>{" "}
-                </Text>
-              </View>
-            </View>
+        <View className="mt-2 pb-5">
+          <Text className="text-2xl font-bold">{userDetail?.fullName}</Text>
+          <View className="flex-row items-center mt-1">
+            <Text className="text-sm mr-1">
+              {userDetail?.numOfRatings !== undefined
+                ? Number.isInteger(userDetail.numOfRatings)
+                  ? `${userDetail.numOfRatings}.0`
+                  : userDetail.numOfRatings
+                : ""}
+            </Text>
+            {[1, 2, 3, 4, 5].map((num) => (
+              <Icon
+                key={`star-${num}`}
+                name="star"
+                size={16}
+                color={num <= userDetail?.numOfRatings! ? "#FFD700" : "#dfecec"}
+              />
+            ))}
+            <Pressable
+              onPress={() =>
+                navigation.navigate("OwnerFeedback", { userId: userId })
+              }
+            >
+              <Text className="ml-1 text-sm font-semibold text-[#00B0B9] underline">
+                ({userDetail?.numOfFeedbacks} feedback)
+              </Text>
+            </Pressable>
           </View>
 
-          <View className="bg-white">
-            <TabHeader
-              owner={true}
-              tabs={tabs}
-              selectedTab={selectedStatus}
-              onSelectTab={(value) => setSelectedStatus(value as StatusItem)}
-            />
+          <View className="flex-row items-center mt-2">
+            <Icon name="location-outline" size={20} color="#738AA0" />
+            <Text className="text-base text-gray-500 ml-1" numberOfLines={1}>
+              Location:{" "}
+              <Text
+                className="text-black underline "
+                onPress={() => setLocationVisible(true)}
+              >
+                {userDetail?.userLocations[0].specificAddress}
+              </Text>{" "}
+            </Text>
           </View>
 
-          {content.length === 0 ? (
+          <View className="flex-row items-center mt-1">
+            <Icon name="time-outline" size={20} color="#738AA0" />
+            <Text className="text-base text-gray-600 ml-1">
+              Paticipant:{" "}
+              <Text className="text-black">
+                {formatRelativeTime(userDetail?.creationDate)}
+              </Text>{" "}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <View className="bg-white">
+        <TabHeader
+          owner={true}
+          tabs={tabs}
+          selectedTab={selectedStatus}
+          onSelectTab={(value) => setSelectedStatus(value as StatusItem)}
+        />
+      </View>
+    </>
+  );
+
+  const renderItem = ({
+    item,
+    index,
+  }: {
+    item: ItemResponse;
+    index: number;
+  }) => {
+    const isSingle = content.length % 2 === 1 && index === content.length - 1;
+
+    return (
+      <View className={`${isSingle ? "w-1/2 px-1.5" : "flex-1 px-1.5"}`}>
+        <ItemCard item={item} navigation={navigation} mode="default" />
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView className="flex-1" edges={["top"]}>
+      <FlatList
+        data={content}
+        numColumns={2}
+        renderItem={renderItem}
+        keyExtractor={(item, index) =>
+          item ? item.id.toString() : `empty-${index}`
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListHeaderComponent={ListHeaderComponent}
+        ListEmptyComponent={() => {
+          if (loading) {
+            return (
+              <View className="flex-1 justify-center items-center">
+                <ActivityIndicator size="large" color="#00b0b9" />
+              </View>
+            );
+          }
+
+          return (
             <View className="bg-white flex-1 justify-center items-center">
               <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
               <Text className="text-gray-500">No item</Text>
             </View>
-          ) : (
-            <View className="bg-white flex-1">
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                className="bg-gray-100"
-                onScroll={({ nativeEvent }) => {
-                  if (isCloseToBottom(nativeEvent)) {
-                    handleLoadMore();
-                  }
-                }}
-                scrollEventThrottle={100}
-              >
-                <View className="mt-3 mx-3">
-                  {rows.map((row, rowIndex) => (
-                    <View key={rowIndex} className="flex flex-row gap-x-2">
-                      {row.map((item) => (
-                        <View key={item.id} className="flex-1">
-                          <ItemCard
-                            item={item}
-                            navigation={navigation}
-                            mode="default"
-                          />
-                        </View>
-                      ))}
-                      {row.length === 1 && <View className="flex-1" />}
-                    </View>
-                  ))}
-                </View>
-              </ScrollView>
-            </View>
-          )}
-        </>
-      )}
+          );
+        }}
+        ListFooterComponent={
+          !loading || content.length === 0 ? null : (
+            <ActivityIndicator size="large" color="#00b0b9" />
+          )
+        }
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          backgroundColor: "#f3f4f6",
+          flexGrow: 1,
+        }}
+      />
 
       {userDetail?.userLocations[0].specificAddress && (
         <LocationModal

@@ -1,5 +1,4 @@
 import axios from "axios";
-import { FeedbackRequest, FeedbackResponse } from "../common/models/feedback";
 import { API_BASE_URL } from "../common/constant";
 import { ResponseEntityPagination } from "../common/models/pagination";
 import { FavoriteResponse } from "../common/models/favorite";
@@ -45,7 +44,7 @@ const getAllFavoriteItems = async (
     {
       params: {
         pageNo,
-        pageSize: 5,
+        pageSize: 10,
         sortBy: "id",
         sortDir: "desc",
       },
