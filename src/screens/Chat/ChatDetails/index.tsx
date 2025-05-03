@@ -164,107 +164,97 @@ const ChatDetails: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-[#00b0b9]" edges={["top"]}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-      >
-        <View className="flex-1">
-          <View className="flex-row items-center justify-start h-[60px] px-5">
-            <Pressable onPress={() => navigation.goBack()}>
-              <Icon name="chevron-back" size={24} color="#fff" />
-            </Pressable>
-            <View className="mx-3 w-12 h-12 rounded-full items-center justify-center">
-              <Icon name="person-circle-outline" size={45} color="white" />
-            </View>
-            <Text className="text-[18px] font-bold text-white">
-              {receiverFullName}
-            </Text>
+      <View className="flex-1">
+        <View className="flex-row items-center justify-start h-[60px] px-5">
+          <Pressable onPress={() => navigation.goBack()}>
+            <Icon name="chevron-back" size={24} color="#fff" />
+          </Pressable>
+          <View className="mx-3 w-12 h-12 rounded-full items-center justify-center">
+            <Icon name="person-circle-outline" size={45} color="white" />
           </View>
+          <Text className="text-[18px] font-bold text-white">
+            {receiverFullName}
+          </Text>
+        </View>
 
-          <View className="flex-1 bg-white">
-            {Array.isArray(messages) && messages.length > 0 ? (
-              <ScrollView
-                ref={scrollViewRef}
-                onContentSizeChange={scrollToBottom}
-                className="bg-white"
-              >
-                {messages.map((msg, index) => (
-                  <Message
-                    key={index}
-                    isSender={msg.senderId === senderUsername}
-                    type={msg.contentType === "image" ? "image" : "text"}
-                    time={formatTimestamp(msg.timestamp)}
-                    text={msg.contentType === "text" ? msg.content : undefined}
-                    imageUrl={
-                      msg.contentType === "image" ? msg.content : undefined
-                    }
-                  />
-                ))}
-              </ScrollView>
-            ) : (
-              <View className="flex-1 justify-center items-center">
-                <Icon
-                  name="remove-circle-outline"
-                  size={70}
-                  color={"#00b0b9"}
+        <View className="flex-1 bg-white">
+          {Array.isArray(messages) && messages.length > 0 ? (
+            <ScrollView
+              ref={scrollViewRef}
+              onContentSizeChange={scrollToBottom}
+              className="bg-white"
+            >
+              {messages.map((msg, index) => (
+                <Message
+                  key={index}
+                  isSender={msg.senderId === senderUsername}
+                  type={msg.contentType === "image" ? "image" : "text"}
+                  time={formatTimestamp(msg.timestamp)}
+                  text={msg.contentType === "text" ? msg.content : undefined}
+                  imageUrl={
+                    msg.contentType === "image" ? msg.content : undefined
+                  }
                 />
-                <Text className="text-gray-500">No history chat</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Selected image preview with remove option */}
-          {selectedImage && (
-            <View style={{ padding: 10 }}>
-              <Text style={{ color: "#000", marginBottom: 4 }}>
-                Selected Image Preview:
-              </Text>
-              <View style={{ width: 100, height: 100, position: "relative" }}>
-                <Image
-                  source={{ uri: selectedImage.uri }}
-                  style={{
-                    width: 100,
-                    height: 100,
-                    borderRadius: 8,
-                  }}
-                />
-                <Pressable
-                  onPress={() => setSelectedImage(null)}
-                  style={{
-                    position: "absolute",
-                    top: -8,
-                    right: -8,
-                  }}
-                >
-                  <Icon name="close-circle" size={24} color="red" />
-                </Pressable>
-              </View>
+              ))}
+            </ScrollView>
+          ) : (
+            <View className="flex-1 justify-center items-center">
+              <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
+              <Text className="text-gray-500">No history chat</Text>
             </View>
           )}
-
-          {/* Chat Input & Actions */}
-          <View className="flex-row items-center px-5 bg-white py-8">
-            <Pressable onPress={handleSelectImage} className="mr-2">
-              <Icon name="image" size={28} color="#00b0b9" />
-            </Pressable>
-            <TextInput
-              placeholder="Nhập tin nhắn..."
-              className="flex-1 bg-[rgb(217,217,217,0.6)] rounded-[20px] px-5 py-3 text-black mr-2"
-              value={message}
-              onChangeText={setMessage}
-              onSubmitEditing={sendMessage}
-            />
-            <Pressable onPress={sendMessage}>
-              {isSending ? (
-                <ActivityIndicator size="small" color="#00b0b9" />
-              ) : (
-                <Icon name="send" size={28} color="#00b0b9" />
-              )}
-            </Pressable>
-          </View>
         </View>
-      </KeyboardAvoidingView>
+
+        {/* Selected image preview with remove option */}
+        {selectedImage && (
+          <View style={{ padding: 10 }}>
+            <Text style={{ color: "#000", marginBottom: 4 }}>
+              Selected Image Preview:
+            </Text>
+            <View style={{ width: 100, height: 100, position: "relative" }}>
+              <Image
+                source={{ uri: selectedImage.uri }}
+                style={{
+                  width: 100,
+                  height: 100,
+                  borderRadius: 8,
+                }}
+              />
+              <Pressable
+                onPress={() => setSelectedImage(null)}
+                style={{
+                  position: "absolute",
+                  top: -8,
+                  right: -8,
+                }}
+              >
+                <Icon name="close-circle" size={24} color="red" />
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+        {/* Chat Input & Actions */}
+        <View className="flex-row items-center px-5 bg-white py-8">
+          <Pressable onPress={handleSelectImage} className="mr-2">
+            <Icon name="image" size={28} color="#00b0b9" />
+          </Pressable>
+          <TextInput
+            placeholder="Nhập tin nhắn..."
+            className="flex-1 bg-[rgb(217,217,217,0.6)] rounded-[20px] px-5 py-3 text-black mr-2"
+            value={message}
+            onChangeText={setMessage}
+            onSubmitEditing={sendMessage}
+          />
+          <Pressable onPress={sendMessage}>
+            {isSending ? (
+              <ActivityIndicator size="small" color="#00b0b9" />
+            ) : (
+              <Icon name="send" size={28} color="#00b0b9" />
+            )}
+          </Pressable>
+        </View>
+      </View>
     </SafeAreaView>
   );
 };

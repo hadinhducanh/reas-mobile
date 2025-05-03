@@ -244,7 +244,6 @@ const SignUp: React.FC = () => {
       <SafeAreaView className="flex-1 bg-[#F6F9F9]">
         <KeyboardAwareScrollView
           contentContainerStyle={{ flexGrow: 1 }}
-          extraScrollHeight={20}
           enableOnAndroid={true}
           keyboardShouldPersistTaps="handled"
         >
