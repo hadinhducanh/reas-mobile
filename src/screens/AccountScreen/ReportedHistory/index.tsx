@@ -138,6 +138,14 @@ export default function ReportedHistory(): JSX.Element {
 
   const handleLoadMore = () => {
     if (!loadingCriticalReport && !last) {
+      if (statusFilter) {
+        searchRequest.statusCriticalReports = [statusFilter];
+      }
+
+      if (typesFilter) {
+        searchRequest.typeReports = [typesFilter];
+      }
+
       dispatch(
         searchCriticalReportThunk({
           pageNo: pageNo + 1,
