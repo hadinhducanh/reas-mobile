@@ -42,12 +42,22 @@ const FilterMap: React.FC = () => {
   const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
-    const newLocation = {
-      latitude: 10.8171,
-      longitude: 106.6563,
-    };
-    setLocation(newLocation);
-    setCircleCenter(newLocation);
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.error("Permission to access location was denied");
+        return;
+      }
+      const currentLocation = await Location.getCurrentPositionAsync({});
+      setLocation({
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+      });
+      setCircleCenter({
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+      });
+    })();
   }, []);
 
   const coordinate = selectedPlaceDetail
