@@ -34,39 +34,51 @@ const ConfirmExchange: React.FC = () => {
     (state: RootState) => state.exchange
   );
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [disable, setDisable] = useState(false);
 
   const handleConfirmExchange = async () => {
-    const offsetMinutes = new Date().getTimezoneOffset();
-    const adjusted = new Date(
-      exchangeItem.exchangeDateExtend.getTime() - offsetMinutes * 60000
-    );
+    if (disable || loading) return;
 
-    const exchangeRequestRequest = {
-      sellerItemId: exchangeItem.sellerItemId,
-      buyerItemId:
-        exchangeItem.selectedItem === null
-          ? null
-          : exchangeItem.selectedItem.id,
-      paidByUserId: exchangeItem.paidByUserId,
-      exchangeDate: adjusted.toISOString(),
-      exchangeLocation: exchangeItem.exchangeLocation,
-      estimatePrice: exchangeItem.estimatePrice,
-      methodExchange: exchangeItem.methodExchange,
-      additionalNotes:
-        exchangeItem.additionalNotes &&
-        exchangeItem.additionalNotes.length !== 0
-          ? exchangeItem.additionalNotes
-          : null,
-    };
+    setDisable(true);
+    try {
+      const offsetMinutes = new Date().getTimezoneOffset();
+      const adjusted = new Date(
+        exchangeItem.exchangeDateExtend.getTime() - offsetMinutes * 60000
+      );
 
-    await dispatch(makeAnExchangeThunk(exchangeRequestRequest));
+      const exchangeRequestRequest = {
+        sellerItemId: exchangeItem.sellerItemId,
+        buyerItemId:
+          exchangeItem.selectedItem === null
+            ? null
+            : exchangeItem.selectedItem.id,
+        paidByUserId: exchangeItem.paidByUserId,
+        exchangeDate: adjusted.toISOString(),
+        exchangeLocation: exchangeItem.exchangeLocation,
+        estimatePrice: exchangeItem.estimatePrice,
+        methodExchange: exchangeItem.methodExchange,
+        additionalNotes:
+          exchangeItem.additionalNotes &&
+          exchangeItem.additionalNotes.length !== 0
+            ? exchangeItem.additionalNotes
+            : null,
+      };
+
+      await dispatch(makeAnExchangeThunk(exchangeRequestRequest)).unwrap();
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setDisable(false);
+      setConfirmVisible(false);
+    }
   };
 
   useEffect(() => {
-    if (exchangeRequest !== null) {
+    if (exchangeRequest && !loading) {
       setExchangeItem(defaultExchangeItem);
       dispatch(resetExchange());
       setConfirmVisible(false);
+      setDisable(false);
       navigation.navigate("MainTabs", { screen: "Exchanges" });
     }
   }, [exchangeRequest, dispatch]);

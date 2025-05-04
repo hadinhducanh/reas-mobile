@@ -203,7 +203,17 @@ const itemSlice = createSlice({
           action: PayloadAction<ResponseEntityPagination<FavoriteResponse>>
         ) => {
           state.loading = false;
-          state.itemFavorite = action.payload;
+          if (action.payload.pageNo === 0) {
+            state.itemFavorite = action.payload;
+          } else {
+            state.itemFavorite = {
+              ...action.payload,
+              content: [
+                ...state.itemFavorite.content,
+                ...action.payload.content,
+              ],
+            };
+          }
         }
       )
       .addCase(
@@ -401,7 +411,17 @@ const itemSlice = createSlice({
           action: PayloadAction<ResponseEntityPagination<ItemResponse>>
         ) => {
           state.loading = false;
-          state.itemByStatus = action.payload;
+          if (action.payload.pageNo === 0) {
+            state.itemByStatus = action.payload;
+          } else {
+            state.itemByStatus = {
+              ...action.payload,
+              content: [
+                ...state.itemByStatus.content,
+                ...action.payload.content,
+              ],
+            };
+          }
         }
       )
       .addCase(
@@ -425,7 +445,17 @@ const itemSlice = createSlice({
           action: PayloadAction<ResponseEntityPagination<ItemResponse>>
         ) => {
           state.loading = false;
-          state.itemByStatusOfUser = action.payload;
+          if (action.payload.pageNo === 0) {
+            state.itemByStatusOfUser = action.payload;
+          } else {
+            state.itemByStatusOfUser = {
+              ...action.payload,
+              content: [
+                ...state.itemByStatusOfUser.content,
+                ...action.payload.content,
+              ],
+            };
+          }
         }
       )
       .addCase(

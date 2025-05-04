@@ -5,7 +5,6 @@ import {
   TextInput,
   ActivityIndicator,
   ScrollView,
-  Alert,
   Image,
   TouchableOpacity,
 } from "react-native";
@@ -55,11 +54,14 @@ const CriticalReport: React.FC = () => {
   const [typesReport, setTypesReport] = useState<TypeCriticalReport | null>(
     typeOfReport
   );
-  const [errorVisible, setErrorVisible] = useState<boolean>(false);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+
+  const [visible, setVisible] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
 
   useEffect(() => {
     if (criticalReportDetail) {
@@ -98,8 +100,10 @@ const CriticalReport: React.FC = () => {
   }, [combinedImages, user?.email]);
 
   const handleSend = useCallback(async () => {
-    if (!comment || !typesReport) {
-      Alert.alert("Invalid information", "All fields are required.");
+    if (!comment || !combinedImages || !typesReport) {
+      setTitle("Missing information");
+      setContent("All fields are required. Please fill them in to proceed.");
+      setVisible(true);
       return;
     }
     setIsUploadingImages(true);
@@ -135,7 +139,10 @@ const CriticalReport: React.FC = () => {
 
   useEffect(() => {
     if (criticalReportCreate) {
-      setErrorVisible(true);
+      setVisible(true);
+      setTitle("Notification");
+      setContent("Critical report was sent successful!");
+      return;
     }
   }, [criticalReportCreate]);
 
@@ -661,7 +668,7 @@ const CriticalReport: React.FC = () => {
         {criticalReportDetail === null && (
           <View className="bg-white rounded-2xl shadow p-4 mb-6">
             <Text className="text-gray-600 mb-2 text-base font-semibold">
-              Upload Image
+              Upload image<Text className="text-red-500">*</Text>
             </Text>
             <View className="flex-row justify-center">
               <ChooseImage
@@ -670,7 +677,7 @@ const CriticalReport: React.FC = () => {
                 transferReceiptImage={transferReceiptImage}
                 setTransferReceiptImage={setTransferReceiptImage}
                 isUploadEvidence
-                isFeedback
+                isCriticalReport
               />
             </View>
           </View>
@@ -710,7 +717,7 @@ const CriticalReport: React.FC = () => {
           {criticalReportDetail === null ? (
             <>
               <Text className="text-gray-600 mb-2 text-base font-semibold">
-                Reported content
+                Reported content<Text className="text-red-500">*</Text>
               </Text>
               <TextInput
                 className="h-32 bg-gray-100 rounded-lg p-3 text-gray-700"
@@ -780,13 +787,17 @@ const CriticalReport: React.FC = () => {
       </ScrollView>
 
       <ErrorModal
-        title={"Notification"}
-        content={"Critical report was sent successful!"}
-        visible={errorVisible}
+        title={title}
+        content={content}
+        visible={visible}
         onCancel={() => {
-          setErrorVisible(false);
-          dispatch(resetCriticalReportDetail());
-          navigation.goBack();
+          if (criticalReportCreate) {
+            setVisible(false);
+            dispatch(resetCriticalReportDetail());
+            navigation.goBack();
+          } else {
+            setVisible(false);
+          }
         }}
       />
 

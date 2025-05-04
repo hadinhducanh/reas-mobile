@@ -2,15 +2,17 @@ import React from "react";
 import { View, Text, Modal, Pressable, TextInput } from "react-native";
 import LoadingButton from "../LoadingButton";
 
-interface DeleteConfirmModalProps {
+interface ConfirmModalProps {
   title: string;
   content: string;
   visible: boolean;
+  disable?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-const ConfirmModal: React.FC<DeleteConfirmModalProps> = ({
+const ConfirmModal: React.FC<ConfirmModalProps> = ({
+  disable,
   title,
   content,
   onCancel,
@@ -47,6 +49,7 @@ const ConfirmModal: React.FC<DeleteConfirmModalProps> = ({
               </View>
               <View className="flex-1">
                 <LoadingButton
+                  disable={disable}
                   title="Sure"
                   onPress={onConfirm}
                   buttonClassName="p-4 border-2 border-transparent"

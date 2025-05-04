@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   FlatList,
-  ScrollView,
   Modal,
   ActivityIndicator,
 } from "react-native";
@@ -21,24 +20,7 @@ import { searchPaymentHistoryOfUserPaginationThunk } from "../../../redux/thunk/
 import { AppDispatch, RootState } from "../../../redux/store";
 import { StatusPayment } from "../../../common/enums/StatusPayment";
 import { MethodPayment } from "../../../common/enums/MethodPayment";
-
-const formatMonthYear = (date: Date): string => {
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  return `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-};
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const formatDate = (date: Date): string => {
   return new Date(date).toLocaleDateString("en-US", {
@@ -64,17 +46,6 @@ const formatPaymentTime = (paymentTime: string): string => {
   return `${formattedTime} `;
 };
 
-const groupByMonth = (
-  data: PaymentHistoryDto[]
-): Record<string, PaymentHistoryDto[]> => {
-  return data.reduce((acc, item) => {
-    const month = formatMonthYear(new Date(item.transactionDateTime));
-    if (!acc[month]) acc[month] = [];
-    acc[month].push(item);
-    return acc;
-  }, {} as Record<string, PaymentHistoryDto[]>);
-};
-
 const methodPayments = [
   { label: "APPLE PAY", value: MethodPayment.APPLE_PAY },
   { label: "BANK", value: MethodPayment.BANK_TRANSFER },
@@ -97,7 +68,7 @@ const dateRanges = ["15 days", "30 days", "3 months", "6 months", "1 year"];
 const getDateRange = (range: string): { fromDate: Date; toDate: Date } => {
   const today = new Date();
   let fromDate = new Date();
-  let toDate = new Date(); // <-- sẽ dùng làm toDate gốc
+  let toDate = new Date();
 
   switch (range) {
     case "15 days":
@@ -179,9 +150,9 @@ export default function PaymentHistory(): JSX.Element {
     }, 500);
 
     return () => clearTimeout(delayDebounce);
-  }, [user?.id, transactionIdSearch, dateRange]);
+  }, [transactionIdSearch, dateRange]);
 
-  const handleLoadMore = useCallback(() => {
+  const handleLoadMore = () => {
     if (!loadingPayment && !last && user?.id) {
       const { fromDate, toDate } = getDateRange(dateRange);
 
@@ -198,18 +169,6 @@ export default function PaymentHistory(): JSX.Element {
         })
       );
     }
-  }, [user?.id, transactionIdSearch, dateRange]);
-
-  const isCloseToBottom = ({
-    layoutMeasurement,
-    contentOffset,
-    contentSize,
-  }: any) => {
-    const paddingToBottom = 80;
-    return (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - paddingToBottom
-    );
   };
 
   const getMethodPaymentLabel = (status: MethodPayment | undefined): string => {
@@ -256,10 +215,8 @@ export default function PaymentHistory(): JSX.Element {
       : "x-circle";
   };
 
-  const grouped = groupByMonth(content);
-
   const renderTransaction = ({ item }: { item: PaymentHistoryDto }) => (
-    <View className="flex-row items-center justify-between bg-white rounded-lg p-4 shadow mb-2">
+    <View className="flex-row items-center justify-between bg-white rounded-lg p-4 mx-2 my-2 shadow mb-2">
       <View className="flex-row items-center">
         <View
           className={`p-3 rounded-full ${getStatusBackground(
@@ -293,7 +250,7 @@ export default function PaymentHistory(): JSX.Element {
           </View>
         </View>
       </View>
-      <View className="flex-col justify-between h-full">
+      <View className="flex-col justify-between">
         <Text
           className={`text-sm ml-auto px-2 py-1 items-center text-center bg-black font-medium ${getStatusColor(
             item.statusPayment
@@ -313,80 +270,86 @@ export default function PaymentHistory(): JSX.Element {
     </View>
   );
 
-  return (
+  const ListHeaderComponent = (
     <>
-      <View className="flex-1 bg-gray-100">
-        <Header title="Payment history" showOption={false} />
+      <Header title="Payment history" showOption={false} />
 
-        {/* Filter UI */}
-        <View className="px-4 pt-3 pb-2 bg-white">
-          <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-3 mb-2">
-            <Feather name="search" size={20} color="#999" />
-            <TextInput
-              placeholder="Search Transaction ID"
-              keyboardType="numeric"
-              value={transactionIdSearch}
-              onChangeText={(text) => {
-                const numericText = text.replace(/[^0-9]/g, "");
-                setTransactionIdSearch(numericText);
-              }}
-              className="ml-2 text-base flex-1 text-gray-800"
-            />
-          </View>
-
-          <View className="flex-row justify-between items-center my-2 px-3">
-            <View className="flex-row items-center">
-              <Feather name="calendar" size={20} color="#555" />
-              <Text className="ml-2 text-gray-700">Date Range</Text>
-            </View>
-            <TouchableOpacity
-              className="flex-row items-center"
-              onPress={() => setShowDateModal(true)}
-            >
-              <Text className="text-[#00b0b9] font-semibold mr-1">
-                {dateRange}
-              </Text>
-              <AntDesign name="down" size={12} color="#00b0b9" />
-            </TouchableOpacity>
-          </View>
+      {/* Filter UI */}
+      <View className="px-4 pt-3 pb-2 bg-white">
+        <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-3 mb-2">
+          <Feather name="search" size={20} color="#999" />
+          <TextInput
+            placeholder="Search Transaction ID"
+            keyboardType="numeric"
+            value={transactionIdSearch}
+            onChangeText={(text) => {
+              const numericText = text.replace(/[^0-9]/g, "");
+              setTransactionIdSearch(numericText);
+            }}
+            className="ml-2 text-base flex-1 text-gray-800"
+          />
         </View>
 
-        {loadingPayment ? (
-          <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color="#00b0b9" />
+        <View className="flex-row justify-between items-center my-2 px-3">
+          <View className="flex-row items-center">
+            <Feather name="calendar" size={20} color="#555" />
+            <Text className="ml-2 text-gray-700">Date Range</Text>
           </View>
-        ) : content.length === 0 ? (
-          <View className="flex-1 justify-center items-center">
-            <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
-            <Text className="text-gray-500">No payment history</Text>
-          </View>
-        ) : (
-          <ScrollView
-            className="px-4 mt-2"
-            showsVerticalScrollIndicator={false}
-            onScroll={({ nativeEvent }) => {
-              if (isCloseToBottom(nativeEvent)) {
-                handleLoadMore();
-              }
-            }}
-            scrollEventThrottle={100}
+          <TouchableOpacity
+            className="flex-row items-center"
+            onPress={() => setShowDateModal(true)}
           >
-            {Object.entries(grouped).map(([month, items]) => (
-              <View key={month} className="mb-4">
-                <Text className="text-gray-500 font-semibold mb-2">
-                  {month}
-                </Text>
-                <FlatList
-                  data={items}
-                  keyExtractor={(item) => item.id.toString()}
-                  renderItem={renderTransaction}
-                  scrollEnabled={false}
-                />
-              </View>
-            ))}
-          </ScrollView>
-        )}
+            <Text className="text-[#00b0b9] font-semibold mr-1">
+              {dateRange}
+            </Text>
+            <AntDesign name="down" size={12} color="#00b0b9" />
+          </TouchableOpacity>
+        </View>
       </View>
+    </>
+  );
+
+  return (
+    <>
+      <SafeAreaView className="flex-1" edges={["top"]}>
+        <FlatList
+          data={content}
+          renderItem={({ item }) => renderTransaction({ item })}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          ListHeaderComponent={ListHeaderComponent}
+          ListEmptyComponent={() => {
+            if (loadingPayment) {
+              return (
+                <View className="flex-1 justify-center items-center">
+                  <ActivityIndicator size="large" color="#00b0b9" />
+                </View>
+              );
+            }
+            return (
+              <View className="flex-1 justify-center items-center">
+                <Icon
+                  name="remove-circle-outline"
+                  size={70}
+                  color={"#00b0b9"}
+                />
+                <Text className="text-gray-500">No payment history</Text>
+              </View>
+            );
+          }}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingPayment ? (
+              <ActivityIndicator
+                size="small"
+                color="#00b0b9"
+                className="my-4"
+              />
+            ) : null
+          }
+          contentContainerStyle={{ flexGrow: 1 }}
+        />
+      </SafeAreaView>
 
       <Modal
         transparent

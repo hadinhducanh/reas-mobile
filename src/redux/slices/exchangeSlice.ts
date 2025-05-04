@@ -57,6 +57,16 @@ const exchangeSlice = createSlice({
     resetExchangeEvidence: (state) => {
       state.exchangeUploadEvidence = null;
     },
+    resetExchangeList: (state) => {
+      state.exchangeByStatus = {
+        pageNo: 0,
+        pageSize: 10,
+        totalPages: 0,
+        totalRecords: 0,
+        last: false,
+        content: [],
+      };
+    },
     resetExchange: (state) => {
       state.exchangeRequest = null;
       state.exchangeDetail = null;
@@ -340,5 +350,6 @@ const exchangeSlice = createSlice({
   },
 });
 
-export const { resetExchange, resetExchangeEvidence } = exchangeSlice.actions;
+export const { resetExchange, resetExchangeList, resetExchangeEvidence } =
+  exchangeSlice.actions;
 export default exchangeSlice.reducer;

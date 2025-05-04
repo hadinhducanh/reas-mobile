@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../components/Header";
@@ -16,7 +16,7 @@ import {
   getItemCountsOfCurrentUserThunk,
 } from "../../redux/thunk/itemThunks";
 import Icon from "react-native-vector-icons/Ionicons";
-import { ScrollView } from "react-native-gesture-handler";
+import { FlatList } from "react-native-gesture-handler";
 
 const statusItems = [
   { label: "AVAILABLE", value: StatusItem.AVAILABLE },
@@ -99,28 +99,6 @@ const ItemManagement: React.FC = () => {
     },
   ];
 
-  const chunkArray = (array: ItemResponse[], size: number) => {
-    const chunked: ItemResponse[][] = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunked.push(array.slice(i, i + size));
-    }
-    return chunked;
-  };
-
-  const rows = chunkArray(content, 2);
-
-  const isCloseToBottom = ({
-    layoutMeasurement,
-    contentOffset,
-    contentSize,
-  }: any) => {
-    const paddingToBottom = 80;
-    return (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - paddingToBottom
-    );
-  };
-
   const handleLoadMore = () => {
     if (!loading && !last) {
       dispatch(
@@ -132,63 +110,73 @@ const ItemManagement: React.FC = () => {
     }
   };
 
+  const ListHeaderComponent = (
+    <>
+      <Header showBackButton={false} title="Your items" showOption={false} />
+      <TabHeader
+        owner={false}
+        tabs={tabs}
+        selectedTab={selectedStatus}
+        onSelectTab={(value) => setSelectedStatus(value as StatusItem)}
+      />
+    </>
+  );
+
+  const renderItem = ({
+    item,
+    index,
+  }: {
+    item: ItemResponse;
+    index: number;
+  }) => {
+    const isSingle = content.length % 2 === 1 && index === content.length - 1;
+
+    return (
+      <View className={`${isSingle ? "w-1/2 px-1.5" : "flex-1 px-1.5 "}`}>
+        <CardItem item={item} navigation={navigation} mode="management" />
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#f6f9f9]">
-      <View>
-        <Header showBackButton={false} title="Your items" showOption={false} />
-        <TabHeader
-          owner={false}
-          tabs={tabs}
-          selectedTab={selectedStatus}
-          onSelectTab={(value) => setSelectedStatus(value as StatusItem)}
-        />
-      </View>
+      <FlatList
+        data={content}
+        numColumns={2}
+        renderItem={renderItem}
+        keyExtractor={(item, index) =>
+          item ? item.id.toString() : `empty-${index}`
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListHeaderComponent={ListHeaderComponent}
+        ListEmptyComponent={() => {
+          if (loading) {
+            return (
+              <View className="flex-1 justify-center items-center">
+                <ActivityIndicator size="large" color="#00b0b9" />
+              </View>
+            );
+          }
 
-      {loading ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#00b0b9" />
-        </View>
-      ) : (
-        <>
-          {content.length === 0 ? (
+          return (
             <View className="flex-1 justify-center items-center">
               <Icon name="remove-circle-outline" size={70} color={"#00b0b9"} />
               <Text className="text-gray-500">No item</Text>
             </View>
-          ) : (
-            <ScrollView
-              className="bg-gray-100"
-              showsVerticalScrollIndicator={false}
-              onScroll={({ nativeEvent }) => {
-                if (isCloseToBottom(nativeEvent)) {
-                  handleLoadMore();
-                }
-              }}
-              scrollEventThrottle={100}
-            >
-              <View className="mx-5">
-                <View className="mt-3">
-                  {rows.map((row, rowIndex) => (
-                    <View key={rowIndex} className="flex flex-row gap-x-2">
-                      {row.map((item) => (
-                        <View key={item.id} className="flex-1">
-                          <CardItem
-                            item={item}
-                            navigation={navigation}
-                            // toggleLike={toggleLike}
-                            mode="management"
-                          />
-                        </View>
-                      ))}
-                      {row.length === 1 && <View className="flex-1" />}
-                    </View>
-                  ))}
-                </View>
-              </View>
-            </ScrollView>
-          )}
-        </>
-      )}
+          );
+        }}
+        ListFooterComponent={
+          !loading || content.length === 0 ? null : (
+            <ActivityIndicator size="large" color="#00b0b9" className="my-4" />
+          )
+        }
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          backgroundColor: "#f3f4f6",
+          flexGrow: 1,
+        }}
+      />
     </SafeAreaView>
   );
 };
