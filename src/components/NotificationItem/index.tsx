@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { NotificationDto } from "../../common/models/notification";
 import { TypeNotification } from "../../common/enums/TypeNotification";
@@ -15,7 +15,6 @@ import { getItemDetailThunk } from "../../redux/thunk/itemThunks";
 import { resetItemDetailState } from "../../redux/slices/itemSlice";
 import { resetExchange } from "../../redux/slices/exchangeSlice";
 
-// Helper function to map enum values to user-friendly labels
 const getNotificationTitle = (notificationType: TypeNotification): string => {
   switch (notificationType) {
     case TypeNotification.CHAT_MESSAGE:
@@ -24,6 +23,12 @@ const getNotificationTitle = (notificationType: TypeNotification): string => {
       return "Upload item";
     case TypeNotification.EXCHANGE_REQUEST:
       return "Request for exchange";
+    case TypeNotification.ITEM_EXPIRED:
+      return "Item expired";
+    case TypeNotification.REPORT_RESPONSE:
+      return "Report response";
+    case TypeNotification.REPORT_HANDLED:
+      return "Report handled";
     default:
       return "Notification";
   }
@@ -46,6 +51,21 @@ const getNotificationColors = (type: TypeNotification) => {
         bgColor: "bg-[#EDE7F6]",
         textColor: "text-[#5E35B1]",
       };
+    case TypeNotification.ITEM_EXPIRED:
+      return {
+        bgColor: "bg-[#FFEBEE]",
+        textColor: "text-[#C62828]",
+      };
+    case TypeNotification.REPORT_RESPONSE:
+      return {
+        bgColor: "bg-[#E8F5E9]",
+        textColor: "text-[#2E7D32]",
+      };
+    case TypeNotification.REPORT_HANDLED:
+      return {
+        bgColor: "bg-[#ECEFF1]",
+        textColor: "text-[#37474F]",
+      };
     default:
       return {
         bgColor: "bg-[#00B0B9]/10",
@@ -58,13 +78,19 @@ const getNotificationColors = (type: TypeNotification) => {
 const getNotificationIcon = (notificationType: TypeNotification): string => {
   switch (notificationType) {
     case TypeNotification.CHAT_MESSAGE:
-      return "mail"; // For example, you can use "mail" or "mail-unread"
+      return "mail"; // Tin nhắn
     case TypeNotification.UPLOAD_ITEM:
-      return "cloud-upload";
+      return "cloud-upload"; // Tải lên
     case TypeNotification.EXCHANGE_REQUEST:
-      return "swap-horizontal"; // Example icon for exchange requests
+      return "swap-horizontal"; // Yêu cầu trao đổi
+    case TypeNotification.ITEM_EXPIRED:
+      return "time-outline"; // Hết hạn
+    case TypeNotification.REPORT_RESPONSE:
+      return "chatbubble-ellipses-outline"; // Phản hồi báo cáo
+    case TypeNotification.REPORT_HANDLED:
+      return "checkmark-done-outline"; // Báo cáo đã xử lý
     default:
-      return "notifications";
+      return "notifications"; // Mặc định
   }
 };
 

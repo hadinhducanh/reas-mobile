@@ -49,14 +49,20 @@ const FilterMap: React.FC = () => {
         return;
       }
       const currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation({
+      const newLocation = {
         latitude: currentLocation.coords.latitude,
         longitude: currentLocation.coords.longitude,
-      });
-      setCircleCenter({
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-      });
+      };
+      setLocation(newLocation);
+      setCircleCenter(newLocation);
+      mapRef.current?.animateToRegion(
+        {
+          ...newLocation,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        },
+        1000
+      );
     })();
   }, []);
 
@@ -110,9 +116,11 @@ const FilterMap: React.FC = () => {
   };
 
   const handleGetCurrentLocation = async () => {
+    const currentLocation = await Location.getCurrentPositionAsync({});
+
     const newLocation = {
-      latitude: 10.8171,
-      longitude: 106.6563,
+      latitude: currentLocation.coords.latitude,
+      longitude: currentLocation.coords.longitude,
     };
     setLocation(newLocation);
     setCircleCenter(newLocation);
@@ -152,7 +160,7 @@ const FilterMap: React.FC = () => {
           <MapView
             ref={mapRef}
             style={{ flex: 1 }}
-            initialRegion={region}
+            region={region}
             onRegionChangeComplete={handleRegionChangeComplete}
           >
             <UrlTile

@@ -329,7 +329,13 @@ const SearchResult: React.FC = () => {
   const ListHeaderComponent = (
     <>
       <View className="h-20 bg-[#00B0B9] w-full flex-row justify-between items-center px-4">
-        <Pressable onPress={() => navigation.goBack()} className="mr-1">
+        <Pressable
+          onPress={() => {
+            dispatch(setRangeState(0));
+            navigation.goBack();
+          }}
+          className="mr-1"
+        >
           <Icon name="chevron-back-outline" size={30} color="white" />
         </Pressable>
         <View className="flex-1 mr-5">
