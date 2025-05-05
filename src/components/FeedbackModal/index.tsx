@@ -19,6 +19,7 @@ import dayjs from "dayjs";
 import { resetFeedback } from "../../redux/slices/feedbackSlice";
 import ImagePreviewModal from "../ImagePreviewModal";
 import { TypeCriticalReport } from "../../common/enums/TypeCriticalReport";
+import ErrorModal from "../ErrorModal";
 
 interface FeebackModalProps {
   feedbackId: number;
@@ -35,9 +36,7 @@ const FeebackModal: React.FC<FeebackModalProps> = ({
 }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
-  const { feedbackDetail, loading } = useSelector(
-    (state: RootState) => state.feeback
-  );
+  const { feedbackDetail } = useSelector((state: RootState) => state.feeback);
   const { user } = useSelector((state: RootState) => state.auth);
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -97,148 +96,163 @@ const FeebackModal: React.FC<FeebackModalProps> = ({
 
   return (
     <>
-      <Modal
-        transparent
-        visible={visible}
-        animationType="fade"
-        onRequestClose={onCancel}
-      >
-        <View className="flex-1 bg-black/50 justify-center items-center">
-          <Pressable className="absolute inset-0" onPress={onCancel} />
+      {feedbackDetail ? (
+        <Modal
+          transparent
+          visible={visible}
+          animationType="fade"
+          onRequestClose={onCancel}
+        >
+          <View className="flex-1 bg-black/50 justify-center items-center">
+            <Pressable className="absolute inset-0" onPress={onCancel} />
 
-          <View className="w-[90%] bg-white rounded-lg shadow-md p-5">
-            <>
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <View className="items-center">
-                    <Icon name="person-circle-outline" size={40} color="gray" />
+            <View className="w-[90%] bg-white rounded-lg shadow-md p-5">
+              <>
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center">
+                    <View className="items-center">
+                      <Icon
+                        name="person-circle-outline"
+                        size={40}
+                        color="gray"
+                      />
+                    </View>
+                    <Text className="text-lg font-bold">
+                      {feedbackDetail?.user.fullName}
+                    </Text>
                   </View>
-                  <Text className="text-lg font-bold">
-                    {feedbackDetail?.user.fullName}
+                  {feedbackDetail?.updated === false &&
+                  user?.id === feedbackDetail.user.id ? (
+                    <View>
+                      <LoadingButton
+                        onPress={() =>
+                          navigation.navigate("FeedbackItem", {
+                            exchangeId: exchangeId,
+                          })
+                        }
+                        title="Update"
+                        buttonClassName="px-3 py-1 bg-white border border-[#00B0B9]"
+                        textColor="text-[#00B0B9]"
+                      />
+                    </View>
+                  ) : user?.id !== feedbackDetail?.user.id ? (
+                    <TouchableOpacity onPress={() => setIsPopupVisible(true)}>
+                      <Icon name="ellipsis-vertical" size={20} color="gray" />
+                    </TouchableOpacity>
+                  ) : (
+                    ""
+                  )}
+                </View>
+
+                {imageUrls.length > 0 && (
+                  <View className="flex-row flex-wrap gap-2 mt-2">
+                    {imageUrls.map((uri, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => {
+                          setSelectedIndex(index);
+                          setImageModalVisible(true);
+                        }}
+                        className="w-20 h-28 rounded-lg overflow-hidden mr-2"
+                      >
+                        <Image
+                          source={{ uri }}
+                          className="w-full h-full rounded-lg"
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+                {feedbackDetail?.comment && (
+                  <View className="mt-2">
+                    {feedbackDetail?.comment.split("\\n").map((line, index) => (
+                      <Text className="text-gray-700" key={index}>
+                        {line}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+
+                <View className="flex-row items-center mt-2">
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <Icon
+                      key={num}
+                      name="star"
+                      size={16}
+                      color={
+                        num <= feedbackDetail?.rating! ? "#FFD700" : "#dfecec"
+                      }
+                    />
+                  ))}
+                  <Text className="ml-2 text-gray-500 text-sm">
+                    | {formatRelativeTime(feedbackDetail?.creationDate)}
                   </Text>
                 </View>
-                {feedbackDetail?.updated === false &&
-                user?.id === feedbackDetail.user.id ? (
-                  <View>
-                    <LoadingButton
-                      onPress={() =>
-                        navigation.navigate("FeedbackItem", {
-                          exchangeId: exchangeId,
-                        })
-                      }
-                      title="Update"
-                      buttonClassName="px-3 py-1 bg-white border border-[#00B0B9]"
-                      textColor="text-[#00B0B9]"
+
+                <View className="flex-row items-center bg-[#D6F2F4] rounded-lg mt-4 p-3">
+                  <View className="" />
+                  <View className="w-12 h-12 bg-white rounded-md mr-3">
+                    <Image
+                      source={{
+                        uri: feedbackDetail?.item.imageUrl.split(", ")[0],
+                      }}
+                      className="w-full h-full object-contain"
+                      resizeMode="contain"
                     />
                   </View>
-                ) : user?.id !== feedbackDetail?.user.id ? (
-                  <TouchableOpacity onPress={() => setIsPopupVisible(true)}>
-                    <Icon name="ellipsis-vertical" size={20} color="gray" />
-                  </TouchableOpacity>
-                ) : (
-                  ""
-                )}
-              </View>
-
-              {imageUrls.length > 0 && (
-                <View className="flex-row flex-wrap gap-2 mt-2">
-                  {imageUrls.map((uri, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() => {
-                        setSelectedIndex(index);
-                        setImageModalVisible(true);
-                      }}
-                      className="w-20 h-28 rounded-lg overflow-hidden mr-2"
-                    >
-                      <Image
-                        source={{ uri }}
-                        className="w-full h-full rounded-lg"
-                      />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-
-              {feedbackDetail?.comment && (
-                <View className="mt-2">
-                  {feedbackDetail?.comment.split("\\n").map((line, index) => (
-                    <Text className="text-gray-700" key={index}>
-                      {line}
+                  <View>
+                    <Text className="text-gray-700 font-medium">
+                      {feedbackDetail?.item.itemName}
                     </Text>
-                  ))}
+                    <Text className="text-[#00B0B9] font-bold">
+                      {feedbackDetail?.item.price === 0
+                        ? "Free"
+                        : formatPrice(feedbackDetail?.item.price) + " VND"}
+                    </Text>
+                  </View>
                 </View>
-              )}
-
-              <View className="flex-row items-center mt-2">
-                {[1, 2, 3, 4, 5].map((num) => (
-                  <Icon
-                    key={num}
-                    name="star"
-                    size={16}
-                    color={
-                      num <= feedbackDetail?.rating! ? "#FFD700" : "#dfecec"
-                    }
-                  />
-                ))}
-                <Text className="ml-2 text-gray-500 text-sm">
-                  | {formatRelativeTime(feedbackDetail?.creationDate)}
-                </Text>
-              </View>
-
-              <View className="flex-row items-center bg-[#D6F2F4] rounded-lg mt-4 p-3">
-                <View className="" />
-                <View className="w-12 h-12 bg-white rounded-md mr-3">
-                  <Image
-                    source={{
-                      uri: feedbackDetail?.item.imageUrl.split(", ")[0],
-                    }}
-                    className="w-full h-full object-contain"
-                    resizeMode="contain"
-                  />
-                </View>
-                <View>
-                  <Text className="text-gray-700 font-medium">
-                    {feedbackDetail?.item.itemName}
-                  </Text>
-                  <Text className="text-[#00B0B9] font-bold">
-                    {feedbackDetail?.item.price === 0
-                      ? "Free"
-                      : formatPrice(feedbackDetail?.item.price) + " VND"}
-                  </Text>
-                </View>
-              </View>
-            </>
-          </View>
-        </View>
-        <ImagePreviewModal
-          visible={imageModalVisible}
-          onClose={() => setImageModalVisible(false)}
-          initialIndex={selectedIndex}
-          imageUrls={imageUrls}
-        />
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isPopupVisible}
-          onRequestClose={() => setIsPopupVisible(false)}
-        >
-          <Pressable
-            className="flex-1 bg-[rgba(0,0,0,0.2)]"
-            onPress={() => setIsPopupVisible(false)}
-          >
-            <View className="mt-auto ">
-              <Pressable
-                className="flex-row items-center bg-white p-5 active:bg-gray-100"
-                onPress={handleNavigateCriticalReport}
-              >
-                <Icon name="warning-outline" size={24} color="black" />
-                <Text className="ml-2 text-base">Report this feedback</Text>
-              </Pressable>
+              </>
             </View>
-          </Pressable>
+          </View>
+          <ImagePreviewModal
+            visible={imageModalVisible}
+            onClose={() => setImageModalVisible(false)}
+            initialIndex={selectedIndex}
+            imageUrls={imageUrls}
+          />
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={isPopupVisible}
+            onRequestClose={() => setIsPopupVisible(false)}
+          >
+            <Pressable
+              className="flex-1 bg-[rgba(0,0,0,0.2)]"
+              onPress={() => setIsPopupVisible(false)}
+            >
+              <View className="mt-auto ">
+                <Pressable
+                  className="flex-row items-center bg-white p-5 active:bg-gray-100"
+                  onPress={handleNavigateCriticalReport}
+                >
+                  <Icon name="warning-outline" size={24} color="black" />
+                  <Text className="ml-2 text-base">Report this feedback</Text>
+                </Pressable>
+              </View>
+            </Pressable>
+          </Modal>
         </Modal>
-      </Modal>
+      ) : (
+        <ErrorModal
+          content={
+            "You cannot view this feedback because it has been reported as invalid."
+          }
+          title={"Feedback Unavailable"}
+          visible={visible}
+          onCancel={onCancel}
+        />
+      )}
     </>
   );
 };

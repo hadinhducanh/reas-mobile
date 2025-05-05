@@ -31,6 +31,7 @@ import ConfirmModal from "../../../components/DeleteConfirmModal";
 import { resetFeedback } from "../../../redux/slices/feedbackSlice";
 import { StatusExchange } from "../../../common/enums/StatusExchange";
 import { fetchUserInfoThunk } from "../../../redux/thunk/authThunks";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const FeedbackItem: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -156,59 +157,68 @@ const FeedbackItem: React.FC = () => {
           <ActivityIndicator size="large" color="#00b0b9" />
         </View>
       ) : (
-        <View className="flex-1 m-5 bg-white rounded-[10px] flex flex-col items-center justify-center">
-          <Text className="text-2xl font-bold text-[#0b1d2d] text-center pt-10">
-            Please Rate Item And {"\n"} Resident For The Exchange
-          </Text>
+        <KeyboardAwareScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          extraScrollHeight={20}
+          enableOnAndroid={true}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="flex-1 m-5 bg-white rounded-[10px] flex flex-col items-center justify-center">
+            <Text className="text-2xl font-bold text-[#0b1d2d] text-center pt-10">
+              Please Rate Item And {"\n"} Resident For The Exchange
+            </Text>
 
-          <ChooseImage
-            receivedItemImage={receivedItemImage}
-            setReceivedItemImage={setReceivedItemImage}
-            transferReceiptImage={transferReceiptImage}
-            setTransferReceiptImage={setTransferReceiptImage}
-            isUploadEvidence={true}
-            isFeedback={true}
-          />
-
-          <View className="flex-row justify-between w-[65%] my-5">
-            {[1, 2, 3, 4, 5].map((num) => (
-              <TouchableOpacity key={num} onPress={() => setRating(num)}>
-                <Icon
-                  name="star"
-                  size={40}
-                  color={num <= rating ? "#FFD700" : "#dfecec"}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text className="text-[16px] leading-[24px] text-[#738aa0] text-center mt-[10px]">
-            Your feedback help us and resdent in {"\n"} improving the quality of
-            the app better!
-          </Text>
-
-          <View className="w-[90%] mx-auto h-40 bg-gray-100 rounded-lg mt-4 px-5 py-3">
-            <TextInput
-              className="flex-1 text-base font-normal text-gray-500"
-              placeholder="Write your feedback..."
-              placeholderTextColor="#d1d5db"
-              multiline={true}
-              textAlignVertical="top"
-              value={comment}
-              onChangeText={setComment}
+            <ChooseImage
+              receivedItemImage={receivedItemImage}
+              setReceivedItemImage={setReceivedItemImage}
+              transferReceiptImage={transferReceiptImage}
+              setTransferReceiptImage={setTransferReceiptImage}
+              isUploadEvidence={true}
+              isFeedback={true}
             />
-          </View>
 
-          <View className="w-full p-5 mt-auto">
-            {!feedbackDetail?.updated && (
-              <LoadingButton
-                title={exchangeDetail?.feedbackId !== null ? "Update" : "Send"}
-                onPress={handleSend}
-                buttonClassName="py-4"
+            <View className="flex-row justify-between w-[65%] my-5">
+              {[1, 2, 3, 4, 5].map((num) => (
+                <TouchableOpacity key={num} onPress={() => setRating(num)}>
+                  <Icon
+                    name="star"
+                    size={40}
+                    color={num <= rating ? "#FFD700" : "#dfecec"}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text className="text-[16px] leading-[24px] text-[#738aa0] text-center mt-[10px]">
+              Your feedback help us and resdent in {"\n"} improving the quality
+              of the app better!
+            </Text>
+
+            <View className="w-[90%] mx-auto h-40 bg-gray-100 rounded-lg mt-4 px-5 py-3">
+              <TextInput
+                className="flex-1 text-base font-normal text-gray-500"
+                placeholder="Write your feedback..."
+                placeholderTextColor="#d1d5db"
+                multiline={true}
+                textAlignVertical="top"
+                value={comment}
+                onChangeText={setComment}
               />
-            )}
+            </View>
+
+            <View className="w-full p-5 mt-auto">
+              {!feedbackDetail?.updated && (
+                <LoadingButton
+                  title={
+                    exchangeDetail?.feedbackId !== null ? "Update" : "Send"
+                  }
+                  onPress={handleSend}
+                  buttonClassName="py-4"
+                />
+              )}
+            </View>
           </View>
-        </View>
+        </KeyboardAwareScrollView>
       )}
       <ConfirmModal
         title="Warning"

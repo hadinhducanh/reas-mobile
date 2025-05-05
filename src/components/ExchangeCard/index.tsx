@@ -242,7 +242,10 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({ status, exchange }) => {
               : exchange.buyerItem.owner.id) ? (
               <Text className="justify-start items-center text-left text-[14px] font-normal text-[#6b7280]">
                 {exchange.buyerItem === null
-                  ? "Item free"
+                  ? "Exchange with money"
+                  : exchange.buyerItem === null &&
+                    exchange.sellerItem.price === 0
+                  ? "Free item"
                   : exchange.buyerItem.itemName}
               </Text>
             ) : (
