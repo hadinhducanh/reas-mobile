@@ -17,7 +17,12 @@ import {
   Image,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -86,24 +91,17 @@ const SearchResult: React.FC = () => {
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [searchText, setSearchText] = useState<string>("");
   const [typeItem, setTypeItem] = useState<TypeItem[]>([]);
-  const isFirstRender = useRef(true);
+  const lastParams = useRef<{
+    pageNo: number;
+    request: SearchItemRequest;
+    sortBy: string;
+    sortDir: string;
+  } | null>(null);
 
   const handleSelectSort = useCallback((value: string) => {
     setSelectedSort(value);
     setIsSortModalVisible(false);
   }, []);
-
-  const isCloseToBottom = ({
-    layoutMeasurement,
-    contentOffset,
-    contentSize,
-  }: any) => {
-    const paddingToBottom = 80;
-    return (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - paddingToBottom
-    );
-  };
 
   const searchRequest: SearchItemRequest = {
     statusItems: [StatusItem.AVAILABLE],
@@ -133,65 +131,60 @@ const SearchResult: React.FC = () => {
     return { sortBy: _sortBy, sortDir: _sortDir };
   }, [selectedSort]);
 
+  // Initial fetch
   useEffect(() => {
+    if (itemType) setTypeItem([itemType]);
+    if (searchTextParam) setSearchText(searchTextParam);
+
+    const initialReq = {
+      pageNo: 0,
+      request: {
+        ...searchRequest,
+        itemName: searchTextParam || undefined,
+        typeItems: itemType ? [itemType] : undefined,
+      },
+      sortBy: "approvedTime",
+      sortDir: "desc",
+    };
+    lastParams.current = initialReq;
     dispatch(resetItemDetailState());
     dispatch(getAllBrandThunk());
-    if (searchTextParam !== undefined) {
-      setSearchText(searchTextParam);
-      dispatch(
-        searchItemPaginationThunk({
-          pageNo: 0,
-          request: {
-            ...searchRequest,
-            itemName: searchTextParam,
-          },
-          sortBy: "approvedTime",
-          sortDir: "desc",
-        })
-      );
-    } else if (itemType !== undefined) {
-      setTypeItem([itemType]);
-      dispatch(
-        searchItemPaginationThunk({
-          pageNo: 0,
-          request: {
-            ...searchRequest,
-            typeItems: [itemType],
-          },
-          sortBy: "approvedTime",
-          sortDir: "desc",
-        })
-      );
-    }
+    dispatch(searchItemPaginationThunk(initialReq));
   }, [dispatch, searchTextParam, itemType]);
 
+  // Re-fetch when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      if (lastParams.current) {
+        dispatch(searchItemPaginationThunk(lastParams.current));
+      }
+    }, [dispatch])
+  );
+
+  // Fetch on filter/sort change
   useEffect(() => {
-    dispatch(resetItemDetailState());
+    if (!lastParams.current) return;
 
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
+    const params = {
+      pageNo: 0,
+      request: {
+        ...searchRequest,
+        itemName: searchText || undefined,
+        typeItems: typeItem.length ? typeItem : undefined,
+        fromPrice: fromPrice || undefined,
+        toPrice: toPrice || undefined,
+        categoryIds: selectedCategories.map((c) => c.id) || undefined,
+        brandIds: selectedBrands.map((b) => b.id) || undefined,
+      },
+      sortBy,
+      sortDir,
+    };
+    lastParams.current = params;
 
-    const deplayDebounce = setTimeout(() => {
-      dispatch(
-        searchItemPaginationThunk({
-          pageNo: 0,
-          request: {
-            ...searchRequest,
-            categoryIds: selectedCategories.map((cate) => cate.id) || undefined,
-            brandIds: selectedBrands.map((brand) => brand.id) || undefined,
-            typeItems: typeItem || undefined,
-            itemName: searchText || undefined,
-            fromPrice: fromPrice || undefined,
-            toPrice: toPrice || undefined,
-          },
-          sortBy: sortBy,
-          sortDir: sortDir,
-        })
-      );
+    const debounce = setTimeout(() => {
+      dispatch(searchItemPaginationThunk(params));
     }, 500);
-    return () => clearTimeout(deplayDebounce);
+    return () => clearTimeout(debounce);
   }, [
     dispatch,
     searchText,
@@ -204,42 +197,17 @@ const SearchResult: React.FC = () => {
     selectedBrands,
   ]);
 
+  // Load more
   const handleLoadMore = useCallback(() => {
-    if (!loading && !last) {
-      dispatch(
-        searchItemPaginationThunk({
-          pageNo: pageNo + 1,
-          request: {
-            ...searchRequest,
-            categoryIds: selectedCategories.map((cate) => cate.id) || undefined,
-            brandIds: selectedBrands.map((brand) => brand.id) || undefined,
-            typeItems: typeItem || undefined,
-            itemName: searchText || undefined,
-            fromPrice: fromPrice || undefined,
-            toPrice: toPrice || undefined,
-          },
-          sortBy: sortBy,
-          sortDir: sortDir,
-        })
-      );
+    if (!loading && !last && lastParams.current) {
+      const next = { ...lastParams.current, pageNo: pageNo + 1 };
+      lastParams.current = next;
+      dispatch(searchItemPaginationThunk(next));
     }
-  }, [
-    dispatch,
-    loading,
-    last,
-    pageNo,
-    searchText,
-    typeItem,
-    fromPrice,
-    toPrice,
-    sortBy,
-    sortDir,
-    selectedCategories,
-    selectedBrands,
-  ]);
+  }, [dispatch, loading, last, pageNo]);
 
   useEffect(() => {
-    if (typeItem) {
+    if (typeItem.length) {
       dispatch(getAllByTypeItemThunk(typeItem[0]));
     }
   }, [typeItem, dispatch]);

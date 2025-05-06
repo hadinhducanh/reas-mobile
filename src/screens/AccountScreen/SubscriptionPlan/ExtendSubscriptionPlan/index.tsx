@@ -95,7 +95,7 @@ const ExtendPremium: React.FC = () => {
     return inputDate < today;
   };
 
-  const handleBackPress = () => {
+  const handleBackPress = useCallback(() => {
     if (currentPlan) {
       navigation.reset({
         index: 0,
@@ -109,7 +109,7 @@ const ExtendPremium: React.FC = () => {
     } else {
       navigation.goBack();
     }
-  };
+  }, [currentPlan]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#00B0B9]" edges={["top"]}>

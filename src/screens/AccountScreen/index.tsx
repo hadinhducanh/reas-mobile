@@ -5,7 +5,10 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useDispatch, useSelector } from "react-redux";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { AppDispatch, RootState } from "../../redux/store";
-import { logoutUserThunk } from "../../redux/thunk/authThunks";
+import {
+  fetchUserInfoThunk,
+  logoutUserThunk,
+} from "../../redux/thunk/authThunks";
 import { logout } from "../../redux/slices/authSlice";
 import Header from "../../components/Header";
 import { RootStackParamList } from "../../navigation/AppNavigator";
@@ -76,7 +79,8 @@ const Account: React.FC = () => {
 
   useEffect(() => {
     dispatch(getCurrentSubscriptionThunk());
-  }, [dispatch, accessToken]);
+    dispatch(fetchUserInfoThunk());
+  }, [dispatch, accessToken, user?.numOfFeedbacks]);
 
   const accountItems = useMemo(() => {
     return [

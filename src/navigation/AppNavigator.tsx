@@ -337,6 +337,7 @@ export default function RootNavigator() {
         screenOptions={{
           headerShown: false,
           gestureEnabled: false,
+          gestureResponseDistance: 0,
         }}
       >
         <Stack.Screen name="MainTabs" component={BottomTabs} />

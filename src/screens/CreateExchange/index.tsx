@@ -211,7 +211,7 @@ const CreateExchange: React.FC = () => {
         estimatePrice: itemDetail.price,
         buyerItemId: null,
       });
-
+      hasConfirmedRef.current = true;
       navigation.navigate("ConfirmExchange");
     } else if (isRecommended || itemDetail?.desiredItem === null) {
       setExchangeItem({
@@ -234,7 +234,7 @@ const CreateExchange: React.FC = () => {
             ? -(itemDetail?.price! - exchangeItem.selectedItem?.price!)
             : itemDetail?.price! - exchangeItem.selectedItem?.price!,
       });
-
+      hasConfirmedRef.current = true;
       navigation.navigate("ConfirmExchange");
     } else {
       setModalVisible(true);
@@ -263,6 +263,7 @@ const CreateExchange: React.FC = () => {
           ? -(itemDetail?.price! - exchangeItem.selectedItem?.price!)
           : itemDetail?.price! - exchangeItem.selectedItem?.price!,
     });
+    hasConfirmedRef.current = true;
     navigation.navigate("ConfirmExchange");
   };
 

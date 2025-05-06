@@ -600,9 +600,8 @@ const ItemExpire: React.FC = () => {
                   </Text>
                 </Text>
                 <View className="flex-row items-center">
-                  <View className="w-3 h-3 bg-[#738aa0] rounded-full mr-1" />
                   <Text className="text-gray-500">
-                    Paricipant:{" "}
+                    Participant:{" "}
                     {formatRelativeTime(itemDetail?.owner.creationDate)}
                   </Text>
                 </View>

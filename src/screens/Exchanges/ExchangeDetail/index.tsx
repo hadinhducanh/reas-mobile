@@ -98,7 +98,14 @@ const ExchangeDetail: React.FC = () => {
   );
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const { textColor, backgroundColor } = statusStyles[statusDetail];
+  const displayStatus =
+    statusDetail === StatusExchange.APPROVED &&
+    exchangeDetail?.exchangeHistory.statusExchangeHistory ===
+      StatusExchange.FAILED
+      ? StatusExchange.FAILED
+      : statusDetail;
+
+  const { textColor, backgroundColor } = statusStyles[displayStatus];
   const [locationVisible, setLocationVisible] = useState<boolean>(false);
   const [cancelVisible, setCancelVisible] = useState(false);
 
@@ -140,8 +147,16 @@ const ExchangeDetail: React.FC = () => {
   };
 
   const getStatusExchangeLabel = (
-    status: StatusExchange | undefined
+    status: StatusExchange | undefined,
+    statusHistory?: StatusExchange
   ): string => {
+    if (
+      status === StatusExchange.APPROVED &&
+      statusHistory === StatusExchange.FAILED
+    ) {
+      return "Failed";
+    }
+
     const found = statusExchanges.find((item) => item.value === status);
     return found ? found.label : "";
   };
@@ -168,7 +183,10 @@ const ExchangeDetail: React.FC = () => {
               <Text
                 className={`items-center text-[13px] font-medium ${textColor} ${backgroundColor} rounded-full px-5 py-2`}
               >
-                {getStatusExchangeLabel(statusDetail)}
+                {getStatusExchangeLabel(
+                  statusDetail,
+                  exchangeDetail?.exchangeHistory.statusExchangeHistory
+                )}
               </Text>
             </View>
             <View className="flex-row justify-between items-center py-5">
