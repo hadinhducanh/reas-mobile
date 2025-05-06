@@ -100,7 +100,7 @@ const ExchangeDetail: React.FC = () => {
 
   const displayStatus =
     statusDetail === StatusExchange.APPROVED &&
-    exchangeDetail?.exchangeHistory.statusExchangeHistory ===
+    exchangeDetail?.exchangeHistory?.statusExchangeHistory ===
       StatusExchange.FAILED
       ? StatusExchange.FAILED
       : statusDetail;
@@ -185,7 +185,7 @@ const ExchangeDetail: React.FC = () => {
               >
                 {getStatusExchangeLabel(
                   statusDetail,
-                  exchangeDetail?.exchangeHistory.statusExchangeHistory
+                  exchangeDetail?.exchangeHistory?.statusExchangeHistory
                 )}
               </Text>
             </View>

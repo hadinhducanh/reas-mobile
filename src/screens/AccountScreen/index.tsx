@@ -16,6 +16,7 @@ import LoadingButton from "../../components/LoadingButton";
 import LanguageSwitchModal from "./LanguageSwitch";
 import { useTranslation } from "react-i18next";
 import { getCurrentSubscriptionThunk } from "../../redux/thunk/subscriptionThunks";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type AccountListItemProps = {
   iconName: string;
@@ -71,6 +72,8 @@ const Account: React.FC = () => {
   const handleLogout = useCallback(() => {
     dispatch(logout());
     dispatch(logoutUserThunk());
+    AsyncStorage.removeItem("ACCESS_TOKEN");
+    AsyncStorage.removeItem("REFRESH_TOKEN");
   }, [dispatch]);
 
   const toggleLanguageModal = useCallback(() => {

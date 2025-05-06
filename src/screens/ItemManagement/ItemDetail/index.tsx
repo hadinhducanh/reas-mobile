@@ -41,6 +41,10 @@ import {
 import { StatusItem } from "../../../common/enums/StatusItem";
 import { TypeItem } from "../../../common/enums/TypeItem";
 import ImagePreviewModal from "../../../components/ImagePreviewModal";
+import {
+  defaultExchangeItem,
+  useExchangeItem,
+} from "../../../context/ExchangeContext";
 
 const { width } = Dimensions.get("window");
 
@@ -101,6 +105,7 @@ const typeItems = [
 const ItemDetails: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, "ItemDetails">>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { setExchangeItem } = useExchangeItem();
   const { itemId } = route.params;
   const dispatch = useDispatch<AppDispatch>();
   const { itemDetail, itemSimilar, otherItemOfUser, loading } = useSelector(
@@ -254,6 +259,7 @@ const ItemDetails: React.FC = () => {
     if (!accessToken) {
       navigation.navigate("SignIn");
     } else {
+      setExchangeItem(defaultExchangeItem);
       navigation.navigate("CreateExchange", { itemId });
     }
   }, [accessToken, navigation, itemId]);

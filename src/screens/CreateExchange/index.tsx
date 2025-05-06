@@ -464,7 +464,10 @@ const CreateExchange: React.FC = () => {
 
                   <View className="bg-gray-100 p-4 rounded-lg border border-gray-300 mt-10">
                     <Text className="text-gray-500 text-lg font-medium mb-2">
-                      Your chosen item<Text className="text-red-500">*</Text>
+                      Your chosen item
+                      {!itemDetail?.moneyAccepted && (
+                        <Text className="text-red-500">*</Text>
+                      )}
                     </Text>
                     {exchangeItem.selectedItem ? (
                       <View

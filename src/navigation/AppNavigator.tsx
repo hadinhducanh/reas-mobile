@@ -86,6 +86,9 @@ export type MainTabsParamList = {
   Account: undefined;
   Items: undefined;
 };
+export type UploadParamList = {
+  UploadScreen: { fromBrowse?: boolean };
+};
 
 export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabsParamList>;
@@ -137,7 +140,7 @@ export type RootStackParamList = {
   ExtendPremiumSucess: undefined;
   About: undefined;
   UploadItemSuccess: undefined;
-  UploadScreen: undefined;
+  UploadScreenBrowse: NavigatorScreenParams<UploadParamList>;
   Account: undefined;
   Payment: { payOSURL: string; returnUrl: string; cancelUrl: string };
   OrderFailed: undefined;
@@ -371,7 +374,7 @@ export default function RootNavigator() {
         <Stack.Screen name="BrowseItems" component={BrowseItems} />
         <Stack.Screen name="CriticalReport" component={CriticalReport} />
         <Stack.Screen name="ConfirmExchange" component={ConfirmExchange} />
-        <Stack.Screen name="UploadScreen" component={UploadItem} />
+        <Stack.Screen name="UploadScreenBrowse" component={UploadItemFlow} />
         <Stack.Screen name="UpdateItem" component={UpdateItemFlow} />
         <Stack.Screen
           name="AccpectRejectExchange"

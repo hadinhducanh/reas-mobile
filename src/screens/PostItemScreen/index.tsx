@@ -7,13 +7,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useNavigation, useNavigationState } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useDispatch, useSelector } from "react-redux";
 
-import { RootStackParamList } from "../../navigation/AppNavigator";
+import {
+  RootStackParamList,
+  UploadParamList,
+} from "../../navigation/AppNavigator";
 import { AppDispatch, RootState } from "../../redux/store";
 import Header from "../../components/Header";
 import ChooseImage from "../../components/ChooseImage";
@@ -38,8 +40,9 @@ import ErrorModal from "../../components/ErrorModal";
 export default function UploadItem() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<UploadParamList>>();
+  const { fromBrowse } = route.params || { fromBrowse: false };
   const { user } = useSelector((state: RootState) => state.auth);
-  const state = useNavigationState((state) => state);
 
   const { userLocationId } = useSelector((state: RootState) => state.user);
   const { itemUpload, loading } = useSelector((state: RootState) => state.item);
@@ -286,10 +289,7 @@ export default function UploadItem() {
     <SafeAreaView className="flex-1 bg-[#F6F9F9]" edges={["top"]}>
       <Header
         title="Upload your item"
-        showBackButton={
-          state.index > 0 &&
-          state.routes[state.index - 1].name === "BrowseItems"
-        }
+        showBackButton={fromBrowse}
         showOption={false}
       />
       {loading || isUploadingImages ? (
