@@ -39,11 +39,7 @@ import ConfirmModal from "../../components/DeleteConfirmModal";
 import { resetPlaceDetail } from "../../redux/slices/locationSlice";
 import LocationModal from "../../components/LocationModal";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import {
-  getItemDetailThunk,
-  getRecommendedItemsInExchangeThunk,
-} from "../../redux/thunk/itemThunks";
-import dayjs from "dayjs";
+import { getRecommendedItemsInExchangeThunk } from "../../redux/thunk/itemThunks";
 import { resetExchange } from "../../redux/slices/exchangeSlice";
 import { StatusItem } from "../../common/enums/StatusItem";
 

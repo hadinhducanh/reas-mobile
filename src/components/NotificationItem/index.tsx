@@ -14,6 +14,10 @@ import ErrorModal from "../ErrorModal";
 import { getItemDetailThunk } from "../../redux/thunk/itemThunks";
 import { resetItemDetailState } from "../../redux/slices/itemSlice";
 import { resetExchange } from "../../redux/slices/exchangeSlice";
+import {
+  defaultExchangeItem,
+  useExchangeItem,
+} from "../../context/ExchangeContext";
 
 const getNotificationTitle = (notificationType: TypeNotification): string => {
   switch (notificationType) {
@@ -109,7 +113,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   const { bgColor, textColor } = getNotificationColors(
     notification.notificationType
   );
-  const { exchangeDetail } = useSelector((state: RootState) => state.exchange);
+  const { setExchangeItem } = useExchangeItem();
 
   const [visible, setVisible] = useState<boolean>(false);
   const [content, setContent] = useState<string>("");
@@ -144,6 +148,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
                   );
                   return;
                 } else {
+                  setExchangeItem(defaultExchangeItem);
                   dispatch(resetItemDetailState());
                   dispatch(getItemDetailThunk(result.sellerItem.id));
                   navigation.navigate("CreateExchange", {
