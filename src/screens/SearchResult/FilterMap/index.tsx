@@ -48,16 +48,18 @@ const FilterMap: React.FC = () => {
         console.error("Permission to access location was denied");
         return;
       }
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      const newLocation = {
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
+      const current = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Highest,
+      });
+      const newLoc = {
+        latitude: current.coords.latitude,
+        longitude: current.coords.longitude,
       };
-      setLocation(newLocation);
-      setCircleCenter(newLocation);
+      setLocation(newLoc);
+      setCircleCenter(newLoc);
       mapRef.current?.animateToRegion(
         {
-          ...newLocation,
+          ...newLoc,
           latitudeDelta: LATITUDE_DELTA,
           longitudeDelta: LONGITUDE_DELTA,
         },
@@ -116,21 +118,35 @@ const FilterMap: React.FC = () => {
   };
 
   const handleGetCurrentLocation = async () => {
-    const currentLocation = await Location.getCurrentPositionAsync({});
-
-    const newLocation = {
-      latitude: currentLocation.coords.latitude,
-      longitude: currentLocation.coords.longitude,
-    };
-    setLocation(newLocation);
-    setCircleCenter(newLocation);
-
-    mapRef.current?.animateToRegion({
-      latitude: newLocation.latitude,
-      longitude: newLocation.longitude,
-      latitudeDelta: LATITUDE_DELTA,
-      longitudeDelta: LONGITUDE_DELTA,
-    });
+    try {
+      console.log("Requesting permission...");
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      console.log("Permission status:", status);
+      if (status !== "granted") {
+        console.warn("Location permission not granted");
+        return;
+      }
+      const current = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Highest,
+      });
+      const newLoc = {
+        latitude: current.coords.latitude,
+        longitude: current.coords.longitude,
+      };
+      console.log("Got location:", newLoc);
+      setLocation(newLoc);
+      setCircleCenter(newLoc);
+      mapRef.current?.animateToRegion(
+        {
+          ...newLoc,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        },
+        1000
+      );
+    } catch (error) {
+      console.error("Error fetching location:", error);
+    }
   };
 
   const handleApplyPress = () => {
