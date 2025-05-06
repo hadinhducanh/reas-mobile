@@ -36,9 +36,8 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const SignIn: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { accessToken, loading, loadingGoogle, user } = useSelector(
-    (state: RootState) => state.auth
-  );
+  const { accessToken, refreshToken, loading, loadingGoogle, user } =
+    useSelector((state: RootState) => state.auth);
   const registrationToken = useSelector(
     (state: RootState) => state.notification.token
   );
@@ -150,6 +149,10 @@ const SignIn: React.FC = () => {
   useEffect(() => {
     const handleLogin = async () => {
       if (accessToken) {
+        await AsyncStorage.setItem("ACCESS_TOKEN", accessToken);
+        if (refreshToken) {
+          await AsyncStorage.setItem("REFRESH_TOKEN", refreshToken);
+        }
         if (remember) {
           await AsyncStorage.setItem(
             "CREDENTIALS",

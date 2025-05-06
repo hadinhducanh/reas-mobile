@@ -5,22 +5,14 @@ import {
 } from "@react-native-google-signin/google-signin";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux/store";
-import {
-  authenticateGoogleUserkThunk,
-  fetchUserInfoThunk,
-} from "../../redux/thunk/authThunks";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "../../navigation/AppNavigator";
+import { authenticateGoogleUserkThunk } from "../../redux/thunk/authThunks";
 import { ActivityIndicator, Pressable, Text } from "react-native";
 import { View } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 
 export default function GoogleSignInScreen() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
-  const { accessToken, user, loadingGoogle } = useSelector(
-    (state: RootState) => state.auth
-  );
+  const { loadingGoogle } = useSelector((state: RootState) => state.auth);
   const registrationToken = useSelector(
     (state: RootState) => state.notification.token
   );

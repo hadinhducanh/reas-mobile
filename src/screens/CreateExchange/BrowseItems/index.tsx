@@ -81,7 +81,12 @@ const BrowseItems: React.FC = () => {
       />
       <Pressable
         className="flex-row justify-center items-center mx-5 bg-gray-100 border-[1px] border-gray-300 px-5 py-4 rounded-lg active:bg-gray-200"
-        onPress={() => navigation.navigate("UploadScreen")}
+        onPress={() =>
+          navigation.navigate("UploadScreenBrowse", {
+            screen: "UploadScreen",
+            params: { fromBrowse: true },
+          })
+        }
       >
         <Text className="text-center text-lg text-gray-500 font-medium mr-1">
           Add a different item

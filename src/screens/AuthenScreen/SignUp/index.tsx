@@ -28,6 +28,7 @@ import { RootStackParamList } from "../../../navigation/AppNavigator";
 import Auth from "../../../components/Auth";
 import ErrorModal from "../../../components/ErrorModal";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const emailRegex =
   /^[^\.][a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
@@ -58,9 +59,8 @@ const signUpSchema = z
 
 const SignUp: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { accessToken, loading, loadingGoogle, user } = useSelector(
-    (state: RootState) => state.auth
-  );
+  const { accessToken, refreshToken, loading, loadingGoogle, user } =
+    useSelector((state: RootState) => state.auth);
   const registrationToken = useSelector(
     (state: RootState) => state.notification.token
   );
@@ -188,6 +188,15 @@ const SignUp: React.FC = () => {
 
       try {
         const result = await dispatch(fetchUserInfoThunk()).unwrap();
+        await AsyncStorage.setItem("ACCESS_TOKEN", accessToken);
+        if (refreshToken) {
+          await AsyncStorage.setItem("REFRESH_TOKEN", refreshToken);
+        }
+        await AsyncStorage.setItem(
+          "CREDENTIALS",
+          JSON.stringify({ savedEmail: email, savedPassword: password })
+        );
+        await AsyncStorage.removeItem("CREDENTIALS");
 
         if (result.firstLogin) {
           navigation.reset({

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import AppNavigator from "./src/navigation/AppNavigator";
 import "./locales/i18n";
 import { StyleSheet } from "react-native";
@@ -13,11 +13,14 @@ import { useNotification } from "./src/hook/useNotification";
 import { useDispatch } from "react-redux";
 import { setRegistrationTokenThunk } from "./src/redux/thunk/notificationThunk";
 import { UpdateItemProvider } from "./src/context/UpdateItemContext";
+import { AuthRestoreHandler } from "./src/components/AuthRestoreHandler";
 
 const App: React.FC = () => {
   return (
     <Provider store={store}>
       <SafeAreaProvider style={styles.container}>
+        <AuthRestoreHandler />
+
         <UploadItemProvider>
           <UpdateItemProvider>
             <ExchangeItemProvider>
