@@ -748,6 +748,10 @@ const ExchangeDetail: React.FC = () => {
         {exchangeDetail?.exchangeDate &&
           new Date(exchangeDetail.exchangeDate) > new Date() &&
           exchangeDetail?.statusExchangeRequest === StatusExchange.APPROVED &&
+          (exchangeDetail?.exchangeHistory?.statusExchangeHistory ===
+            StatusExchange.NOT_YET_EXCHANGE ||
+            exchangeDetail?.exchangeHistory?.statusExchangeHistory ===
+              StatusExchange.PENDING_EVIDENCE) &&
           user?.id ===
             (exchangeDetail?.buyerItem?.owner?.id ??
               exchangeDetail?.paidBy.id) && (
