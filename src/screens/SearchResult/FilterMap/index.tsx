@@ -45,26 +45,52 @@ const FilterMap: React.FC = () => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        console.error("Permission to access location was denied");
+        console.warn("Location permission not granted");
         return;
       }
-      const current = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Highest,
-      });
-      const newLoc = {
-        latitude: current.coords.latitude,
-        longitude: current.coords.longitude,
-      };
-      setLocation(newLoc);
-      setCircleCenter(newLoc);
-      mapRef.current?.animateToRegion(
-        {
-          ...newLoc,
-          latitudeDelta: LATITUDE_DELTA,
-          longitudeDelta: LONGITUDE_DELTA,
-        },
-        1000
-      );
+
+      // 2. Lấy nhanh vị trí gần nhất (nếu có) để animate tạm thời
+      const lastKnown = await Location.getLastKnownPositionAsync();
+      if (lastKnown) {
+        const quickLoc = {
+          latitude: lastKnown.coords.latitude,
+          longitude: lastKnown.coords.longitude,
+        };
+        setCircleCenter(quickLoc);
+        mapRef.current?.animateToRegion(
+          {
+            ...quickLoc,
+            latitudeDelta: LATITUDE_DELTA,
+            longitudeDelta: LONGITUDE_DELTA,
+          },
+          500 // thời gian animate ngắn để phản hồi nhanh
+        );
+      }
+
+      // 3. Lấy vị trí chính xác
+      try {
+        const current = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Highest,
+        });
+        const newLoc = {
+          latitude: current.coords.latitude,
+          longitude: current.coords.longitude,
+        };
+        setLocation(newLoc);
+        setCircleCenter(newLoc);
+
+        // 4. Animate lần nữa về vị trí chính xác
+        mapRef.current?.animateToRegion(
+          {
+            ...newLoc,
+            latitudeDelta: LATITUDE_DELTA,
+            longitudeDelta: LONGITUDE_DELTA,
+          },
+          1000
+        );
+      } catch (error) {
+        console.error("Error fetching accurate location:", error);
+      }
     })();
   }, []);
 
@@ -118,14 +144,33 @@ const FilterMap: React.FC = () => {
   };
 
   const handleGetCurrentLocation = async () => {
+    // 1. Xin quyền
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      console.warn("Location permission not granted");
+      return;
+    }
+
+    // 2. Lấy nhanh vị trí gần nhất (nếu có) để animate tạm thời
+    const lastKnown = await Location.getLastKnownPositionAsync();
+    if (lastKnown) {
+      const quickLoc = {
+        latitude: lastKnown.coords.latitude,
+        longitude: lastKnown.coords.longitude,
+      };
+      setCircleCenter(quickLoc);
+      mapRef.current?.animateToRegion(
+        {
+          ...quickLoc,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        },
+        500 // thời gian animate ngắn để phản hồi nhanh
+      );
+    }
+
+    // 3. Lấy vị trí chính xác
     try {
-      console.log("Requesting permission...");
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      console.log("Permission status:", status);
-      if (status !== "granted") {
-        console.warn("Location permission not granted");
-        return;
-      }
       const current = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Highest,
       });
@@ -133,9 +178,10 @@ const FilterMap: React.FC = () => {
         latitude: current.coords.latitude,
         longitude: current.coords.longitude,
       };
-      console.log("Got location:", newLoc);
       setLocation(newLoc);
       setCircleCenter(newLoc);
+
+      // 4. Animate lần nữa về vị trí chính xác
       mapRef.current?.animateToRegion(
         {
           ...newLoc,
@@ -145,7 +191,7 @@ const FilterMap: React.FC = () => {
         1000
       );
     } catch (error) {
-      console.error("Error fetching location:", error);
+      console.error("Error fetching accurate location:", error);
     }
   };
 
@@ -173,7 +219,7 @@ const FilterMap: React.FC = () => {
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
         <View style={{ flex: 1, position: "relative" }}>
-          <MapView
+          <MapView.Animated
             ref={mapRef}
             style={{ flex: 1 }}
             region={region}
@@ -194,7 +240,7 @@ const FilterMap: React.FC = () => {
                 fillColor="rgba(0,176,185,0.2)"
               />
             )}
-          </MapView>
+          </MapView.Animated>
         </View>
 
         <View className="absolute top-4 left-4 z-10 bg-white rounded-full items-center p-3">
